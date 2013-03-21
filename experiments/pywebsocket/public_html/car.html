@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js'></script>
+<script>
+
+    var counter = 0;
+    
+    $(document).ready(function() {
+        function debug(str) {
+		    $("#debug").append("<p>"+str+"</p>");
+        };
+		
+        ws = new WebSocket("ws://localhost:8080/bridge");
+
+        /* Define websocket handlers */
+        ws.onmessage = function(evt) {
+		    $("#msg").append("<p>" + evt.data + "</p>");
+		};
+        ws.onclose = function() {
+		    debug("socket closed");
+        };
+        ws.onopen = function() {
+		    debug("connected...");
+			ws.send("OH HAI!\n");
+   		};
+	});
+    
+    /* Define click handler */
+	$(document).click(function () {
+	    ws.send("Click number " + counter);
+        counter++;
+	});
+</script>
+</head>
+<body>
+	<div id="debug"></div>
+	<div id="msg"></div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
