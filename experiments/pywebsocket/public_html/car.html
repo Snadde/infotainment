@@ -15,14 +15,16 @@
 
         /* Define websocket handlers */
         ws.onmessage = function(evt) {
-		    $("#msg").append("<p>" + evt.data + "</p>");
+            var obj = $.parseJSON(evt.data);
+            $("#msg").append("<p>" + obj.message + "</p>");
+            console.log(obj);
 		};
         ws.onclose = function() {
 		    debug("socket closed");
         };
         ws.onopen = function() {
 		    debug("connected...");
-			ws.send("OH HAI!\n");
+			ws.send('{"message" : "OH HAI!"}');
    		};
 	});
     

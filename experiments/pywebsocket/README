@@ -1,3 +1,0 @@
-To run the pysocket server
-
-PYTHONPATH=. python mod_pywebsocket/standalone.py -p 8080 -d ./public_html/ -w ./public_html/websock_handlers/

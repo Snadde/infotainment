@@ -17,8 +17,9 @@ def on_disconnect(mosq, obj, rc):
 
 def on_message(mosq, obj, msg):
     global g_request
-    #send mqtt message to socket using the connection specified in g_request
-    msgutil.send_message(g_request, "<strong>" + msg.topic + "</strong> - " + msg.payload + "")
+    # send mqtt message to socket using the connection specified in g_request
+    # msgutil.send_message(g_request, "<strong>" + msg.topic + "</strong> - " + msg.payload + "")
+    msgutil.send_message(g_request, msg.payload + "")
 
 def on_publish(mosq, obj, mid):
     print("Message " + str(mid) + " published.")
