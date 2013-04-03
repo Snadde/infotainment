@@ -1,0 +1,20 @@
+body
+{
+	background-color:#d0e4fe;
+}
+h1
+{
+	color:orange;
+	text-align:center;
+}
+div
+{
+	text-align:center;
+	background-color:orange;
+	color:#d0e4fe;
+	text-align:center;
+	margin: 15px;
+	padding: 20px;
+}
+	/*width: 150px;
+}
