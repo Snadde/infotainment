@@ -32,7 +32,7 @@ server.on('connection', function (socketclient) {
 	
 		client2.on('publish', function(packet) {
 			log('sending to websocekt!!   %s\t%s', packet.topic, packet.payload);
-	  	  	socketclient.send(packet.topic +"="+ packet.payload);
+	  	  	socketclient.send('{"topic":"'+packet.topic+'","payload":'+packet.payload+"}");
 		});
 		
 	});
@@ -58,8 +58,6 @@ server.on('connection', function (socketclient) {
 		else{
 			mqttclient.publish({topic: '/system', payload: packet});
 		}
-	//	mqttclient.subscribe({'topic': top.topic});
-		//mqttclient.publish({topic: 'hej', payload: packet});
 		
 		log("message from websocket: "+packet) 
 	});
