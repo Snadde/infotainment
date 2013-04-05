@@ -1,6 +1,7 @@
 package se.chalmers.pd.client;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 
 import android.content.Context;
@@ -12,23 +13,16 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-public class HostedApplicationController {
-
-	public interface Callbacks {
-		public void onLoadComplete(String url);
-	}
+public class HostedApplicationController implements MqttBroadcastReceiver.Callbacks {
 
 	private final String DEFAULT_URL = "file:///android_asset/index.html";
 	private final String BASEDIR = Environment.getExternalStorageDirectory() + "/infotainment/apps/";
 	private WebView webView;
 	private Context context;
-	private Callbacks callback;
 
 	public HostedApplicationController(WebView webView, Context context) {
 		this.webView = webView;
 		this.context = context;
-		this.callback = (Callbacks) context;
-
 		WebSettings webSettings = webView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setDomStorageEnabled(true);
@@ -97,8 +91,39 @@ public class HostedApplicationController {
 
 		@Override
 		public void onPageFinished(WebView view, String url) {
-			callback.onLoadComplete(url);
+			onLoadComplete(url);
 			Log.d("CustomWebViewClient", "onPageFinished " + url);
 		}
+	}
+	
+	@Override
+	public void onMessageReceived(String topic, String payload) {
+		Log.d("CustomWebViewClient", "onMessage " + "topic: " + topic + ", payload: " + payload);
+	}
+
+	@Override
+	public void onStatusUpdate(String status) {
+		Log.d("CustomWebViewClient", "onMessage " + "status: " + status);
+	}
+	
+	public void onLoadComplete(String url) {
+		if (init("webapp")) {
+			// start("/webapp/index.html");
+			// uninstall("webapp");
+		} else {
+			// install(getInputStream());
+		}
+	}
+
+	private InputStream getInputStream() {
+		String zipFilename = "webapp.zip";
+		InputStream inputStream = null;
+		try {
+			inputStream = context.getAssets().open(zipFilename);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return inputStream;
 	}
 }

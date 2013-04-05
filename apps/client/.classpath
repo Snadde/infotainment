@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
-	<classpathentry kind="lib" path="libs/paho/org.eclipse.paho.client.mqttv3.jar" sourcepath="libs/paho/org.eclipse.paho.client.mqttv3/src"/>
-	<classpathentry kind="lib" path="libs/webserver-socket-java/dist/java_websocket.jar" sourcepath="libs/webserver-socket-java/src"/>
+	<classpathentry kind="lib" path="libs/java_websocket.jar"/>
+	<classpathentry kind="lib" path="libs/org.eclipse.paho.client.mqttv3.jar" sourcepath="/Users/daniel/Development/libs/paho/org.eclipse.paho.client.mqttv3/src"/>
 	<classpathentry kind="output" path="bin/classes"/>
 </classpath>
