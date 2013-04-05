@@ -31,8 +31,13 @@ server.on('connection', function (socketclient) {
 	    });
 	
 		client2.on('publish', function(packet) {
-			log('sending to websocekt!!   %s\t%s', packet.topic, packet.payload);
-	  	  	socketclient.send('{"topic":"'+packet.topic+'","payload":'+packet.payload+"}");
+			var message = {
+				topic : packet.topic,
+				payload : packet.payload
+			}
+			var json = JSON.stringify(message);
+			log("Sending to websocket : "+json);
+	  	  	socketclient.send(json);
 		});
 		
 	});
