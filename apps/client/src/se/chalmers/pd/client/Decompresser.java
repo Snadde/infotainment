@@ -8,12 +8,12 @@ import java.util.zip.ZipInputStream;
 import android.content.Context;
 import android.util.Log;
 
-public class DecompressZip {
+public class Decompresser {
 	private String zipFile;
 	private String location;
 	private Context context;
 
-	public DecompressZip(String zipFile, String location, Context context) {
+	public Decompresser(String zipFile, String location, Context context) {
 		this.zipFile = zipFile;
 		this.location = location;
 		this.context = context;
@@ -27,7 +27,7 @@ public class DecompressZip {
 			ZipEntry zipEntry = null;
 			
 			while ((zipEntry = zipInputStream.getNextEntry()) != null) {
-				Log.v("DecompressZip", "Unzipping " + zipEntry.getName());
+				Log.v("Decompresser", "Unzipping " + zipEntry.getName());
 				if (zipEntry.isDirectory()) {
 					createBaseDirectory(zipEntry.getName());
 				} else {
@@ -42,7 +42,7 @@ public class DecompressZip {
 			zipInputStream.close();
 			result = true;
 		} catch (Exception e) {
-			Log.e("DecompressZip", e.getMessage());
+			Log.e("Decompresser", e.getMessage());
 			result = false;
 		}
 		return result;
