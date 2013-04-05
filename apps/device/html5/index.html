@@ -12,7 +12,7 @@ $(document).ready(function(){
     $("#install").hide(); 
     $("#backup").hide(); 
   $("#connect").click(function(){
-    $("#start").hide();
+    $("#connect").hide();
     $("#init").show();
 	WebSocketTest();
   });
@@ -44,7 +44,8 @@ function WebSocketTest()
      };
      ws.onmessage = function (evt) 
      { 
-        var message = JSON.parse(evt.data);
+        var mqttmessage = JSON.parse(evt.data);
+		var message = mqttmessage.payload;
         if(message.action == 'initresponse')
 		{
 			if(message.data == 'install'){
