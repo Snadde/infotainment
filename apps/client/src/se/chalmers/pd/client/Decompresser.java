@@ -2,28 +2,25 @@ package se.chalmers.pd.client;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import android.content.Context;
 import android.util.Log;
 
 public class Decompresser {
-	private String zipFile;
-	private String location;
-	private Context context;
 
-	public Decompresser(String zipFile, String location, Context context) {
-		this.zipFile = zipFile;
+	private String location;
+
+	public Decompresser(String location) {
 		this.location = location;
-		this.context = context;
 		createBaseDirectory("");
 	}
 
-	public boolean unzip() {
+	public boolean unzip(InputStream inputStream) {
 		boolean result = false;
 		try {
-			ZipInputStream zipInputStream = new ZipInputStream(context.getAssets().open(zipFile)); 
+			ZipInputStream zipInputStream = new ZipInputStream(inputStream); 
 			ZipEntry zipEntry = null;
 			
 			while ((zipEntry = zipInputStream.getNextEntry()) != null) {

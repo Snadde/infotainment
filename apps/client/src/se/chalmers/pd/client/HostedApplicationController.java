@@ -1,6 +1,7 @@
 package se.chalmers.pd.client;
 
 import java.io.File;
+import java.io.InputStream;
 
 import android.content.Context;
 import android.os.Environment;
@@ -12,7 +13,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 public class HostedApplicationController {
-	
+
 	public interface Callbacks {
 		public void onLoadComplete(String url);
 	}
@@ -27,7 +28,7 @@ public class HostedApplicationController {
 		this.webView = webView;
 		this.context = context;
 		this.callback = (Callbacks) context;
-		
+
 		WebSettings webSettings = webView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setDomStorageEnabled(true);
@@ -38,19 +39,18 @@ public class HostedApplicationController {
 
 	public boolean init(String appName) {
 		File directory = new File(BASEDIR + appName);
-		if(directory.exists() && directory.isDirectory()) {
+		if (directory.exists() && directory.isDirectory()) {
 			Log.d("HostedApplicationController", "init " + appName + " exists");
 			return true;
 		}
-		Log.d("HostedApplicationController",  "init " + appName + " doesn't exist or is not a directory");
+		Log.d("HostedApplicationController", "init " + appName + " doesn't exist or is not a directory");
 		return false;
 	}
 
-	public boolean install() {
-		String zipFilename = "webapp.zip";
+	public boolean install(InputStream inputStream) {
 		String unzipLocation = BASEDIR;
-		Decompresser decompresser = new Decompresser(zipFilename, unzipLocation, context);
-		if(decompresser.unzip()) {
+		Decompresser decompresser = new Decompresser(unzipLocation);
+		if (decompresser.unzip(inputStream)) {
 			return true;
 		}
 		return false;
@@ -65,13 +65,13 @@ public class HostedApplicationController {
 	}
 
 	public void uninstall(String appName) {
-		Log.d("HostedApplicationController",  "uninstall " + appName);
+		Log.d("HostedApplicationController", "uninstall " + appName);
 		File directory = new File(BASEDIR + appName);
-		if(directory.exists() && directory.isDirectory()) {
+		if (directory.exists() && directory.isDirectory()) {
 			deleteRecursive(directory);
 		}
 	}
-	
+
 	private void deleteRecursive(File appDir) {
 		if (appDir.isDirectory()) {
 			for (File child : appDir.listFiles()) {
@@ -80,7 +80,7 @@ public class HostedApplicationController {
 		}
 		appDir.delete();
 	}
-	
+
 	private class CustomWebChromeClient extends WebChromeClient {
 		public boolean onConsoleMessage(ConsoleMessage cm) {
 			Log.d("CustomWebChromeClient", cm.message() + " -- From line " + cm.lineNumber() + " of " + cm.sourceId());

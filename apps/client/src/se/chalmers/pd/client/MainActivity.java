@@ -1,5 +1,8 @@
 package se.chalmers.pd.client;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.view.Window;
@@ -31,7 +34,19 @@ public class MainActivity extends Activity implements HostedApplicationControlle
 			//controller.start("/webapp/index.html");
 			controller.uninstall("webapp");
 		} else {
-			//controller.install();
+			controller.install(getInputStream());
 		}
+	}
+	
+	private InputStream getInputStream() {
+		String zipFilename = "webapp.zip";
+		InputStream inputStream = null;
+		try {
+			inputStream = getAssets().open(zipFilename);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return inputStream;
 	}
 }
