@@ -55,6 +55,26 @@ server.on('connection', function (socketclient) {
 			mqttclient.subscribe({topic: privatetopic});
 			mqttclient.publish({topic: '/system', payload: packet});
 		}
+		else if(action == 'install'){
+			var location = message.url;
+			var buffer;
+			var http = require('http');	
+			var request = http.request(location, function (res) {
+		   	 	var data = '';
+		    	res.on('data', function (chunk) {
+		        	data += chunk;
+					buffer = new Buffer(data).toString('base64');
+		    	});
+		    	res.on('end', function () {
+		        	log(buffer);
+					mqttclient.publish({topic: '/system', payload: '{"action":"install","data":"'+buffer+'"}'})
+		    	});
+			});
+			request.on('error', function (e) {
+		    	console.log("ERRORR  "+e.message);
+			});
+			request.end();
+		}
 		else{
 			mqttclient.publish({topic: '/system', payload: packet});
 		}
