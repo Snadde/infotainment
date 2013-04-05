@@ -23,7 +23,7 @@ public class MainActivity extends Activity {
 		WebView webView = (WebView) findViewById(R.id.webview);
 		HostedApplicationController controller= new HostedApplicationController(webView, this);
 		MqttBroadcastReceiver receiver = new MqttBroadcastReceiver(controller);
-		IntentFilter messageReceivedFilter = new IntentFilter(MQTTService.MQTT_MSG_RECEIVED_INTENT);
+		IntentFilter messageReceivedFilter = new IntentFilter(MQTTService.MQTT_MESSAGE_RECEIVED_INTENT);
 		IntentFilter statusFilter = new IntentFilter(MQTTService.MQTT_STATUS_INTENT);
 		registerReceiver(receiver, messageReceivedFilter);
 		registerReceiver(receiver, statusFilter);

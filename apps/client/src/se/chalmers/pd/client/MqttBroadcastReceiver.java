@@ -23,12 +23,12 @@ public class MqttBroadcastReceiver extends BroadcastReceiver {
 		Bundle extras = intent.getExtras();
 		String action = intent.getAction();
 		
-		if(action.equals(MQTTService.MQTT_MSG_RECEIVED_INTENT)) {
-			String topic = extras.getString(MQTTService.MQTT_MSG_RECEIVED_TOPIC);
-			String payload = extras.getString(MQTTService.MQTT_MSG_RECEIVED_MSG);
+		if(action.equals(MQTTService.MQTT_MESSAGE_RECEIVED_INTENT)) {
+			String topic = extras.getString(MQTTService.MQTT_MESSAGE_RECEIVED_TOPIC);
+			String payload = extras.getString(MQTTService.MQTT_MESSAGE_RECEIVED_PAYLOAD);
 			callback.onMessageReceived(topic, payload);
 		} else if(action.equals(MQTTService.MQTT_STATUS_INTENT)) {
-			String status = extras.getString(MQTTService.MQTT_STATUS_MSG);
+			String status = extras.getString(MQTTService.MQTT_STATUS_MESSAGE);
 			callback.onStatusUpdate(status);
 		}
 		

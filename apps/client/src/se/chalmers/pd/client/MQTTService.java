@@ -17,11 +17,10 @@ import android.util.Log;
 public class MQTTService extends Service {
 
 	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.client.mqtt.STATUS";
-	public static final String MQTT_STATUS_MSG = "se.chalmers.pd.client.mqtt.STATUS_MSG";
-	public static final String MQTT_MSG_RECEIVED_INTENT = "se.chalmers.pd.client.mqtt.MSGRECVD";
-    public static final String MQTT_MSG_RECEIVED_TOPIC  = "se.chalmers.pd.client.mqtt.MSGRECVD_TOPIC";
-    public static final String MQTT_MSG_RECEIVED_MSG    = "se.chalmers.pd.client.mqtt.MSGRECVD_MSGBODY";
-    
+	public static final String MQTT_STATUS_MESSAGE = "se.chalmers.pd.client.mqtt.STATUS_MESSAGE";
+	public static final String MQTT_MESSAGE_RECEIVED_INTENT = "se.chalmers.pd.client.mqtt.MESSAGE_RECEIVED";
+    public static final String MQTT_MESSAGE_RECEIVED_TOPIC  = "se.chalmers.pd.client.mqtt.MESSAGE_RECEIVED_TOPIC";
+    public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD    = "se.chalmers.pd.client.mqtt.MESSAGE_RECEIVED_PAYLOAD";
 
 	private MqttClient mqttClient;
 
@@ -106,15 +105,15 @@ public class MQTTService extends Service {
 	private void broadcastServiceStatus(String statusDescription) {
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(MQTT_STATUS_INTENT);
-		broadcastIntent.putExtra(MQTT_STATUS_MSG, statusDescription);
+		broadcastIntent.putExtra(MQTT_STATUS_MESSAGE, statusDescription);
 		sendBroadcast(broadcastIntent);
 	}
 
 	private void broadcastReceivedMessage(String topic, String message) {
 		Intent broadcastIntent = new Intent();
-		broadcastIntent.setAction(MQTT_MSG_RECEIVED_INTENT);
-		broadcastIntent.putExtra(MQTT_MSG_RECEIVED_TOPIC, topic);
-		broadcastIntent.putExtra(MQTT_MSG_RECEIVED_MSG, message);
+		broadcastIntent.setAction(MQTT_MESSAGE_RECEIVED_INTENT);
+		broadcastIntent.putExtra(MQTT_MESSAGE_RECEIVED_TOPIC, topic);
+		broadcastIntent.putExtra(MQTT_MESSAGE_RECEIVED_PAYLOAD, message);
 		sendBroadcast(broadcastIntent);
 	}
 

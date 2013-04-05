@@ -17,6 +17,7 @@ public class HostedApplicationController implements MqttBroadcastReceiver.Callba
 
 	private final String DEFAULT_URL = "file:///android_asset/index.html";
 	private final String BASEDIR = Environment.getExternalStorageDirectory() + "/infotainment/apps/";
+	
 	private WebView webView;
 	private Context context;
 
@@ -74,27 +75,6 @@ public class HostedApplicationController implements MqttBroadcastReceiver.Callba
 		}
 		appDir.delete();
 	}
-
-	private class CustomWebChromeClient extends WebChromeClient {
-		public boolean onConsoleMessage(ConsoleMessage cm) {
-			Log.d("CustomWebChromeClient", cm.message() + " -- From line " + cm.lineNumber() + " of " + cm.sourceId());
-			return true;
-		}
-	}
-
-	private class CustomWebViewClient extends WebViewClient {
-
-		@Override
-		public boolean shouldOverrideUrlLoading(WebView view, String url) {
-			return false;
-		}
-
-		@Override
-		public void onPageFinished(WebView view, String url) {
-			onLoadComplete(url);
-			Log.d("CustomWebViewClient", "onPageFinished " + url);
-		}
-	}
 	
 	@Override
 	public void onMessageReceived(String topic, String payload) {
@@ -125,5 +105,26 @@ public class HostedApplicationController implements MqttBroadcastReceiver.Callba
 			e.printStackTrace();
 		}
 		return inputStream;
+	}
+
+	private class CustomWebChromeClient extends WebChromeClient {
+		public boolean onConsoleMessage(ConsoleMessage cm) {
+			Log.d("CustomWebChromeClient", cm.message() + " -- From line " + cm.lineNumber() + " of " + cm.sourceId());
+			return true;
+		}
+	}
+
+	private class CustomWebViewClient extends WebViewClient {
+
+		@Override
+		public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			return false;
+		}
+
+		@Override
+		public void onPageFinished(WebView view, String url) {
+			onLoadComplete(url);
+			Log.d("CustomWebViewClient", "onPageFinished " + url);
+		}
 	}
 }
