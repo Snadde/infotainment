@@ -1,0 +1,100 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+var ws;
+$(document).ready(function(){
+    $("#connect").show();
+	$("#start").hide();
+    $("#init").hide();
+    $("#install").hide(); 
+    $("#backup").hide(); 
+  $("#connect").click(function(){
+    $("#connect").hide();
+    $("#init").show();
+	WebSocketTest();
+  });
+  $("#init").click(function(){
+    $("#init").hide();
+	Init();
+  });
+  $("#install").click(function(){
+    $("#install").hide();
+    $("#start").show();
+	install();
+  });
+ });
+function WebSocketTest()
+{
+  if ("WebSocket" in window)
+  {
+  	 ws = new WebSocket("ws://localhost:3000/echo");
+     // Let us open a web socket
+     ws.onopen = function()
+     {
+        alert("WebSocket is UP!");
+		//ws.send('{"action":"init","topic":"mintopic"}');
+		//ws.send('{"action":"install","topic":"mintopic"}');
+		//ws.send('{"action":"start","topic":"mintopic"}');
+		//ws.send('{"action":"stop","topic":"mintopic"}');
+		//ws.send('{"action":"uninstall","topic":"mintopic"}');
+        //alert("Message is sent...");
+     };
+     ws.onmessage = function (evt) 
+     { 
+        var mqttmessage = JSON.parse(evt.data);
+		var message = mqttmessage.payload;
+        if(message.action == 'initresponse')
+		{
+			if(message.data == 'install'){
+				//ws.send('{"action":"install","url":"http://infotainment.danielkvist.net/webapp.zip"}');
+				$("#install").show();
+			}
+			else{
+				ws.send('{"action":"start","topic":"mintopic"}');
+			}
+		}
+		alert(received_msg);
+		
+     };
+     ws.onclose = function()
+     { 
+        // websocket is closed.
+        alert("Connection is closed..."); 
+     };
+  }
+  else
+  {
+     // The browser doesn't support WebSocket
+     alert("WebSocket NOT supported by your Browser!");
+  }
+};
+function Init(){
+	ws.send('{"action":"init","data":"mintopic"}');
+};
+function Install(){
+	ws.send('{"action":"install","url":"http://infotainment.danielkvist.net/webapp.zip"}');
+};
+</script>
+</head>
+<body>
+<button id="connect">
+	Connect WebSocket
+</button>
+ <button id = "init">
+	 Init
+</button>
+ <button id = "install">
+	Install
+</button>
+ <button id = "start">
+	 Start Application
+</button>
+
+<div id = "backup">
+	<a href="javascript:WebSocketTest()">Connect WebSocket</a>
+</div>
+</body>
+</html>
