@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+function ReadZip(){
+	alert("HEJJJ");
+  	jQuery.get('http://infotainment.danielkvist.net/webapp.zip', function(data) {
+  	    var myvar = data;
+		alert(data);
+		alert("INUTII");
+  	});
+		alert("TEEEEMp");
+	var container = $(document).getElementById('temp');
+	container.innerHTML = myvar;
+}
+
+function WebSocketTest()
+{
+  if ("WebSocket" in window)
+  {
+  	  var ws = new WebSocket("ws://localhost:3000/echo");
+     // Let us open a web socket
+     ws.onopen = function()
+     {
+        alert("WebSocket is UP!");
+		ws.send('{"action":"init","topic":"mintopic"}');
+		//ws.send('{"action":"install","topic":"mintopic"}');
+		//ws.send('{"action":"start","topic":"mintopic"}');
+		//ws.send('{"action":"stop","topic":"mintopic"}');
+		//ws.send('{"action":"uninstall","topic":"mintopic"}');
+        alert("Message is sent...");
+     };
+     ws.onmessage = function (evt) 
+     { 
+        var message = JSON.parse(evt.data);
+        if(message.action == 'initresponse')
+		{
+			if(message.data == 'install'){
+				var zip = readZip();
+				container.innerHTML = zip;
+			}
+			else{
+				ws.send('{"action":"start","topic":"mintopic"}');
+			}
+		}
+		alert(received_msg);
+		
+     };
+     ws.onclose = function()
+     { 
+        // websocket is closed.
+        alert("Connection is closed..."); 
+     };
+  }
+  else
+  {
+     // The browser doesn't support WebSocket
+     alert("WebSocket NOT supported by your Browser!");
+  }
+}
+</script>
+</head>
+<body>
+<div id="sse">
+   <a href="javascript:WebSocketTest()">Run WebSocket</a>
+</div>
+<div id="test">
+   <a href="javascript:ReadZip()">ReadZip</a>
+</div>
+<div id = "temp">
+	testaaa
+	
+</div>
+</body>
+</html>
