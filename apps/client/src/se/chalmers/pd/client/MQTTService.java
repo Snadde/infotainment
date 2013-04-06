@@ -14,6 +14,12 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 
+/**
+ * This service launches an MQTT client in a separate thread and subscribes to the
+ * systems basic topics. When a message is received, it broadcasts the message using
+ * custom intent filters.
+ *
+ */
 public class MQTTService extends Service {
 
 	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.client.mqtt.STATUS";

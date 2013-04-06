@@ -5,6 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+/**
+ * This broadcast receiver listens for messages from the filters defined in the
+ * broadcasting class.
+ *
+ */
 public class MqttBroadcastReceiver extends BroadcastReceiver {
 
 	public interface Callbacks {
@@ -31,7 +36,5 @@ public class MqttBroadcastReceiver extends BroadcastReceiver {
 			String status = extras.getString(MQTTService.MQTT_STATUS_MESSAGE);
 			callback.onStatusUpdate(status);
 		}
-		
 	}
-
 }
