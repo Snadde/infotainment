@@ -1,4 +1,4 @@
-package se.chalmers.pd.client;
+package se.chalmers.pd.dashboard;
 
 import java.io.File;
 import java.io.IOException;

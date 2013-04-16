@@ -1,4 +1,4 @@
-package se.chalmers.pd.client;
+package se.chalmers.pd.dashboard;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

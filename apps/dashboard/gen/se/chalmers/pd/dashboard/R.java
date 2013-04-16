@@ -5,7 +5,7 @@
  * should not be modified by hand.
  */
 
-package se.chalmers.pd.client;
+package se.chalmers.pd.dashboard;
 
 public final class R {
     public static final class attr {
