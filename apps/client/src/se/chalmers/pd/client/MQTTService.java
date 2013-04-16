@@ -56,7 +56,6 @@ public class MQTTService extends Service {
 					MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
 					mqttClient = new MqttClient("tcp://192.168.43.147:1883", "client", dataStore);
 					mqttClient.setCallback(new CustomMqttCallback());
-
 					mqttClient.connect();
 					mqttClient.subscribe("/app/webapp");
 				} catch (MqttException e) {

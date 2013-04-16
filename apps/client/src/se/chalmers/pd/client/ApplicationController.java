@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.content.IntentFilter;
 import android.os.Environment;
@@ -83,13 +86,15 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 
 	/**
 	 * Loads the app at the given location which is the same as the app name
-	 * into the iframe by calling a javascript method in the container file.
+	 * into the web view.
 	 * 
 	 * @param appName
-	 *            the appname (folder name of application)
+	 *            the app name (folder name of application)
 	 */
 	public void start(String appName) {
-		webView.loadUrl("javascript:loadApp('" + "file://" + BASEDIR + appName + "')");
+		String url = "file://" + BASEDIR + appName + "/index.html";
+		webView.loadUrl(url);
+		Log.d("ApplicationController", "start " + url);
 	}
 
 	/**
@@ -130,22 +135,45 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 
 	@Override
 	public void onMessageReceived(String topic, String payload) {
-		Log.d("CustomWebViewClient", "onMessage " + "topic: " + topic + ", payload: " + payload);
+		Log.d("CustomWebViewClient", "onMessageReceived " + "topic: " + topic + ", payload: " + payload);
+		handleMessage(payload);	
+	}
+	
+	private void handleMessage(String payload) {
+		try {
+			JSONObject json = new JSONObject(payload);
+			String action = json.getString("action");
+			String data = json.getString("data");
+			if(action.equals("install")) {
+				//install(getInputStream(data));
+			} else if(action.equals("start")) {
+				start(data);
+			} else if(action.equals("stop")) {
+				webView.loadUrl(DEFAULT_URL);
+			} else if(action.equals("uninstall")) {
+				uninstall(data);
+			} else {
+				//webView.loadUrl("javascript:onMessage('ompa')");
+			}
+			Log.d("CustomWebViewClient", "handleMessage " + " action: " + json.getString("action") + " data: " + json.getString("data"));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void onStatusUpdate(String status) {
-		Log.d("CustomWebViewClient", "onMessage " + "status: " + status);
+		Log.d("CustomWebViewClient", "onStatusUpdate " + "status: " + status);
 	}
 
-	public void onLoadComplete(String url) {
-		if (init("webapp")) {
-			// start("/webapp/index.html");
-			// uninstall("webapp");
-		} else {
-			// install(getInputStream());
-		}
-	}
+//	public void onLoadComplete(String url) {
+//		if (init("webapp")) {
+//			// start("/webapp/index.html");
+//			// uninstall("webapp");
+//		} else {
+//			// install(getInputStream());
+//		}
+//	}
 
 	private InputStream getInputStream() {
 		String zipFilename = "webapp.zip";
