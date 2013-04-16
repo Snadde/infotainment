@@ -130,6 +130,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 				deleteRecursive(child);
 			}
 		}
+		Log.d("ApplicationController", "deleteRecursive " + appDir.getAbsolutePath());
 		appDir.delete();
 	}
 
@@ -145,7 +146,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 			String action = json.getString("action");
 			String data = json.getString("data");
 			if(action.equals("install")) {
-				//install(getInputStream(data));
+				install(getInputStream(data));
 			} else if(action.equals("start")) {
 				start(data);
 			} else if(action.equals("stop")) {
@@ -153,7 +154,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 			} else if(action.equals("uninstall")) {
 				uninstall(data);
 			} else {
-				//webView.loadUrl("javascript:onMessage('ompa')");
+				webView.loadUrl("javascript:onMessage(" + payload + ")");
 			}
 			Log.d("CustomWebViewClient", "handleMessage " + " action: " + json.getString("action") + " data: " + json.getString("data"));
 		} catch (JSONException e) {
@@ -175,7 +176,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 //		}
 //	}
 
-	private InputStream getInputStream() {
+	private InputStream getInputStream(String data) {
 		String zipFilename = "webapp.zip";
 		InputStream inputStream = null;
 		try {
