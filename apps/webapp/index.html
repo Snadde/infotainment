@@ -2,12 +2,24 @@
 <html>
 <head>
 <link rel="stylesheet" href="stylesheets/stylesheet.css" type="text/css" media="screen" charset="utf-8">
+<script src="javascripts/jquery1.9.1.js"></script>
 <script type="text/javascript">
-	var debug = true;
+
+    var debug = true;
+
+    $(document).ready(function() {
+        $('#container').click(function() {
+            publish('/app/webapp', 'a cool message!'); 
+        });
+    });
+
+    function publish(topic, message) {
+        WebApp.publish(topic, message);
+    }
 
 	function onMessage(payload) {
 		log("web app got a message with payload: " + payload);
-        document.getElementById("namn").innerHTML = payload.data;
+        $('#container').text(payload.data);
 	}
 
 	function log(message) {
@@ -22,8 +34,8 @@
 
 
 
-<div id='namn'>
-	namn
+<div id='container'>
+	Container
 </div>
 
 </body>
