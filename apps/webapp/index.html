@@ -2,7 +2,20 @@
 <html>
 <head>
 <link rel="stylesheet" href="stylesheets/stylesheet.css" type="text/css" media="screen" charset="utf-8">
-	
+<script type="text/javascript">
+	var debug = true;
+
+	function onMessage(payload) {
+		log("web app got a message with payload: " + payload);
+        document.getElementById("namn").innerHTML = payload.data;
+	}
+
+	function log(message) {
+		if (debug) {
+			console.log(message);
+		}
+	}
+</script>
 </head>
 <body>
 <h1>Hello World</h1>
