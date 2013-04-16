@@ -19,7 +19,6 @@ import android.webkit.WebViewClient;
  */
 public class MainActivity extends Activity {
 
-	private ApplicationController controller;
 	private WebView webView;
 
 	@Override
@@ -29,7 +28,7 @@ public class MainActivity extends Activity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_main);
 		setupView();
-		controller = new ApplicationController(webView, this);
+		new ApplicationController(webView, this);
 		Intent service = new Intent(this, MQTTService.class);
 		startService(service); 
 	}

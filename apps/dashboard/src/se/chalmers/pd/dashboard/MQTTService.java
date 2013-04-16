@@ -25,8 +25,8 @@ public class MQTTService extends Service {
 	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.dashboard.mqtt.STATUS";
 	public static final String MQTT_STATUS_MESSAGE = "se.chalmers.pd.dashboard.mqtt.STATUS_MESSAGE";
 	public static final String MQTT_MESSAGE_RECEIVED_INTENT = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED";
-    public static final String MQTT_MESSAGE_RECEIVED_TOPIC  = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
-    public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD    = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
+    public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
+    public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
 
 	private MqttClient mqttClient;
 
@@ -54,13 +54,12 @@ public class MQTTService extends Service {
 				try {
 					String tmpDir = Environment.getExternalStorageDirectory() + "/infotainment/";
 					MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
-					mqttClient = new MqttClient("tcp://192.168.43.147:1883", "client", dataStore);
+					mqttClient = new MqttClient("tcp://192.168.43.147:1883", "dashboard", dataStore);
 					mqttClient.setCallback(new CustomMqttCallback());
 					mqttClient.connect();
 					mqttClient.subscribe("/app/webapp");
 				} catch (MqttException e) {
 					e.printStackTrace();
-
 				}
 			}
 
@@ -68,19 +67,19 @@ public class MQTTService extends Service {
 
 				@Override
 				public void messageArrived(MqttTopic topic, MqttMessage message) throws Exception {
-					Log.d("MQTTClient", "messageArrived " + "topic:" + topic.toString() + ", message:" + message.toString());
+					Log.d("MQTTService", "messageArrived " + "topic:" + topic.toString() + ", message:" + message.toString());
 					broadcastServiceStatus("messageArrived");
 					broadcastReceivedMessage(topic.toString(), message.toString());
 				}
 
 				@Override
 				public void deliveryComplete(MqttDeliveryToken token) {
-					Log.d("MQTTClient", "deliveryComplete " + "token:" + token);
+					Log.d("MQTTService", "deliveryComplete " + "token:" + token);
 				}
 
 				@Override
 				public void connectionLost(Throwable cause) {
-					Log.d("MQTTClient", "connectionLost " + "cause:" + cause.toString());
+					Log.d("MQTTService", "connectionLost " + "cause:" + cause.toString());
 				}
 			}
 		}, "MQTTService").start();

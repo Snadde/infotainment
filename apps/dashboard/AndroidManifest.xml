@@ -26,7 +26,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".MQTTServiceervice" />
+        <service android:name="se.chalmers.pd.dashboard.MQTTService" />
         <!-- <receiver android:name="MqttBroadcastReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="se.chalmers.pd.dashboard.mqtt.STATUS" />
