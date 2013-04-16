@@ -1,164 +1,88 @@
+var debug = require('./debug.js');
 var mqtt = require('./node_modules/mqttjs');
-var socket = require('./node_modules/websocket.io')
-var server = socket.listen(3000);
-//var server = require('./node_modules/socket.io').listen(80);
-var debug = true;
-function log(message){
-	if(debug){	
-		console.log(message);
-	}
-}
-
-server.on('connection', function (socketclient) {
-	
-	var mqttclient = mqtt.createClient(1883, 'localhost', function(err, client2) {	
-		var privatetopic;
-		
-		client2.connect({ "version": "MQIsdp",
-		  "versionNum": 3,
-		  "keepalive": 60,
-		  "client": "mqtt_1"+Math.random(),
-		});
-		//client2.subscribe({'topic': '/min/privata/kanal'});
-		
-	    client2.on('close', function() {
-	      process.exit(0);
-	    });
-
-	    client2.on('error', function(e) {
-	      log('error %s', e);
-	      process.exit(-1);
-	    });
-	
-		client2.on('publish', function(packet) {
-			var message = {
-				topic : packet.topic,
-				payload : packet.payload
-			}
-			var json = JSON.stringify(message);
-			log("Sending to websocket : "+json);
-	  	  	socketclient.send(json);
-		});
-		
-	});
-	
-	socketclient.on('message', function (packet) { 
-		var message = JSON.parse(packet);
-		action = message.action;
-		
-		if(action == undefined){
-			mqttclient.publish({topic: privatetopic, payload: packet});
-		}
-		else if(action == 'publish'){
-			mqttclient.publish({topic: message.topic, payload: message.data});
-		}
-		else if(action == 'subscribe'){
-			mqttclient.subscribe({topic: message.topic});
-		}
-		else if(action == 'init'){
-			privatetopic = message.data;
-			mqttclient.subscribe({topic: privatetopic});
-			mqttclient.publish({topic: '/system', payload: packet});
-		}
-		else if(action == 'install'){
-			var location = message.url;
-			var buffer;
-			var http = require('http');	
-			var request = http.request(location, function (res) {
-		   	 	var data = '';
-		    	res.on('data', function (chunk) {
-		        	data += chunk;
-					buffer = new Buffer(data).toString('base64');
-		    	});
-		    	res.on('end', function () {
-		        	log(buffer);
-					mqttclient.publish({topic: '/system', payload: '{"action":"install","data":"'+buffer+'"}'})
-		    	});
-			});
-			request.on('error', function (e) {
-		    	console.log("ERRORR  "+e.message);
-			});
-			request.end();
-		}
-		else{
-			mqttclient.publish({topic: '/system', payload: packet});
-		}
-		
-		log("message from websocket: "+packet) 
-	});
-    socketclient.on('close', function () {
-		log('Closing socket') 
-	});
-});
-
+//Initiates the websocket bridge
+var bridge = require("./websocketBridge");
+/*
+**  Creates the MQTT server that will handle all communication such as 
+**  publish and subscribing to different topics
+**/
 mqtt.createServer(function (client) {
-	var self = this;
-	
-	if(!self.clients) {
-		self.clients = {};
-	}
-
-	client.on('connect', function (packet) {
-	    self.clients[packet.client] = client;
-	    client.id = packet.client;
-	    log("CONNECT: client id: " + client.id);
-	    client.subscriptions = [];
-	    client.connack({returnCode: 0});
-	});
-	
-	client.on('publish', function(packet) {
-	    for (var k in self.clients) {
-	      var c = self.clients[k]
-	        , publish = false;
-
-	      for (var i = 0; i < c.subscriptions.length; i++) {
-	        var s = c.subscriptions[i];
-
-	        if (s.test(packet.topic)) {
-	          publish = true;
-	        }
-	      }
-	      if (publish) {
-	        c.publish({topic: packet.topic, payload: packet.payload});
-			log("publish to client: "+c.id+" with topic: "+ packet.topic +" payload: "+packet.payload);
-	      }
-	    }
-	  });
-	  
-	  client.on('subscribe', function(packet) {
-	    var granted = [];
-
-	    for (var i = 0; i < packet.subscriptions.length; i++) {
-	      var qos = packet.subscriptions[i].qos
-	        , topic = packet.subscriptions[i].topic
-	        , reg = new RegExp(topic.replace('+', '[^\/]+').replace('#', '.+$'));
-
-	      granted.push(qos);
-	      client.subscriptions.push(reg);
-		  log("client: "+client.id+" subscribes to topic: "+ topic); 
-	    }
-
-	    client.suback({messageId: packet.messageId, granted: granted});
-	  });
-	
-	client.on('pingreq', function(packet) {
-		client.pingresp();
-		log('Ping from client ' + client.id);
-	});
-
+    var self = this;
+    if(!self.clients) {
+	    self.clients = {};
+    }
+	/*
+	**	Adds the client when it is connecting to the client list 
+	**/
+    client.on('connect', function (packet) {
+        self.clients[packet.client] = client;
+        client.id = packet.client;
+        debug.log("CONNECT: client id: " + client.id);
+        client.subscriptions = [];
+        client.connack({returnCode: 0});
+    });
+	/*
+	**	Publish a message to all clients that are subscribing to the specified topic
+	**/
+    client.on('publish', function(packet) {
+        for (var k in self.clients) {
+            var c = self.clients[k]
+            , publish = false;
+            for (var i = 0; i < c.subscriptions.length; i++) {
+                var s = c.subscriptions[i];
+                if (s.test(packet.topic)) {
+                    publish = true;
+                }
+            }
+            if (publish) {
+                c.publish({topic: packet.topic, payload: packet.payload});
+		        debug.log("publish to client: "+c.id+" with topic: "+ packet.topic +" payload: "+packet.payload);
+            }
+        }
+    });
+	/*
+	**	Adds the topics specified in the packet to the clients subscriptions
+	**/
+    client.on('subscribe', function(packet) {
+        var granted = [];
+        for (var i = 0; i < packet.subscriptions.length; i++) {
+            var qos = packet.subscriptions[i].qos
+            , topic = packet.subscriptions[i].topic
+            , reg = new RegExp(topic.replace('+', '[^\/]+').replace('#', '.+$'));
+            granted.push(qos);
+            client.subscriptions.push(reg);
+	        debug.log("client: "+client.id+" subscribes to topic: "+ topic); 
+        }
+        client.suback({messageId: packet.messageId, granted: granted});
+    });
+	/*
+	**  When there is a ping request, respond with a pingresponse
+	**/
+    client.on('pingreq', function(packet) {
+	    client.pingresp();
+	    debug.log('Ping from client ' + client.id);
+    });
+	/*
+	**	Ends the stream to the client when a disconnect message is sent
+	**/
 	client.on('disconnect', function(packet) {
-	    client.stream.end();
-		log('disconnect client ' + client.id);
-	});
-
-	client.on('close', function(err) {
-	    delete self.clients[client.id];
-		log("close " + client.id);
-	});
-
-	client.on('error', function(err) {
-	    client.stream.end();
-	    util.log('error!');
-	});	
+        client.stream.end();
+	    debug.log('disconnect client ' + client.id);
+    });
+	/*
+	**	Removes the client from the client list when the client 
+	**  close the connection
+	**/
+    client.on('close', function(err) {
+        delete self.clients[client.id];
+	    debug.log("close " + client.id);
+    });
+	/*
+	**	Ends the stream to the client when an error has occured and 
+	**  log the error to the console
+	**/
+    client.on('error', function(err) {
+        client.stream.end();
+        util.log('error!');
+    });	
 }).listen(1883);
-
