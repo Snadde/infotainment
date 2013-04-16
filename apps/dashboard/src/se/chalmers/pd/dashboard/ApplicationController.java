@@ -27,15 +27,18 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 
 	private WebView webView;
 	private Context context;
+	private MQTTService mqttService;
 
 	/**
 	 * Sets up the receivers and initiates the object.
 	 * 
 	 * @param webView
 	 * @param context
+	 * @param mainActivity 
 	 */
-	public ApplicationController(WebView webView, Context context) {
+	public ApplicationController(WebView webView, MQTTService mqttService, Context context) {
 		this.webView = webView;
+		this.mqttService = mqttService;
 		this.context = context;
 		setupReceivers();
 	}
@@ -186,6 +189,11 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 			e.printStackTrace();
 		}
 		return inputStream;
+	}
+
+	public void publish(String topic, String message) {
+		Log.d("ApplicationController", "publish " + "topic: " + topic + " message: " + message);
+		mqttService.publish(topic, message);
 	}
 
 }

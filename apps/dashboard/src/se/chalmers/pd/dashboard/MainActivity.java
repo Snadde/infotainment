@@ -1,8 +1,12 @@
 package se.chalmers.pd.dashboard;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
@@ -20,6 +24,9 @@ import android.webkit.WebViewClient;
 public class MainActivity extends Activity {
 
 	private WebView webView;
+	private ApplicationController controller;
+	private MQTTService mqttService;
+	private boolean isBound;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -27,22 +34,46 @@ public class MainActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_main);
-		setupView();
-		new ApplicationController(webView, this);
-		Intent service = new Intent(this, MQTTService.class);
-		startService(service); 
-	}
-
-	/**
-	 * Sets up the webview and initiates the application controller.
-	 */
-	private void setupView() {
+		bindService();
+		
 		webView = (WebView) findViewById(R.id.webview);
 		WebSettings webSettings = webView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setDomStorageEnabled(true);
 		webView.setWebViewClient(new CustomWebViewClient());
 		webView.setWebChromeClient(new CustomWebChromeClient());
+	}
+
+	private ServiceConnection serviceConnection = new ServiceConnection() {
+	    public void onServiceConnected(ComponentName className, IBinder service) {
+	        mqttService = ((MQTTService.LocalBinder)service).getService();
+	        controller = new ApplicationController(webView, mqttService, MainActivity.this);
+	        webView.addJavascriptInterface(new WebAppInterface(controller), "WebApp");
+	    }
+
+	    public void onServiceDisconnected(ComponentName className) {
+	        mqttService = null;
+	    }
+	};
+
+	private void bindService() {
+		Intent intent = new Intent(MainActivity.this, MQTTService.class);
+	    bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+	    startService(intent);
+	    isBound = true;
+	}
+
+	private void unbindService() {
+	    if (isBound) {
+	        unbindService(serviceConnection);
+	        isBound = false;
+	    }
+	}
+
+	@Override
+	protected void onDestroy() {
+	    super.onDestroy();
+	    unbindService();
 	}
 	
 	private class CustomWebChromeClient extends WebChromeClient {
@@ -53,7 +84,6 @@ public class MainActivity extends Activity {
 	}
 
 	private class CustomWebViewClient extends WebViewClient {
-
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {
 			return false;
