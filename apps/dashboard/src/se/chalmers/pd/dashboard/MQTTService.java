@@ -75,7 +75,8 @@ public class MQTTService extends Service {
 					mqttClient = new MqttClient("tcp://192.168.43.147:1883", "dashboard", dataStore);
 					mqttClient.setCallback(new CustomMqttCallback());
 					mqttClient.connect();
-					mqttClient.subscribe("/app/webapp");
+					mqttClient.subscribe("/system/");
+					mqttClient.subscribe("/app/webapp/");
 				} catch (MqttException e) {
 					e.printStackTrace();
 				}
