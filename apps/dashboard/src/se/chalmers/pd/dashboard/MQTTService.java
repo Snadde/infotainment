@@ -6,10 +6,12 @@ import org.eclipse.paho.client.mqttv3.MqttDefaultFilePersistence;
 import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
@@ -21,6 +23,22 @@ import android.util.Log;
  *
  */
 public class MQTTService extends Service {
+	
+	/**
+     * Class for clients to access.  Because we know this service always
+     * runs in the same process as its clients, we don't need to deal with
+     * IPC.
+     */
+    public class LocalBinder extends Binder {
+    	MQTTService getService() {
+            return MQTTService.this;
+        }
+    }
+    
+    // This is the object that receives interactions from clients.  See
+    // RemoteService for a more complete example.
+    private final IBinder binder = new LocalBinder();
+
 
 	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.dashboard.mqtt.STATUS";
 	public static final String MQTT_STATUS_MESSAGE = "se.chalmers.pd.dashboard.mqtt.STATUS_MESSAGE";
@@ -57,7 +75,8 @@ public class MQTTService extends Service {
 					mqttClient = new MqttClient("tcp://192.168.43.147:1883", "dashboard", dataStore);
 					mqttClient.setCallback(new CustomMqttCallback());
 					mqttClient.connect();
-					mqttClient.subscribe("/app/webapp");
+					mqttClient.subscribe("/system/");
+					mqttClient.subscribe("/app/webapp/");
 				} catch (MqttException e) {
 					e.printStackTrace();
 				}
@@ -86,9 +105,9 @@ public class MQTTService extends Service {
 	}
 
 	@Override
-	public IBinder onBind(Intent intent) {
-		return null;
-	}
+    public IBinder onBind(Intent intent) {
+        return binder;
+    }
 
 	@Override
 	public void onDestroy() {
@@ -119,6 +138,17 @@ public class MQTTService extends Service {
 		broadcastIntent.putExtra(MQTT_MESSAGE_RECEIVED_TOPIC, topic);
 		broadcastIntent.putExtra(MQTT_MESSAGE_RECEIVED_PAYLOAD, message);
 		sendBroadcast(broadcastIntent);
+	}
+
+	public void publish(String topic, String message) {
+		try {
+			MqttMessage payload = new MqttMessage(message.getBytes());
+			mqttClient.getTopic(topic).publish(payload);
+		} catch (MqttPersistenceException e) {
+			e.printStackTrace();
+		} catch (MqttException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

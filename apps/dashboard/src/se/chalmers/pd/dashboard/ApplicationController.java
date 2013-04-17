@@ -27,15 +27,18 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 
 	private WebView webView;
 	private Context context;
+	private MQTTService mqttService;
 
 	/**
 	 * Sets up the receivers and initiates the object.
 	 * 
 	 * @param webView
 	 * @param context
+	 * @param mainActivity 
 	 */
-	public ApplicationController(WebView webView, Context context) {
+	public ApplicationController(WebView webView, MQTTService mqttService, Context context) {
 		this.webView = webView;
+		this.mqttService = mqttService;
 		this.context = context;
 		setupReceivers();
 	}
@@ -58,7 +61,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 	 * @param appName
 	 * @return true if it does exist
 	 */
-	public boolean init(String appName) {
+	public boolean applicationExists(String appName) {
 		File directory = new File(BASEDIR + appName);
 		if (directory.exists() && directory.isDirectory()) {
 			Log.d("ApplicationController", "init " + appName + " exists");
@@ -91,10 +94,11 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 	 * @param appName
 	 *            the app name (folder name of application)
 	 */
-	public void start(String appName) {
+	public boolean start(String appName) {
 		String url = "file://" + BASEDIR + appName + "/index.html";
 		webView.loadUrl(url);
 		Log.d("ApplicationController", "start " + url);
+		return true;
 	}
 
 	/**
@@ -117,6 +121,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 		if (directory.exists() && directory.isDirectory()) {
 			deleteRecursive(directory);
 		}
+		// TODO Confirm uninstall complete
 	}
 
 	/**
@@ -137,29 +142,65 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 	@Override
 	public void onMessageReceived(String topic, String payload) {
 		Log.d("CustomWebViewClient", "onMessageReceived " + "topic: " + topic + ", payload: " + payload);
-		handleMessage(payload);	
+		if(topic.equals("/system/")) {
+			handleSystemMessage(payload);
+		} else {
+			handleMessage(topic, payload);
+		}
 	}
-	
-	private void handleMessage(String payload) {
+
+	private void handleSystemMessage(String payload) {
 		try {
+			JSONObject responsePayload = new JSONObject();
 			JSONObject json = new JSONObject(payload);
 			String action = json.getString("action");
 			String data = json.getString("data");
-			if(action.equals("install")) {
-				install(getInputStream(data));
+			String privateTopic = "/app/webapp/1";
+			
+			// TODO Add checking to make sure that action is one of a well defined enum or array
+			responsePayload.put("action", action);
+			responsePayload.put("type", "response");
+			
+			if(action.equals("exist")) {
+				if(applicationExists(data)) {
+					responsePayload.put("data", "success");
+				} else {
+					responsePayload.put("data", "error");
+					responsePayload.put("error", "Application does not exist, payload was: " + payload);
+				}
+			} else if(action.equals("install")) {
+				if(install(getInputStream(data))) {
+					responsePayload.put("data", "success");
+				} else {
+					responsePayload.put("data", "error");
+					responsePayload.put("error", "Could not install the application, payload was: " + payload);
+				}
 			} else if(action.equals("start")) {
-				start(data);
+				if(start(data)) {
+					responsePayload.put("data", "success");
+				} else {
+					responsePayload.put("data", "error");
+					responsePayload.put("error", "Could not start the application, payload was: " + payload);
+				}
 			} else if(action.equals("stop")) {
 				webView.loadUrl(DEFAULT_URL);
+				responsePayload.put("data", "success");
 			} else if(action.equals("uninstall")) {
 				uninstall(data);
-			} else {
-				webView.loadUrl("javascript:onMessage(" + payload + ")");
-			}
-			Log.d("CustomWebViewClient", "handleMessage " + " action: " + json.getString("action") + " data: " + json.getString("data"));
+				responsePayload.put("data", "success");
+			} 
+			
+			mqttService.publish(privateTopic, responsePayload.toString());
+			
+			Log.d("CustomWebViewClient", "handleSystemMessage " + " action: " + json.getString("action") + " data: " + json.getString("data"));
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void handleMessage(String topic, String payload) {
+		webView.loadUrl("javascript:onMessage(" + payload + ")");
+		Log.d("CustomWebViewClient", "handleMessage " + " topic: " + topic + " payload: " + payload);
 	}
 
 	@Override
@@ -182,10 +223,14 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 		try {
 			inputStream = context.getAssets().open(zipFilename);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return inputStream;
+	}
+
+	public void publish(String topic, String message) {
+		Log.d("ApplicationController", "publish " + "topic: " + topic + " message: " + message);
+		mqttService.publish(topic, message);
 	}
 
 }
