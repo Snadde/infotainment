@@ -25,6 +25,7 @@ mqtt.createServer(function (client) {
 	**	Publish a message to all clients that are subscribing to the specified topic
 	**/
     client.on('publish', function(packet) {
+         debug.log("publish to with topic: "+ packet.topic +" payload: "+packet.payload);
         for (var k in self.clients) {
             var c = self.clients[k]
             , publish = false;
@@ -48,7 +49,7 @@ mqtt.createServer(function (client) {
         for (var i = 0; i < packet.subscriptions.length; i++) {
             var qos = packet.subscriptions[i].qos
             , topic = packet.subscriptions[i].topic
-            , reg = new RegExp(topic.replace('+', '[^\/]+').replace('#', '.+$'));
+            , reg = new RegExp(topic.replace('+', '[^\/]+').replace('#', '.+') + '$');
             granted.push(qos);
             client.subscriptions.push(reg);
 	        debug.log("client: "+client.id+" subscribes to topic: "+ topic); 
