@@ -46,6 +46,7 @@
 	        }
 	        else if(action == 'publish'){
 	            mqttmessage = createJSON(message.topic, message.data);
+                debug.log('publish from websocket'+mqttmessage+" ej json : "+message);
 	            mqttclient.publish(mqttmessage);
 	        }
 	        else if(action == 'subscribe'){
@@ -105,6 +106,6 @@
 		    topic : mqtt_topic,
 		    payload : mqtt_payload
 	    };
-	    return JSON.stringify(mqttmessage);
+	    return mqttmessage;
     };
 }());
