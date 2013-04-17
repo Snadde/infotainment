@@ -55,8 +55,13 @@
 	        else if(action == 'init'){
 	            privatetopic = message.data;
 	            mqttclient.subscribe({topic: privatetopic});
-	            mqttmessage = createJSON('/system', packet);
-	            mqttclient.publish(mqttmessage);
+	            //mqttmessage = createJSON('/system', packet);
+	            //mqttclient.publish(mqttmessage);
+                var initmessage = {
+                    payload : '{"action":"init","type":"response","data":"success"}'
+                };
+                
+                socketclient.send(JSON.stringify(initmessage));
 	        }
 	        else if(action == 'install'){
 	            var location = message.url;
