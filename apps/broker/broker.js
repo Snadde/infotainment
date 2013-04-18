@@ -25,7 +25,7 @@ mqtt.createServer(function (client) {
 	**	Publish a message to all clients that are subscribing to the specified topic
 	**/
     client.on('publish', function(packet) {
-         debug.log("publish to with topic: "+ packet.topic +" payload: "+packet.payload);
+        debug.log("publish to with topic: "+ packet.topic +" payload: "+packet.payload);
         for (var k in self.clients) {
             var c = self.clients[k]
             , publish = false;
@@ -36,7 +36,38 @@ mqtt.createServer(function (client) {
                 }
             }
             if (publish) {
-                c.publish({topic: packet.topic, payload: packet.payload});
+                var payload = JSON.parse(packet.payload);
+                if(payload.action == 'install-url') {
+                    debug.log('installing from url!')
+    	            var buffer;
+                    var location = payload.data;
+    	            var http = require('http');	
+    	            var request = http.request(location, function (res) {
+                        var data = '';
+                        res.setEncoding('binary');
+    		            res.on('data', function (chunk) {
+    		                data += chunk;
+					    
+    		            });
+    		    	    res.on('end', function () {
+                            buffer = new Buffer(data, 'binary').toString('base64');
+    		        	    debug.log(buffer);
+    					    var json_data = {
+    						    action : 'install',
+    						    data : buffer
+    					    };
+    					    var json_payload = JSON.stringify(json_data);
+    					    packet.payload = json_payload;
+                            c.publish({topic: packet.topic, payload: json_payload});
+    		    	    });
+    			    });
+    			    request.on('error', function (e) {
+    		            console.log("ERRORR  "+e.message);
+    			    });
+    			    request.end();
+                } else {
+                    c.publish({topic: packet.topic, payload: packet.payload});
+                }
 		        debug.log("publish to client: "+c.id+" with topic: "+ packet.topic +" payload: "+packet.payload);
             }
         }
