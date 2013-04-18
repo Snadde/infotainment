@@ -27,6 +27,7 @@ public class MainActivity extends Activity {
 	private ApplicationController controller;
 	private MQTTService mqttService;
 	private boolean isBound;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
