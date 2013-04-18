@@ -51,6 +51,7 @@ public class MQTTService extends Service {
 	private static final String CLIENT_NAME = "dashboard";
 
 	private MqttClient mqttClient;
+	
 
 	@Override
 	public void onCreate() {

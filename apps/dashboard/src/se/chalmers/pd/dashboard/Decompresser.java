@@ -1,5 +1,6 @@
 package se.chalmers.pd.dashboard;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -33,7 +34,8 @@ public class Decompresser {
 			public void run() {
 				boolean result = false;
 				try {
-					ZipInputStream zipInputStream = new ZipInputStream(inputStream); 
+					BufferedInputStream bis = new BufferedInputStream(inputStream);
+					ZipInputStream zipInputStream = new ZipInputStream(bis); 
 					ZipEntry zipEntry = null;
 					
 					while ((zipEntry = zipInputStream.getNextEntry()) != null) {
@@ -41,9 +43,11 @@ public class Decompresser {
 						if (zipEntry.isDirectory()) {
 							createBaseDirectory(zipEntry.getName());
 						} else {
+							int readBytes;
+							byte byteArray[] = new byte[1024];
 							FileOutputStream fileOutputStream = new FileOutputStream(location + zipEntry.getName());
-							for (int readByte = zipInputStream.read(); readByte != -1; readByte = zipInputStream.read()) {
-								fileOutputStream.write(readByte);
+							while ((readBytes = zipInputStream.read(byteArray, 0, 1024)) >= 0) {
+								fileOutputStream.write(byteArray, 0, readBytes);
 							}
 							zipInputStream.closeEntry();
 							fileOutputStream.close();

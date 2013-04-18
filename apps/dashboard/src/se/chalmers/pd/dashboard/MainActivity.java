@@ -15,6 +15,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.TextView;
 
 /**
  * Main class which contains the WebView and hosts the application controller. This class
@@ -49,6 +50,7 @@ public class MainActivity extends Activity {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 	        mqttService = ((MQTTService.LocalBinder)service).getService();
 	        controller = new ApplicationController(webView, mqttService, MainActivity.this);
+	        controller.setStatusView((TextView) findViewById(R.id.status));
 	        webView.addJavascriptInterface(new WebAppInterface(controller), "WebApp");
 	    }
 

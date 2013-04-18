@@ -13,6 +13,7 @@ import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebView;
+import android.widget.TextView;
 
 /**
  * This class handles the control flow of the application. It listens for
@@ -29,6 +30,8 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	private WebView webView;
 	private Context context;
 	private MQTTService mqttService;
+	private TextView statusView;
+	private boolean debug = true;
 
 	/**
 	 * Sets up the receivers and initiates the object.
@@ -65,10 +68,10 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	public boolean applicationExists(String appName) {
 		File directory = new File(BASEDIR + "/" + appName);
 		if (directory.exists() && directory.isDirectory()) {
-			Log.d("ApplicationController", "init " + appName + " exists");
+			log("ApplicationController", "init " + appName + " exists");
 			return true;
 		}
-		Log.d("ApplicationController", "init " + appName + " doesn't exist or is not a directory");
+		log("ApplicationController", "init " + appName + " doesn't exist or is not a directory");
 		return false;
 	}
 
@@ -96,7 +99,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	public boolean start(String appName) {
 		String url = "file://" + BASEDIR + appName + "/index.html";
 		webView.loadUrl(url);
-		Log.d("ApplicationController", "start " + url);
+		log("ApplicationController", "start " + url);
 		return true;
 	}
 
@@ -115,7 +118,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	 * @param appName
 	 */
 	public void uninstall(String appName) {
-		Log.d("ApplicationController", "uninstall " + appName);
+		log("ApplicationController", "uninstall " + appName);
 		File directory = new File(BASEDIR + appName);
 		if (directory.exists() && directory.isDirectory()) {
 			deleteRecursive(directory);
@@ -134,13 +137,13 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 				deleteRecursive(child);
 			}
 		}
-		Log.d("ApplicationController", "deleteRecursive " + appDir.getAbsolutePath());
+		log("ApplicationController", "deleteRecursive " + appDir.getAbsolutePath());
 		appDir.delete();
 	}
 
 	@Override
 	public void onMessageReceived(String topic, String payload) {
-		Log.d("CustomWebViewClient", "onMessageReceived " + "topic: " + topic + ", payload: " + payload);
+		log("ApplicationController", "onMessageReceived " + "topic: " + topic);
 		if (topic.equals("/system")) {
 			handleSystemMessage(payload);
 		} else {
@@ -156,8 +159,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 			String data = json.getString("data");
 			String privateTopic = "/app/webapp/1";
 
-			// TODO Add checking to make sure that action is one of a well
-			// defined enum or array
+			// TODO Add checking to make sure that action is one of a well defined enum or array
 			responsePayload.put("action", action);
 
 			if (action.equals("exist")) {
@@ -186,9 +188,6 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 			}
 
 			sendResponse(privateTopic, responsePayload);
-
-			Log.d("CustomWebViewClient", "handleSystemMessage " + " action: " + json.getString("action") + " data: "
-					+ json.getString("data"));
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -196,7 +195,6 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 
 	private void handleMessage(String topic, String payload) {
 		webView.loadUrl("javascript:onMessage(" + payload + ")");
-		Log.d("CustomWebViewClient", "handleMessage " + " topic: " + topic + " payload: " + payload);
 	}
 
 	private void sendResponse(String topic, JSONObject responsePayload) throws JSONException {
@@ -206,7 +204,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 
 	@Override
 	public void onStatusUpdate(String status) {
-		Log.d("CustomWebViewClient", "onStatusUpdate " + "status: " + status);
+		log("ApplicationController", "onStatusUpdate " + "status: " + status);
 	}
 
 	// public void onLoadComplete(String url) {
@@ -224,7 +222,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	}
 
 	public void publish(String topic, String message) {
-		Log.d("ApplicationController", "publish " + "topic: " + topic + " message: " + message);
+		log("ApplicationController", "publish " + "topic: " + topic + " message: " + message);
 		mqttService.publish(topic, message);
 	}
 
@@ -235,13 +233,31 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 			responsePayload.put("action", "install");
 			if (result) {
 				responsePayload.put("data", "success");
+				log("decompressComplete", "installation complete");
 			} else {
 				responsePayload.put("data", "error");
 				responsePayload.put("error", "Could not install the application.");
+				log("decompressComplete", "failed to install");
 			}
 			sendResponse(privateTopic, responsePayload);
 		} catch (JSONException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public void setStatusView(TextView view) {
+		statusView = view;
+	}
+	
+	private void log(String tag, final String message) {
+		if(debug) {
+			Log.d(tag, message);
+			((MainActivity) context).runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					statusView.setText(message);
+				}
+			});
 		}
 	}
 
