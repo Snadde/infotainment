@@ -9,11 +9,6 @@ public class WebAppInterface {
     WebAppInterface(ApplicationController controller) {
         this.controller = controller;
     }
-    
-    @JavascriptInterface
-    public void testa() {
-    	Log.d("WebAppInterface", "test");
-    }
    
     @JavascriptInterface
     public void publish(String topic, String message) {

@@ -7,6 +7,7 @@ import org.eclipse.paho.client.mqttv3.MqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 
 import android.app.Service;
@@ -45,6 +46,9 @@ public class MQTTService extends Service {
 	public static final String MQTT_MESSAGE_RECEIVED_INTENT = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED";
     public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
     public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
+    
+	private static final String BROKER = "tcp://192.168.43.88:1883";
+	private static final String CLIENT_NAME = "dashboard";
 
 	private MqttClient mqttClient;
 
@@ -72,11 +76,12 @@ public class MQTTService extends Service {
 				try {
 					String tmpDir = Environment.getExternalStorageDirectory() + "/infotainment/";
 					MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
-					mqttClient = new MqttClient("tcp://192.168.43.147:1883", "dashboard", dataStore);
+					mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
 					mqttClient.setCallback(new CustomMqttCallback());
 					mqttClient.connect();
-					mqttClient.subscribe("/system/");
-					mqttClient.subscribe("/app/webapp/");
+					mqttClient.subscribe("/system");
+					mqttClient.subscribe("/app/webapp");
+					Log.d("MQTTService", "subscribing");
 				} catch (MqttException e) {
 					e.printStackTrace();
 				}
@@ -145,6 +150,16 @@ public class MQTTService extends Service {
 			MqttMessage payload = new MqttMessage(message.getBytes());
 			mqttClient.getTopic(topic).publish(payload);
 		} catch (MqttPersistenceException e) {
+			e.printStackTrace();
+		} catch (MqttException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void subscribe(String string) {
+		try {
+			mqttClient.subscribe(string);
+		} catch (MqttSecurityException e) {
 			e.printStackTrace();
 		} catch (MqttException e) {
 			e.printStackTrace();
