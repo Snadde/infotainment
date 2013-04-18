@@ -47,7 +47,7 @@ public class MQTTService extends Service {
     public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
     public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
     
-	private static final String BROKER = "tcp://192.168.43.88:1883";
+	private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "dashboard";
 
 	private MqttClient mqttClient;
