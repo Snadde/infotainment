@@ -58,16 +58,18 @@
 	            mqttclient.publish(mqttmessage);
 	        }
 	        else if(action == 'install'){
-	            var location = message.url;
 	            var buffer;
+                var location = message.url;
 	            var http = require('http');	
 	            var request = http.request(location, function (res) {
-	                var data = '';
+                    var data = '';
+                    res.setEncoding('binary');
 		            res.on('data', function (chunk) {
 		                data += chunk;
-					    buffer = new Buffer(data).toString('base64');
+					    
 		            });
 		    	    res.on('end', function () {
+                        buffer = new Buffer(data, 'binary').toString('base64');
 		        	    debug.log(buffer);
 					    var json_data = {
 						    action : 'install',
