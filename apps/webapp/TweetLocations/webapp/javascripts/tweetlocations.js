@@ -1,11 +1,11 @@
 Ext.setup({
-	tabletStartupScreen: 'tablet_startup.png',
-	phoneStartupScreen: 'phone_startup.png',
+	tabletStartupScreen: 'tablet_splash.png',
+	phoneStartupScreen: 'phone_splash.png',
 	icon: 'icon.png',
-	glossOnIcon: false,
+	glossOnIcon: true,
 	onReady: function() {
 
-		var timeline, mapPanel, panel, tabBar, refresh, addMarker, tweetBubble;
+		var timeline, panel, mapPanel, tabBar, refresh, addMarker, tweetBubble;
 
 		timeline = new Ext.Component({
 			title: 'Timeline',
@@ -14,8 +14,8 @@ Ext.setup({
 			tpl: [
 				'<tpl for=".">',
 					'<div class="tweet">',
-							'<div class="avatar"><img src="{profile_image_url}" /></div>',
-							'<div class="tweet-content">',
+							'<div class="profile"><img src="{profile_image_url}" /></div>',
+							'<div class="content">',
 								'<h2>{from_user}</h2>',
 								'<p>{text}</p>',
 							'</div>',
@@ -28,7 +28,7 @@ Ext.setup({
 			title: 'Map',
 			useCurrentLocation: true,
 			mapOptions: {
-				zoom: 12
+				zoom: 11
 			}
 		});
 
@@ -39,14 +39,14 @@ Ext.setup({
 			items: [mapPanel, timeline]
 		});
 
-		panel.getTabBar().add([
-			{xtype: 'spacer'},
-			{
+		panel.getTabBar().add([ {
+                xtype: 'spacer'
+            },  {
 				xtype: 'button',
 				iconMask: true,
 				iconCls: 'refresh',
 				ui: 'plain',
-				style: 'margin:0;',
+				style: 'margin: 0;',
 				handler: refresh
 			}
 		]);
@@ -59,16 +59,15 @@ Ext.setup({
 				url: 'http://search.twitter.com/search.json',
 				callbackKey: 'callback',
 				params: {
-					geocode: coords.latitude + ',' + coords.longitude + ',' + '5mi',
+					geocode: coords.latitude + ',' + coords.longitude + ',' + '10mi',
 					rpp: 30
 				},
 				callback: function(data) {
 					var tweetList = data.results;
-					timeline.update(tweetList);	// Update the tweets in timeline
+					timeline.update(tweetList);
 
-					// Add points to the map
-					for (var i = 0, ln = tweetList.length; i < ln; i++) {
-						var tweet = tweetList[i];
+					for (var index = 0, tweets = tweetList.length; index < tweets; index++) {
+						var tweet = tweetList[index];
 						if (tweet.geo && tweet.geo.coordinates) {
 							addMarker(tweet);
 						}
@@ -78,11 +77,13 @@ Ext.setup({
 		};
 
 		addMarker = function(tweet) {
-			var latLng = new google.maps.LatLng(tweet.geo.coordinates[0], tweet.geo.coordinates[1]);
+            var latIndex = 0;
+            var longIndex = 1;
+			var latLong = new google.maps.LatLng(tweet.geo.coordinates[latIndex], tweet.geo.coordinates[longIndex]);
 
 			var marker = new google.maps.Marker({
 				map: mapPanel.map,
-				position: latLng
+				position: latLong
 			});
 
 			google.maps.event.addListener(marker, "click", function() {
@@ -92,8 +93,6 @@ Ext.setup({
 		};
 
 		tweetBubble = new google.maps.InfoWindow();
-
 		mapPanel.geo.on('update', refresh);
-
 	}
 });

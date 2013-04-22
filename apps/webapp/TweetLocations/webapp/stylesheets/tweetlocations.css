@@ -1,0 +1,37 @@
+.tweet {
+    margin-top: 7px;
+    margin-left: 12px;
+    position: relative;
+    background: #FFF;
+    padding: 13px;
+    border: 1px solid #cdcdcd;
+}
+
+.tweet .profile {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 40px;
+}
+
+.tweet .profile img {
+  width: 36px;
+  height: 36px;
+}
+
+.tweet .content {
+  position: relative;
+  top: 0; 
+  left: 40px;
+  padding-right: 80px;
+}
+
+.tweet .content h2 {
+    font-size: 0.6em;
+    color: #777;
+}
+
+.tweet .content p {
+    font-size: 0.7em;
+    color: #212121;
+}

@@ -56,7 +56,7 @@ public class Decompresser {
 					zipInputStream.close();
 					result = true;
 				} catch (Exception e) {
-					Log.e("Decompresser", e.getMessage());
+					Log.e("Decompresser", "" + e.getMessage());
 					result = false;
 				}
 				callback.decompressComplete(result, privateTopic);
