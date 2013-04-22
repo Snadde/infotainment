@@ -24,8 +24,10 @@ import android.widget.TextView;
  */
 public class ApplicationController implements MqttBroadcastReceiver.Callbacks, Decompresser.Callbacks {
 
+	
+	private static final String HTTP_LOCALHOST = "http://localhost:8080/";
 	private final String DEFAULT_URL = "file:///android_asset/index.html";
-	private final String BASEDIR = Environment.getExternalStorageDirectory() + "/infotainment/apps/";
+	private final String BASEDIR = Environment.getExternalStorageDirectory() + "/www/";
 
 	private WebView webView;
 	private Context context;
@@ -66,7 +68,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	 * @return true if it does exist
 	 */
 	public boolean applicationExists(String appName) {
-		File directory = new File(BASEDIR + "/" + appName);
+		File directory = new File(BASEDIR + appName);
 		if (directory.exists() && directory.isDirectory()) {
 			log("ApplicationController", "init " + appName + " exists");
 			return true;
@@ -97,7 +99,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	 *            the app name (folder name of application)
 	 */
 	public boolean start(String appName) {
-		String url = "file://" + BASEDIR + appName + "/index.html";
+		String url = HTTP_LOCALHOST + appName + "/index.html";
 		webView.loadUrl(url);
 		log("ApplicationController", "start " + url);
 		return true;
@@ -144,7 +146,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	@Override
 	public void onMessageReceived(String topic, String payload) {
 		log("ApplicationController", "onMessageReceived " + "topic: " + topic);
-		if (topic.equals("/system")) {
+		if (topic.equals(MQTTService.TOPIC_SYSTEM)) {
 			handleSystemMessage(payload);
 		} else {
 			handleMessage(topic, payload);
@@ -155,36 +157,37 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 		try {
 			JSONObject responsePayload = new JSONObject();
 			JSONObject json = new JSONObject(payload);
-			String action = json.getString("action");
-			String data = json.getString("data");
+			String action = json.getString(MQTTService.ACTION);
+			String data = json.getString(MQTTService.ACTION_DATA);
 			String privateTopic = "/app/webapp/1";
 
 			// TODO Add checking to make sure that action is one of a well defined enum or array
-			responsePayload.put("action", action);
+			responsePayload.put(MQTTService.ACTION, action);
 
-			if (action.equals("exist")) {
+			if (action.equals(MQTTService.ACTION_EXIST)) {
 				// mqttService.subscribe("/app/webapp");
 				if (applicationExists(data)) {
-					responsePayload.put("data", "success");
+					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 				} else {
-					responsePayload.put("data", "error");
-					responsePayload.put("error", "Application does not exist, payload was: " + payload);
+					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
+					responsePayload.put(MQTTService.ACTION_ERROR, R.string.application_does_not_exist_payload_was + payload);
 				}
-			} else if (action.equals("install")) {
+			} else if (action.equals(MQTTService.ACTION_INSTALL)) {
+				data = mqttService.getData();
 				install(getInputStream(data), privateTopic);
-			} else if (action.equals("start")) {
+			} else if (action.equals(MQTTService.ACTION_START)) {
 				if (start(data)) {
-					responsePayload.put("data", "success");
+					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 				} else {
-					responsePayload.put("data", "error");
-					responsePayload.put("error", "Could not start the application, payload was: " + payload);
+					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
+					responsePayload.put(MQTTService.ACTION_ERROR, R.string.could_not_start_the_application_payload_was + payload);
 				}
-			} else if (action.equals("stop")) {
+			} else if (action.equals(MQTTService.ACTION_STOP)) {
 				webView.loadUrl(DEFAULT_URL);
-				responsePayload.put("data", "success");
-			} else if (action.equals("uninstall")) {
+				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
+			} else if (action.equals(MQTTService.ACTION_UNINSTALL)) {
 				uninstall(data);
-				responsePayload.put("data", "success");
+				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 			}
 
 			sendResponse(privateTopic, responsePayload);
@@ -198,7 +201,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	}
 
 	private void sendResponse(String topic, JSONObject responsePayload) throws JSONException {
-		responsePayload.put("type", "response");
+		responsePayload.put(MQTTService.ACTION_TYPE, MQTTService.ACTION_RESPONSE);
 		mqttService.publish(topic, responsePayload.toString());
 	}
 
@@ -217,6 +220,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	// }
 
 	private InputStream getInputStream(String data) {
+		log("getInputStream", data); 
 		InputStream inputStream = (InputStream) new ByteArrayInputStream(Base64.decode(data, Base64.DEFAULT));
 		return inputStream;
 	}
@@ -232,11 +236,11 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 		try {
 			responsePayload.put("action", "install");
 			if (result) {
-				responsePayload.put("data", "success");
+				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 				log("decompressComplete", "installation complete");
 			} else {
-				responsePayload.put("data", "error");
-				responsePayload.put("error", "Could not install the application.");
+				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
+				responsePayload.put(MQTTService.ACTION_ERROR, R.string.could_not_install_the_application);
 				log("decompressComplete", "failed to install");
 			}
 			sendResponse(privateTopic, responsePayload);

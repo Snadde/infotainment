@@ -6,11 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
+import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -24,6 +26,8 @@ import android.widget.TextView;
  */
 public class MainActivity extends Activity {
 
+	private static final String JAVASCRIPT_INTERFACE = "WebApp";
+	private static final String STORAGE_FOLDER = "/infotainment/";
 	private WebView webView;
 	private ApplicationController controller;
 	private MQTTService mqttService;
@@ -42,6 +46,7 @@ public class MainActivity extends Activity {
 		WebSettings webSettings = webView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setDomStorageEnabled(true);
+		webSettings.setGeolocationDatabasePath(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
 		webView.setWebViewClient(new CustomWebViewClient());
 		webView.setWebChromeClient(new CustomWebChromeClient());
 	}
@@ -51,7 +56,7 @@ public class MainActivity extends Activity {
 	        mqttService = ((MQTTService.LocalBinder)service).getService();
 	        controller = new ApplicationController(webView, mqttService, MainActivity.this);
 	        controller.setStatusView((TextView) findViewById(R.id.status));
-	        webView.addJavascriptInterface(new WebAppInterface(controller), "WebApp");
+	        webView.addJavascriptInterface(new WebAppInterface(controller), JAVASCRIPT_INTERFACE);
 	    }
 
 	    public void onServiceDisconnected(ComponentName className) {
@@ -84,6 +89,10 @@ public class MainActivity extends Activity {
 			Log.d("CustomWebChromeClient", cm.message() + " -- From line " + cm.lineNumber() + " of " + cm.sourceId());
 			return true;
 		}
+		
+		public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+		    callback.invoke(origin, true, false);
+		 }
 	}
 
 	private class CustomWebViewClient extends WebViewClient {
