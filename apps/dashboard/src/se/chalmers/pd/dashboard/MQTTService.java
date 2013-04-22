@@ -189,11 +189,19 @@ public class MQTTService extends Service {
 		}
 	}
 
-	public void subscribe(String string) {
+	public void subscribe(String topic) {
 		try {
-			mqttClient.subscribe(string);
+			mqttClient.subscribe(topic);
 		} catch (MqttSecurityException e) {
 			e.printStackTrace();
+		} catch (MqttException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void unsubscribe(String topic) {
+		try {
+			mqttClient.unsubscribe(topic);
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}
@@ -202,5 +210,7 @@ public class MQTTService extends Service {
 	public String getData() {
 		return data;
 	}
+
+	
 
 }

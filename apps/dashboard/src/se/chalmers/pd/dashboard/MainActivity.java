@@ -56,6 +56,7 @@ public class MainActivity extends Activity {
 	        mqttService = ((MQTTService.LocalBinder)service).getService();
 	        controller = new ApplicationController(webView, mqttService, MainActivity.this);
 	        controller.setStatusView((TextView) findViewById(R.id.status));
+	        controller.stop();
 	        webView.addJavascriptInterface(new WebAppInterface(controller), JAVASCRIPT_INTERFACE);
 	    }
 

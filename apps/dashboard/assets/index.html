@@ -4,8 +4,9 @@
 <script type="text/javascript">
 	var debug = true;
 
-	function onMessage(payload) {
-		log("web app got a message with payload: " + payload);
+	function onMessage(topic, payload) {
+		//log("web app got a message on topic: " + topic + " with payload: " + payload);
+		WebApp.showToast("web app got a message on topic: " + topic + " with payload: " + payload);
 	}
 
 	function log(message) {

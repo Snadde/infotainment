@@ -14,6 +14,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * This class handles the control flow of the application. It listens for
@@ -197,7 +198,8 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	}
 
 	private void handleMessage(String topic, String payload) {
-		webView.loadUrl("javascript:onMessage(" + payload + ")");
+		log("ApplicationController:handleMessage", topic + " " + payload);
+		webView.loadUrl("javascript:onMessage('" + topic + "', " + payload + ")");
 	}
 
 	private void sendResponse(String topic, JSONObject responsePayload) throws JSONException {
@@ -263,6 +265,18 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 				}
 			});
 		}
+	}
+
+	public void subscribe(String topic) {
+		mqttService.subscribe(topic);
+	}
+
+	public void unsubscribe(String topic) {
+		mqttService.unsubscribe(topic);
+	}
+
+	public void showToast(String message) {
+		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
 	}
 
 }
