@@ -42,6 +42,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);
 		bindService();
 		
+		// Setup the webview and the settings we need
 		webView = (WebView) findViewById(R.id.webview);
 		WebSettings webSettings = webView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
@@ -51,6 +52,11 @@ public class MainActivity extends Activity {
 		webView.setWebChromeClient(new CustomWebChromeClient());
 	}
 
+	/**
+	 * A local implementation of the service connection callbacks that are
+	 * needed to that we can keep track of then the service has been launched,
+	 * stopped or disconnected.
+	 */
 	private ServiceConnection serviceConnection = new ServiceConnection() {
 	    public void onServiceConnected(ComponentName className, IBinder service) {
 	        mqttService = ((MQTTService.LocalBinder)service).getService();
@@ -63,8 +69,13 @@ public class MainActivity extends Activity {
 	    public void onServiceDisconnected(ComponentName className) {
 	        mqttService = null;
 	    }
+	    
+	    // TODO Add reconnect feature
 	};
 
+	/**
+	 * Binds this activity to the mqtt service so we can communicate between them
+	 */
 	private void bindService() {
 		Intent intent = new Intent(MainActivity.this, MQTTService.class);
 	    bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
@@ -72,6 +83,9 @@ public class MainActivity extends Activity {
 	    isBound = true;
 	}
 
+	/**
+	 * Unbinds the service when it's no longer needed
+	 */
 	private void unbindService() {
 	    if (isBound) {
 	        unbindService(serviceConnection);
@@ -85,6 +99,10 @@ public class MainActivity extends Activity {
 	    unbindService();
 	}
 	
+	/**
+	 * A custom webchromeclient for the webview that hijacks that logging from the console and 
+	 * adds it to logcat. Also auto-accepts any location requests from the webview.
+	 */
 	private class CustomWebChromeClient extends WebChromeClient {
 		public boolean onConsoleMessage(ConsoleMessage cm) {
 			Log.d("CustomWebChromeClient", cm.message() + " -- From line " + cm.lineNumber() + " of " + cm.sourceId());
@@ -96,6 +114,10 @@ public class MainActivity extends Activity {
 		 }
 	}
 
+	/**
+	 * Custom webviewclient that makes sure all URL's are opened by this specific webview
+	 * and overrides any other intents.
+	 */
 	private class CustomWebViewClient extends WebViewClient {
 		@Override
 		public boolean shouldOverrideUrlLoading(WebView view, String url) {

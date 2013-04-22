@@ -19,16 +19,16 @@ import android.os.IBinder;
 import android.util.Log;
 
 /**
- * This service launches an MQTT client in a separate thread and subscribes to the
- * systems basic topics. When a message is received, it broadcasts the message using
- * custom intent filters.
- *
+ * This service launches an MQTT client in a separate thread and subscribes to
+ * the systems basic topics. When a message is received, it broadcasts the
+ * message using custom intent filters.
+ * 
  */
 public class MQTTService extends Service {
-	
+
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
 	private static final String SERVICE_NAME = "MQTTService";
-	
+
 	public static final String ACTION_DATA = "data";
 	public static final String ACTION_INSTALL = "install";
 	public static final String ACTION = "action";
@@ -41,34 +41,31 @@ public class MQTTService extends Service {
 	public static final String ACTION_START = "start";
 	public static final String ACTION_UNINSTALL = "uninstall";
 	public static final String ACTION_STOP = "stop";
-	
-	/**
-     * Class for clients to access.  Because we know this service always
-     * runs in the same process as its clients, we don't need to deal with
-     * IPC.
-     */
-    public class LocalBinder extends Binder {
-    	MQTTService getService() {
-            return MQTTService.this;
-        }
-    }
-    
-    // This is the object that receives interactions from clients.  See
-    // RemoteService for a more complete example.
-    private final IBinder binder = new LocalBinder();
 
+	/**
+	 * Class for clients to access. Because we know this service always runs in
+	 * the same process as its clients, we don't need to deal with IPC.
+	 */
+	public class LocalBinder extends Binder {
+		MQTTService getService() {
+			return MQTTService.this;
+		}
+	}
+
+	// This is the object that receives interactions from clients. See
+	// RemoteService for a more complete example.
+	private final IBinder binder = new LocalBinder();
 
 	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.dashboard.mqtt.STATUS";
 	public static final String MQTT_STATUS_MESSAGE = "se.chalmers.pd.dashboard.mqtt.STATUS_MESSAGE";
 	public static final String MQTT_MESSAGE_RECEIVED_INTENT = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED";
-    public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
-    public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
-    
+	public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
+	public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
+
 	private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "dashboard";
-	
+
 	private MqttClient mqttClient;
-	
 
 	@Override
 	public void onCreate() {
@@ -87,13 +84,18 @@ public class MQTTService extends Service {
 	}
 
 	private String data;
-	
+
+	/**
+	 * Connects to the MQTT broker in a new Thread and defines some custom
+	 * callbacks that handle messages.
+	 */
 	private void connect() {
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
 				try {
+					// Sets up the client and subscribes to topics
 					String tmpDir = Environment.getExternalStorageDirectory() + STORAGE_DIRECTORY;
 					MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
 					mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
@@ -106,7 +108,12 @@ public class MQTTService extends Service {
 					e.printStackTrace();
 				}
 			}
-			
+
+			/**
+			 * Called when messages are received. Filters out data from
+			 * installation messages since it is too much to pass around as
+			 * Strings.
+			 */
 			class CustomMqttCallback implements MqttCallback {
 
 				private static final String ACTION_GET_METHOD = "getData";
@@ -116,7 +123,9 @@ public class MQTTService extends Service {
 					JSONObject json = new JSONObject(message.toString());
 					String payload = "";
 					String stringTopic = topic.toString();
-					if(json.getString(ACTION).equals(ACTION_INSTALL)) {
+
+					// Filter install messages and their data separately
+					if (json.getString(ACTION).equals(ACTION_INSTALL)) {
 						data = json.getString(ACTION_DATA);
 						json = new JSONObject();
 						json.put(ACTION, ACTION_INSTALL);
@@ -144,9 +153,9 @@ public class MQTTService extends Service {
 	}
 
 	@Override
-    public IBinder onBind(Intent intent) {
-        return binder;
-    }
+	public IBinder onBind(Intent intent) {
+		return binder;
+	}
 
 	@Override
 	public void onDestroy() {
@@ -155,6 +164,9 @@ public class MQTTService extends Service {
 		broadcastServiceStatus("Disconnected");
 	}
 
+	/**
+	 * Helper method to disconnect from broker
+	 */
 	private void disconnect() {
 		try {
 			mqttClient.disconnect();
@@ -163,6 +175,11 @@ public class MQTTService extends Service {
 		}
 	}
 
+	/**
+	 * Broadcasts status changes
+	 * 
+	 * @param statusDescription
+	 */
 	private void broadcastServiceStatus(String statusDescription) {
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(MQTT_STATUS_INTENT);
@@ -170,14 +187,27 @@ public class MQTTService extends Service {
 		sendBroadcast(broadcastIntent);
 	}
 
-	private void broadcastReceivedMessage(String topic, String message) {
+	/**
+	 * Broadcasts received messages
+	 * 
+	 * @param topic
+	 * @param payload
+	 */
+	private void broadcastReceivedMessage(String topic, String payload) {
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(MQTT_MESSAGE_RECEIVED_INTENT);
 		broadcastIntent.putExtra(MQTT_MESSAGE_RECEIVED_TOPIC, topic);
-		broadcastIntent.putExtra(MQTT_MESSAGE_RECEIVED_PAYLOAD, message);
+		broadcastIntent.putExtra(MQTT_MESSAGE_RECEIVED_PAYLOAD, payload);
 		sendBroadcast(broadcastIntent);
 	}
 
+	/**
+	 * Publishes a message on the given topic.
+	 * 
+	 * @param topic
+	 * @param message
+	 *            should be stringified JSON
+	 */
 	public void publish(String topic, String message) {
 		try {
 			MqttMessage payload = new MqttMessage(message.getBytes());
@@ -189,6 +219,11 @@ public class MQTTService extends Service {
 		}
 	}
 
+	/**
+	 * Subscribes to the given topic
+	 * 
+	 * @param topic
+	 */
 	public void subscribe(String topic) {
 		try {
 			mqttClient.subscribe(topic);
@@ -198,7 +233,12 @@ public class MQTTService extends Service {
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * Unsubscribes from the given topic
+	 * 
+	 * @param topic
+	 */
 	public void unsubscribe(String topic) {
 		try {
 			mqttClient.unsubscribe(topic);
@@ -207,10 +247,13 @@ public class MQTTService extends Service {
 		}
 	}
 
+	/**
+	 * Gets the data for the application install
+	 * 
+	 * @return
+	 */
 	public String getData() {
 		return data;
 	}
-
-	
 
 }

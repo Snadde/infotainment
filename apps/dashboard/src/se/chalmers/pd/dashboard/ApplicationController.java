@@ -25,7 +25,6 @@ import android.widget.Toast;
  */
 public class ApplicationController implements MqttBroadcastReceiver.Callbacks, Decompresser.Callbacks {
 
-	
 	private static final String HTTP_LOCALHOST = "http://localhost:8080/";
 	private final String DEFAULT_URL = "file:///android_asset/index.html";
 	private final String BASEDIR = Environment.getExternalStorageDirectory() + "/www/";
@@ -83,7 +82,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	 * 
 	 * @param inputStream
 	 *            (from the zip file)
-	 * @param privateTopic 
+	 * @param privateTopic
 	 * @return true if successful
 	 */
 	public void install(InputStream inputStream, String privateTopic) {
@@ -154,6 +153,13 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 		}
 	}
 
+	/**
+	 * Handles the system messages like start, stop, install, uninstall and
+	 * exist.
+	 * 
+	 * @param payload
+	 *            the payload from the system message
+	 */
 	private void handleSystemMessage(String payload) {
 		try {
 			JSONObject responsePayload = new JSONObject();
@@ -162,7 +168,8 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 			String data = json.getString(MQTTService.ACTION_DATA);
 			String privateTopic = "/app/webapp/1";
 
-			// TODO Add checking to make sure that action is one of a well defined enum or array
+			// TODO Add checking to make sure that action is one of a well
+			// defined enum or array
 			responsePayload.put(MQTTService.ACTION, action);
 
 			if (action.equals(MQTTService.ACTION_EXIST)) {
@@ -171,7 +178,8 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 				} else {
 					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
-					responsePayload.put(MQTTService.ACTION_ERROR, R.string.application_does_not_exist_payload_was + payload);
+					responsePayload.put(MQTTService.ACTION_ERROR, R.string.application_does_not_exist_payload_was
+							+ payload);
 				}
 			} else if (action.equals(MQTTService.ACTION_INSTALL)) {
 				data = mqttService.getData();
@@ -181,7 +189,8 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 				} else {
 					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
-					responsePayload.put(MQTTService.ACTION_ERROR, R.string.could_not_start_the_application_payload_was + payload);
+					responsePayload.put(MQTTService.ACTION_ERROR, R.string.could_not_start_the_application_payload_was
+							+ payload);
 				}
 			} else if (action.equals(MQTTService.ACTION_STOP)) {
 				webView.loadUrl(DEFAULT_URL);
@@ -197,11 +206,26 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 		}
 	}
 
+	/**
+	 * Handles any message that is not a system message
+	 * 
+	 * @param topic
+	 *            of the message
+	 * @param payload
+	 *            of the message
+	 */
 	private void handleMessage(String topic, String payload) {
 		log("ApplicationController:handleMessage", topic + " " + payload);
 		webView.loadUrl("javascript:onMessage('" + topic + "', " + payload + ")");
 	}
 
+	/**
+	 * Helper method to send response after receiving a system message.
+	 * 
+	 * @param topic
+	 * @param responsePayload
+	 * @throws JSONException
+	 */
 	private void sendResponse(String topic, JSONObject responsePayload) throws JSONException {
 		responsePayload.put(MQTTService.ACTION_TYPE, MQTTService.ACTION_RESPONSE);
 		mqttService.publish(topic, responsePayload.toString());
@@ -221,15 +245,29 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	// }
 	// }
 
+	/**
+	 * Helper method to convert string data to input stream.
+	 * 
+	 * @param data
+	 * @return the inputstream
+	 */
 	private InputStream getInputStream(String data) {
-		log("getInputStream", data); 
+		log("getInputStream", data);
 		InputStream inputStream = (InputStream) new ByteArrayInputStream(Base64.decode(data, Base64.DEFAULT));
 		return inputStream;
 	}
 
-	public void publish(String topic, String message) {
-		log("ApplicationController", "publish " + "topic: " + topic + " message: " + message);
-		mqttService.publish(topic, message);
+	/**
+	 * Controller method to publish a message
+	 * 
+	 * @param topic
+	 *            of message
+	 * @param payload
+	 *            of message (should be stringified JSON)
+	 */
+	public void publish(String topic, String payload) {
+		log("ApplicationController", "publish " + "topic: " + topic + " payload: " + payload);
+		mqttService.publish(topic, payload);
 	}
 
 	@Override
@@ -250,13 +288,26 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 			e.printStackTrace();
 		}
 	}
-	
+
+	/**
+	 * Helper method for debugging text
+	 * 
+	 * @param view
+	 */
 	public void setStatusView(TextView view) {
 		statusView = view;
 	}
-	
+
+	/**
+	 * Helper method for logging
+	 * 
+	 * @param tag
+	 *            to log as
+	 * @param message
+	 *            to log
+	 */
 	private void log(String tag, final String message) {
-		if(debug) {
+		if (debug) {
 			Log.d(tag, message);
 			((MainActivity) context).runOnUiThread(new Runnable() {
 				@Override
@@ -267,14 +318,29 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 		}
 	}
 
+	/**
+	 * Forwards subscribe request to the mqttservice
+	 * 
+	 * @param topic
+	 */
 	public void subscribe(String topic) {
 		mqttService.subscribe(topic);
 	}
 
+	/**
+	 * Forwards unsubscribe request to the mqttservice
+	 * 
+	 * @param topic
+	 */
 	public void unsubscribe(String topic) {
 		mqttService.unsubscribe(topic);
 	}
 
+	/**
+	 * Shows a toast message
+	 * 
+	 * @param message
+	 */
 	public void showToast(String message) {
 		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
 	}
