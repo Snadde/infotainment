@@ -1,13 +1,8 @@
 package se.chalmers.pd.dashboard;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -43,73 +38,33 @@ public class MainActivity extends Activity {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_main);
-		bindService();
-		
-		// Setup the webview and the settings we need
 		webView = (WebView) findViewById(R.id.webview);
-		connectButton = (Button) findViewById(R.id.connect);
-		connectButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				bindService();
-			}
-		});
 		
+		// Create the app control
+		controller = new ApplicationController(webView, this);
+        controller.setStatusView((TextView) findViewById(R.id.status));
+        
+		// Setup the webview and the settings we need
+        webView.addJavascriptInterface(new WebAppInterface(controller), JAVASCRIPT_INTERFACE);
 		WebSettings webSettings = webView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setDomStorageEnabled(true);
 		webSettings.setGeolocationDatabasePath(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
 		webView.setWebViewClient(new CustomWebViewClient());
 		webView.setWebChromeClient(new CustomWebChromeClient());
+		
+		connectButton = (Button) findViewById(R.id.connect);
+		connectButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				controller.connect();
+			}
+		});
+		
 	}
 
-	/**
-	 * A local implementation of the service connection callbacks that are
-	 * needed to that we can keep track of then the service has been launched,
-	 * stopped or disconnected.
-	 */
-	private ServiceConnection serviceConnection = new ServiceConnection() {
-	    public void onServiceConnected(ComponentName className, IBinder service) {
-	        mqttService = ((MQTTService.LocalBinder)service).getService();
-	        controller = new ApplicationController(webView, mqttService, MainActivity.this);
-	        controller.setStatusView((TextView) findViewById(R.id.status));
-	        controller.stop();
-	        webView.addJavascriptInterface(new WebAppInterface(controller), JAVASCRIPT_INTERFACE);
-	    }
 
-	    public void onServiceDisconnected(ComponentName className) {
-	        mqttService = null;
-	    }
-	    
-	    // TODO Add reconnect feature
-	};
 
-	/**
-	 * Binds this activity to the mqtt service so we can communicate between them
-	 */
-	private void bindService() {
-		Intent intent = new Intent(MainActivity.this, MQTTService.class);
-	    bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-	    startService(intent);
-	    isBound = true;
-	}
-
-	/**
-	 * Unbinds the service when it's no longer needed
-	 */
-	private void unbindService() {
-	    if (isBound) {
-	        unbindService(serviceConnection);
-	        isBound = false;
-	    }
-	}
-
-	@Override
-	protected void onDestroy() {
-	    super.onDestroy();
-	    unbindService();
-	}
-	
 	/**
 	 * A custom webchromeclient for the webview that hijacks that logging from the console and 
 	 * adds it to logcat. Also auto-accepts any location requests from the webview.

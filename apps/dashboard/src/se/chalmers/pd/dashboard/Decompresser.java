@@ -11,7 +11,7 @@ import android.util.Log;
 
 /**
  * This class decompresses a zip file in a separate thread. If you wish to know
- * when the decompressing has finished you must implement the Callbacks
+ * when the decompressing has finished you must implement the Callback
  * interface.
  */
 public class Decompresser {

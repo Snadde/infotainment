@@ -8,7 +8,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
-import android.content.IntentFilter;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
@@ -23,7 +22,7 @@ import android.widget.Toast;
  * passed on as json to the container web application that is running in the
  * webview.
  */
-public class ApplicationController implements MqttBroadcastReceiver.Callbacks, Decompresser.Callbacks {
+public class ApplicationController implements Decompresser.Callbacks, MQTTService.Callback {
 
 	private static final String HTTP_LOCALHOST = "http://localhost:8080/";
 	private final String DEFAULT_URL = "file:///android_asset/index.html";
@@ -42,23 +41,10 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	 * @param context
 	 * @param mainActivity
 	 */
-	public ApplicationController(WebView webView, MQTTService mqttService, Context context) {
+	public ApplicationController(WebView webView, Context context) {
+		this.mqttService = new MQTTService(this);
 		this.webView = webView;
-		this.mqttService = mqttService;
 		this.context = context;
-		setupReceivers();
-	}
-
-	/**
-	 * Creates the broadcast receiver and registers it with the custom intent
-	 * filters defined in the service.
-	 */
-	private void setupReceivers() {
-		MqttBroadcastReceiver receiver = new MqttBroadcastReceiver(this);
-		IntentFilter messageReceivedFilter = new IntentFilter(MQTTService.MQTT_MESSAGE_RECEIVED_INTENT);
-		IntentFilter statusFilter = new IntentFilter(MQTTService.MQTT_STATUS_INTENT);
-		context.registerReceiver(receiver, messageReceivedFilter);
-		context.registerReceiver(receiver, statusFilter);
 	}
 
 	/**
@@ -99,8 +85,14 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	 *            the app name (folder name of application)
 	 */
 	public boolean start(String appName) {
-		String url = HTTP_LOCALHOST + appName + "/index.html";
-		webView.loadUrl(url);
+		final String url = HTTP_LOCALHOST + appName + "/index.html";
+		((MainActivity) context).runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				webView.loadUrl(url);
+			}
+		});
+		
 		log("ApplicationController", "start " + url);
 		return true;
 	}
@@ -110,7 +102,12 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	 * default url.
 	 */
 	public void stop() {
-		webView.loadUrl(DEFAULT_URL);
+		((MainActivity) context).runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				webView.loadUrl(DEFAULT_URL);
+			}
+		});
 	}
 
 	/**
@@ -143,17 +140,16 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 		log("ApplicationController", "deleteRecursive " + appDir.getAbsolutePath());
 		appDir.delete();
 	}
-
+	
 	@Override
-	public void onMessageReceived(String topic, String payload) {
-		log("ApplicationController", "onMessageReceived " + "topic: " + topic);
+	public void onMessage(String topic, String payload) {
+		log("ApplicationController", "onMessageReceived " + "topic: " + topic + " payload: " + payload);
 		if (topic.equals(MQTTService.TOPIC_SYSTEM)) {
 			handleSystemMessage(payload);
 		} else {
 			handleMessage(topic, payload);
 		}
 	}
-	
 
 	/**
 	 * Handles the system messages like start, stop, install, uninstall and
@@ -184,7 +180,8 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 							+ payload);
 				}
 			} else if (action.equals(MQTTService.ACTION_INSTALL)) {
-				data = mqttService.getData();
+				responsePayload.put(MQTTService.ACTION_DATA, "pending");
+				data = mqttService.getApplicationRawData();
 				install(getInputStream(data), privateTopic);
 			} else if (action.equals(MQTTService.ACTION_START)) {
 				if (start(data)) {
@@ -195,7 +192,8 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 							+ payload);
 				}
 			} else if (action.equals(MQTTService.ACTION_STOP)) {
-				webView.loadUrl(DEFAULT_URL);
+				stop();
+				
 				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 			} else if (action.equals(MQTTService.ACTION_UNINSTALL)) {
 				stop();
@@ -232,11 +230,6 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	private void sendResponse(String topic, JSONObject responsePayload) throws JSONException {
 		responsePayload.put(MQTTService.ACTION_TYPE, MQTTService.ACTION_RESPONSE);
 		mqttService.publish(topic, responsePayload.toString());
-	}
-
-	@Override
-	public void onStatusUpdate(String status) {
-		log("ApplicationController", "onStatusUpdate " + "status: " + status);
 	}
 
 	// public void onLoadComplete(String url) {
@@ -277,7 +270,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	public void decompressComplete(boolean result, String privateTopic) {
 		JSONObject responsePayload = new JSONObject();
 		try {
-			responsePayload.put("action", "install");
+			responsePayload.put(MQTTService.ACTION, MQTTService.ACTION_INSTALL);
 			if (result) {
 				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 				log("decompressComplete", "installation complete");
@@ -347,5 +340,11 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 	public void showToast(String message) {
 		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
 	}
+
+	public void connect() {
+		mqttService.connect();
+	}
+
+	
 
 }

@@ -1,5 +1,7 @@
 package se.chalmers.pd.dashboard;
 
+import java.util.ArrayList;
+
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttDefaultFilePersistence;
@@ -11,11 +13,7 @@ import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.json.JSONObject;
 
-import android.app.Service;
-import android.content.Intent;
-import android.os.Binder;
 import android.os.Environment;
-import android.os.IBinder;
 import android.util.Log;
 
 /**
@@ -24,7 +22,7 @@ import android.util.Log;
  * message using custom intent filters.
  * 
  */
-public class MQTTService extends Service {
+public class MQTTService {
 
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
 	private static final String SERVICE_NAME = "MQTTService";
@@ -42,20 +40,6 @@ public class MQTTService extends Service {
 	public static final String ACTION_UNINSTALL = "uninstall";
 	public static final String ACTION_STOP = "stop";
 
-	/**
-	 * Class for clients to access. Because we know this service always runs in
-	 * the same process as its clients, we don't need to deal with IPC.
-	 */
-	public class LocalBinder extends Binder {
-		MQTTService getService() {
-			return MQTTService.this;
-		}
-	}
-
-	// This is the object that receives interactions from clients. See
-	// RemoteService for a more complete example.
-	private final IBinder binder = new LocalBinder();
-
 	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.dashboard.mqtt.STATUS";
 	public static final String MQTT_STATUS_MESSAGE = "se.chalmers.pd.dashboard.mqtt.STATUS_MESSAGE";
 	public static final String MQTT_MESSAGE_RECEIVED_INTENT = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED";
@@ -66,103 +50,102 @@ public class MQTTService extends Service {
 	private static final String CLIENT_NAME = "dashboard";
 
 	private MqttClient mqttClient;
-
-	@Override
-	public void onCreate() {
-
-	}
-
-	@Override
-	public void onStart(final Intent intent, final int startId) {
-		connect();
-	}
-
-	@Override
-	public int onStartCommand(final Intent intent, int flags, final int startId) {
-		connect();
-		return START_STICKY;
-	}
-
 	private String data;
+
+	private ArrayList<Callback> callbacks = new ArrayList<Callback>();
+	private Thread mqttClientThread;
+
+	public interface Callback {
+		public void onMessage(String topic, String payload);
+	}
+
+	public MQTTService(Callback callback) {
+		callbacks.add(callback);
+	}
 
 	/**
 	 * Connects to the MQTT broker in a new Thread and defines some custom
-	 * callbacks that handle messages.
+	 * callback that handle messages.
 	 */
-	private void connect() {
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					// Sets up the client and subscribes to topics
-					String tmpDir = Environment.getExternalStorageDirectory() + STORAGE_DIRECTORY;
-					MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
-					mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
-					mqttClient.setCallback(new CustomMqttCallback());
-					mqttClient.connect();
-					mqttClient.subscribe(TOPIC_SYSTEM);
-					mqttClient.subscribe("/app/webapp");
-					Log.d(SERVICE_NAME, "subscribing");
-				} catch (MqttException e) {
-					e.printStackTrace();
-				}
+	public void connect() {
+		if (mqttClientThread != null && mqttClientThread.isAlive()) {
+			try {
+				mqttClient.disconnect();
+				mqttClient.connect();
+			} catch (MqttException e) {
+				e.printStackTrace();
 			}
-
-			/**
-			 * Called when messages are received. Filters out data from
-			 * installation messages since it is too much to pass around as
-			 * Strings.
-			 */
-			class CustomMqttCallback implements MqttCallback {
-
-				private static final String ACTION_GET_METHOD = "getData";
+		} else {
+			mqttClientThread = new Thread(new Runnable() {
 
 				@Override
-				public void messageArrived(MqttTopic topic, MqttMessage message) throws Exception {
-					JSONObject json = new JSONObject(message.toString());
-					String payload = "";
-					String stringTopic = topic.toString();
-
-					// Filter install messages and their data separately
-					if (json.getString(ACTION).equals(ACTION_INSTALL)) {
-						data = json.getString(ACTION_DATA);
-						json = new JSONObject();
-						json.put(ACTION, ACTION_INSTALL);
-						json.put(ACTION_DATA, ACTION_GET_METHOD);
-						payload = json.toString();
-					} else {
-						payload = message.toString();
+				public void run() {
+					try {
+						// Sets up the client and subscribes to topics
+						String tmpDir = Environment.getExternalStorageDirectory() + STORAGE_DIRECTORY;
+						MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
+						mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
+						mqttClient.setCallback(new CustomMqttCallback());
+						mqttClient.connect();
+						mqttClient.subscribe(TOPIC_SYSTEM);
+						mqttClient.subscribe("/app/webapp");
+						Log.d(SERVICE_NAME, "subscribing");
+					} catch (MqttException e) {
+						e.printStackTrace();
 					}
-					broadcastReceivedMessage(stringTopic, payload);
-					broadcastServiceStatus("messageArrived");
-					
-					Log.d(SERVICE_NAME, "messageArrived " + "topic:" + stringTopic + ", message:" + payload);
 				}
 
-				@Override
-				public void deliveryComplete(MqttDeliveryToken token) {
-					Log.d(SERVICE_NAME, "deliveryComplete " + "token:" + token);
+				/**
+				 * Called when messages are received. Filters out data from
+				 * installation messages since it is too much to pass around as
+				 * Strings.
+				 */
+				class CustomMqttCallback implements MqttCallback {
+
+					private static final String ACTION_GET_METHOD = "getData";
+
+					@Override
+					public void messageArrived(MqttTopic topic, MqttMessage message) throws Exception {	
+						JSONObject json = new JSONObject(message.toString());
+						String payload = "";
+						String stringTopic = topic.toString();
+						
+						// Filter install messages and their data separately
+						if (json.getString(ACTION).equals(ACTION_INSTALL)) {
+							data = json.getString(ACTION_DATA);
+							json = new JSONObject();
+							json.put(ACTION, ACTION_INSTALL);
+							json.put(ACTION_DATA, ACTION_GET_METHOD);
+							payload = json.toString();
+						} else {
+							payload = message.toString();
+						}
+
+						Log.d(SERVICE_NAME, "messageArrived 2" + "topic:" + stringTopic + ", message:" + payload);
+						notifyCallbacks(stringTopic, payload);
+						
+					}
+
+					private void notifyCallbacks(String stringTopic, String payload) {
+						for (Callback callback : callbacks) {
+							callback.onMessage(stringTopic, payload);
+						}
+					}
+
+					@Override
+					public void deliveryComplete(MqttDeliveryToken token) {
+						Log.d(SERVICE_NAME, "deliveryComplete " + "token:" + token);
+					}
+
+					@Override
+					public void connectionLost(Throwable cause) {
+						Log.d(SERVICE_NAME, "connectionLost " + "cause:" + cause.toString());
+					}
 				}
+			}, SERVICE_NAME);
+			mqttClientThread.start();
+		}
 
-				@Override
-				public void connectionLost(Throwable cause) {
-					Log.d(SERVICE_NAME, "connectionLost " + "cause:" + cause.toString());
-				}
-			}
-		}, SERVICE_NAME).start();
-	}
-
-	@Override
-	public IBinder onBind(Intent intent) {
-		return binder;
-	}
-
-	@Override
-	public void onDestroy() {
-		super.onDestroy();
-		disconnect();
-		broadcastServiceStatus("Disconnected");
 	}
 
 	/**
@@ -174,32 +157,6 @@ public class MQTTService extends Service {
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * Broadcasts status changes
-	 * 
-	 * @param statusDescription
-	 */
-	private void broadcastServiceStatus(String statusDescription) {
-		Intent broadcastIntent = new Intent();
-		broadcastIntent.setAction(MQTT_STATUS_INTENT);
-		broadcastIntent.putExtra(MQTT_STATUS_MESSAGE, statusDescription);
-		sendBroadcast(broadcastIntent);
-	}
-
-	/**
-	 * Broadcasts received messages
-	 * 
-	 * @param topic
-	 * @param payload
-	 */
-	private void broadcastReceivedMessage(String topic, String payload) {
-		Intent broadcastIntent = new Intent();
-		broadcastIntent.setAction(MQTT_MESSAGE_RECEIVED_INTENT);
-		broadcastIntent.putExtra(MQTT_MESSAGE_RECEIVED_TOPIC, topic);
-		broadcastIntent.putExtra(MQTT_MESSAGE_RECEIVED_PAYLOAD, payload);
-		sendBroadcast(broadcastIntent);
 	}
 
 	/**
@@ -254,7 +211,7 @@ public class MQTTService extends Service {
 	 * 
 	 * @return
 	 */
-	public String getData() {
+	public String getApplicationRawData() {
 		return data;
 	}
 
