@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 /**
  * This broadcast receiver listens for messages from the filters defined in the
@@ -25,12 +26,14 @@ public class MqttBroadcastReceiver extends BroadcastReceiver {
 	
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		Log.d("MqttBroadcastReceiver", "Received message");
 		Bundle extras = intent.getExtras();
 		String action = intent.getAction();
 		
 		if(action.equals(MQTTService.MQTT_MESSAGE_RECEIVED_INTENT)) {
 			String topic = extras.getString(MQTTService.MQTT_MESSAGE_RECEIVED_TOPIC);
 			String payload = extras.getString(MQTTService.MQTT_MESSAGE_RECEIVED_PAYLOAD);
+			Log.d("MqttBroadcastReceiver", "Received message with topic " + topic + " and payload " + payload);
 			callback.onMessageReceived(topic, payload);
 		} else if(action.equals(MQTTService.MQTT_STATUS_INTENT)) {
 			String status = extras.getString(MQTTService.MQTT_STATUS_MESSAGE);

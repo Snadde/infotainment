@@ -1,10 +1,11 @@
 var debug = require('./debug.js');
 var mqtt = require('./node_modules/mqttjs');
 //Initiates the websocket bridge
-var bridge = require("./websocketBridge");
+var websocketbridge = require('./websocketBridge.js')
 /*
 **  Creates the MQTT server that will handle all communication such as 
-**  publish and subscribing to different topics
+**  publish and subscribing to different topics, it can also download a
+**  zip-file from an external server if the 'action' install-url is used.
 **/
 mqtt.createServer(function (client) {
     var self = this;
@@ -23,54 +24,59 @@ mqtt.createServer(function (client) {
     });
 	/*
 	**	Publish a message to all clients that are subscribing to the specified topic
+    **  If 'action' in the payload is install-url the broker will download a zip-file
+    **  from the specified URL and forward it to the specified topic with the 'action'
+    **  'install' and the zip file as the payload.
 	**/
     client.on('publish', function(packet) {
-        debug.log("publish to with topic: "+ packet.topic +" payload: "+packet.payload);
-        for (var k in self.clients) {
-            var c = self.clients[k]
-            , publish = false;
-            for (var i = 0; i < c.subscriptions.length; i++) {
-                var s = c.subscriptions[i];
-                if (s.test(packet.topic)) {
-                    publish = true;
-                }
-            }
-            if (publish) {
-                var payload = JSON.parse(packet.payload);
-                if(payload.action == 'install-url') {
-                    debug.log('installing from url!')
-    	            var buffer;
-                    var location = payload.data;
-    	            var http = require('http');	
-    	            var request = http.request(location, function (res) {
-                        var data = '';
-                        res.setEncoding('binary');
-    		            res.on('data', function (chunk) {
-    		                data += chunk;
-					    
-    		            });
-    		    	    res.on('end', function () {
-                            buffer = new Buffer(data, 'binary').toString('base64');
-    		        	    debug.log(buffer);
-    					    var json_data = {
-    						    action : 'install',
-    						    data : buffer
-    					    };
-    					    var json_payload = JSON.stringify(json_data);
-    					    packet.payload = json_payload;
-                            c.publish({topic: packet.topic, payload: json_payload});
-    		    	    });
-    			    });
-    			    request.on('error', function (e) {
-    		            console.log("ERRORR  "+e.message);
-    			    });
-    			    request.end();
-                } else {
-                    c.publish({topic: packet.topic, payload: packet.payload});
-                }
-		        debug.log("publish to client: "+c.id+" with topic: "+ packet.topic +" payload: "+packet.payload);
-            }
+        debug.log("publish with topic: "+ packet.topic +" payload: "+packet.payload);
+        var payload = JSON.parse(packet.payload);
+        if(payload.action == 'install-url') {
+            debug.log('installing from url!')
+            var buffer;
+            var location = payload.data;
+            var http = require('http');	
+            var request = http.request(location, function (res) {
+                var data = '';
+                res.setEncoding('binary');
+	            res.on('data', function (chunk) {
+	                data += chunk;
+			    
+	            });
+	    	    res.on('end', function () {
+                    buffer = new Buffer(data, 'binary').toString('base64');
+				    var json_data = {
+					    action : 'install',
+					    data : buffer
+				    };
+				    packet.payload = JSON.stringify(json_data);
+                    publishToClients();
+	    	    });
+		    });
+		    request.on('error', function (e) {
+	            console.log("ERRORR  " + e.message);
+		    });
+		    request.end();
+        } else {
+            publishToClients();
         }
+        
+        function publishToClients() {
+            for (var k in self.clients) {
+                var c = self.clients[k]
+                , publish = false;
+                for (var i = 0; i < c.subscriptions.length; i++) {
+                    var s = c.subscriptions[i];
+                    if (s.test(packet.topic)) {
+                        publish = true;
+                    }
+                }
+                if (publish) {
+                    c.publish({topic: packet.topic, payload: packet.payload});
+    		        debug.log("publish to client: " + c.id + " with topic: " + packet.topic +" payload: " + packet.payload);
+                }
+            }
+        };
     });
 	/*
 	**	Adds the topics specified in the packet to the clients subscriptions
@@ -115,6 +121,6 @@ mqtt.createServer(function (client) {
 	**/
     client.on('error', function(err) {
         client.stream.end();
-        util.log('error!');
+        debug.log('error! ' + err);
     });	
 }).listen(1883);
