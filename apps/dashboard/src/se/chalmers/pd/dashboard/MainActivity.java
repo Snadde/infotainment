@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.ConsoleMessage;
@@ -17,6 +18,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.Button;
 import android.widget.TextView;
 
 /**
@@ -32,6 +34,7 @@ public class MainActivity extends Activity {
 	private ApplicationController controller;
 	private MQTTService mqttService;
 	private boolean isBound;
+	private Button connectButton;
 	
 
 	@Override
@@ -44,6 +47,14 @@ public class MainActivity extends Activity {
 		
 		// Setup the webview and the settings we need
 		webView = (WebView) findViewById(R.id.webview);
+		connectButton = (Button) findViewById(R.id.connect);
+		connectButton.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				bindService();
+			}
+		});
+		
 		WebSettings webSettings = webView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setDomStorageEnabled(true);

@@ -125,6 +125,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 		if (directory.exists() && directory.isDirectory()) {
 			deleteRecursive(directory);
 		}
+		log("ApplicationController", "uninstall complete" + appName);
 		// TODO Confirm uninstall complete
 	}
 
@@ -152,6 +153,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 			handleMessage(topic, payload);
 		}
 	}
+	
 
 	/**
 	 * Handles the system messages like start, stop, install, uninstall and
@@ -178,7 +180,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 				} else {
 					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
-					responsePayload.put(MQTTService.ACTION_ERROR, R.string.application_does_not_exist_payload_was
+					responsePayload.put(MQTTService.ACTION_ERROR, context.getString(R.string.application_does_not_exist_payload_was)
 							+ payload);
 				}
 			} else if (action.equals(MQTTService.ACTION_INSTALL)) {
@@ -189,13 +191,14 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks, D
 					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 				} else {
 					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
-					responsePayload.put(MQTTService.ACTION_ERROR, R.string.could_not_start_the_application_payload_was
+					responsePayload.put(MQTTService.ACTION_ERROR, context.getString(R.string.could_not_start_the_application_payload_was)
 							+ payload);
 				}
 			} else if (action.equals(MQTTService.ACTION_STOP)) {
 				webView.loadUrl(DEFAULT_URL);
 				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 			} else if (action.equals(MQTTService.ACTION_UNINSTALL)) {
+				stop();
 				uninstall(data);
 				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
 			}

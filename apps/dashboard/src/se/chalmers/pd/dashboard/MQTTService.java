@@ -136,6 +136,7 @@ public class MQTTService extends Service {
 					}
 					broadcastReceivedMessage(stringTopic, payload);
 					broadcastServiceStatus("messageArrived");
+					
 					Log.d(SERVICE_NAME, "messageArrived " + "topic:" + stringTopic + ", message:" + payload);
 				}
 
@@ -209,6 +210,7 @@ public class MQTTService extends Service {
 	 *            should be stringified JSON
 	 */
 	public void publish(String topic, String message) {
+		Log.d("MQTTService", "publishing topic " + topic + " with message " + message);
 		try {
 			MqttMessage payload = new MqttMessage(message.getBytes());
 			mqttClient.getTopic(topic).publish(payload);

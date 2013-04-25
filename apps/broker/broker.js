@@ -1,7 +1,7 @@
 var debug = require('./debug.js');
 var mqtt = require('./node_modules/mqttjs');
 //Initiates the websocket bridge
-var bridge = require("./websocketBridge");
+
 /*
 **  Creates the MQTT server that will handle all communication such as 
 **  publish and subscribing to different topics
@@ -51,13 +51,11 @@ mqtt.createServer(function (client) {
     		            });
     		    	    res.on('end', function () {
                             buffer = new Buffer(data, 'binary').toString('base64');
-    		        	    debug.log(buffer);
     					    var json_data = {
     						    action : 'install',
     						    data : buffer
     					    };
     					    var json_payload = JSON.stringify(json_data);
-    					    packet.payload = json_payload;
                             c.publish({topic: packet.topic, payload: json_payload});
     		    	    });
     			    });
@@ -115,6 +113,6 @@ mqtt.createServer(function (client) {
 	**/
     client.on('error', function(err) {
         client.stream.end();
-        util.log('error!');
+        debug.log('error! ' + err);
     });	
 }).listen(1883);
