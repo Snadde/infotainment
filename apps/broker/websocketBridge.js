@@ -21,12 +21,7 @@
         **          initiates the communication by subscribing on the private 
         **          channel and publish a init-message to the '/system' channel
         **          the application should then wait for the initresponse that
-        **          the 'dashboard' will reply with
-        **  install:
-        **          Initiates the installation of the application (if it is not installed) 
-        **          by downloading a zip file from the specified URL in the install message
-        **          and store it in a buffer which will be published on the '/system' channel
-        **          
+        **          the 'dashboard' will reply with      
         **  Subscribe:
         **          Subscribes on the topic that is specified in the message
         **  Publish:
@@ -63,35 +58,7 @@
                 
                 socketclient.send(JSON.stringify(initmessage));
 	        }
-	        else if(action == 'install'){
-	            var buffer;
-                var location = message.url;
-	            var http = require('http');	
-	            var request = http.request(location, function (res) {
-                    var data = '';
-                    res.setEncoding('binary');
-		            res.on('data', function (chunk) {
-		                data += chunk;
-					    
-		            });
-		    	    res.on('end', function () {
-                        buffer = new Buffer(data, 'binary').toString('base64');
-		        	    debug.log(buffer);
-					    var json_data = {
-						    action : 'install',
-						    data : buffer
-					    };
-					    var json_payload = JSON.stringify(json_data);
-					    mqttmessage = createJSON('/system', json_payload);
-					    mqttclient.publish(mqttmessage);
-		    	    });
-			    });
-			    request.on('error', function (e) {
-		            console.log("ERRORR  "+e.message);
-			    });
-			    request.end();
-		    }
-		    else{
+	        else{
 			    mqttmessage = createJSON('/system', packet);
 			    mqttclient.publish(mqttmessage);
 		    }

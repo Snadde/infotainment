@@ -4,7 +4,8 @@ var mqtt = require('./node_modules/mqttjs');
 var bridge = require("./websocketBridge");
 /*
 **  Creates the MQTT server that will handle all communication such as 
-**  publish and subscribing to different topics
+**  publish and subscribing to different topics, it can also download a
+**  zip-file from an external server if the 'action' install-url is used.
 **/
 mqtt.createServer(function (client) {
     var self = this;
@@ -23,6 +24,9 @@ mqtt.createServer(function (client) {
     });
 	/*
 	**	Publish a message to all clients that are subscribing to the specified topic
+    **  If 'action' in the payload is install-url the broker will download a zip-file
+    **  from the specified URL and forward it to the specified topic with the 'action'
+    **  'install' and the zip file as the payload.
 	**/
     client.on('publish', function(packet) {
         debug.log("publish to with topic: "+ packet.topic +" payload: "+packet.payload);
