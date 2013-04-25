@@ -1,7 +1,7 @@
 var debug = require('./debug.js');
 var mqtt = require('./node_modules/mqttjs');
 //Initiates the websocket bridge
-
+var websocketbridge = require('./websocketBridge.js')
 /*
 **  Creates the MQTT server that will handle all communication such as 
 **  publish and subscribing to different topics, it can also download a
@@ -29,50 +29,54 @@ mqtt.createServer(function (client) {
     **  'install' and the zip file as the payload.
 	**/
     client.on('publish', function(packet) {
-        debug.log("publish to with topic: "+ packet.topic +" payload: "+packet.payload);
-        for (var k in self.clients) {
-            var c = self.clients[k]
-            , publish = false;
-            for (var i = 0; i < c.subscriptions.length; i++) {
-                var s = c.subscriptions[i];
-                if (s.test(packet.topic)) {
-                    publish = true;
-                }
-            }
-            if (publish) {
-                var payload = JSON.parse(packet.payload);
-                if(payload.action == 'install-url') {
-                    debug.log('installing from url!')
-    	            var buffer;
-                    var location = payload.data;
-    	            var http = require('http');	
-    	            var request = http.request(location, function (res) {
-                        var data = '';
-                        res.setEncoding('binary');
-    		            res.on('data', function (chunk) {
-    		                data += chunk;
-					    
-    		            });
-    		    	    res.on('end', function () {
-                            buffer = new Buffer(data, 'binary').toString('base64');
-    					    var json_data = {
-    						    action : 'install',
-    						    data : buffer
-    					    };
-    					    var json_payload = JSON.stringify(json_data);
-                            c.publish({topic: packet.topic, payload: json_payload});
-    		    	    });
-    			    });
-    			    request.on('error', function (e) {
-    		            console.log("ERRORR  "+e.message);
-    			    });
-    			    request.end();
-                } else {
-                    c.publish({topic: packet.topic, payload: packet.payload});
-                }
-		        debug.log("publish to client: "+c.id+" with topic: "+ packet.topic +" payload: "+packet.payload);
-            }
+        debug.log("publish with topic: "+ packet.topic +" payload: "+packet.payload);
+        var payload = JSON.parse(packet.payload);
+        if(payload.action == 'install-url') {
+            debug.log('installing from url!')
+            var buffer;
+            var location = payload.data;
+            var http = require('http');	
+            var request = http.request(location, function (res) {
+                var data = '';
+                res.setEncoding('binary');
+	            res.on('data', function (chunk) {
+	                data += chunk;
+			    
+	            });
+	    	    res.on('end', function () {
+                    buffer = new Buffer(data, 'binary').toString('base64');
+				    var json_data = {
+					    action : 'install',
+					    data : buffer
+				    };
+				    packet.payload = JSON.stringify(json_data);
+                    publishToClients();
+	    	    });
+		    });
+		    request.on('error', function (e) {
+	            console.log("ERRORR  " + e.message);
+		    });
+		    request.end();
+        } else {
+            publishToClients();
         }
+        
+        function publishToClients() {
+            for (var k in self.clients) {
+                var c = self.clients[k]
+                , publish = false;
+                for (var i = 0; i < c.subscriptions.length; i++) {
+                    var s = c.subscriptions[i];
+                    if (s.test(packet.topic)) {
+                        publish = true;
+                    }
+                }
+                if (publish) {
+                    c.publish({topic: packet.topic, payload: packet.payload});
+    		        debug.log("publish to client: " + c.id + " with topic: " + packet.topic +" payload: " + packet.payload);
+                }
+            }
+        };
     });
 	/*
 	**	Adds the topics specified in the packet to the clients subscriptions
