@@ -22,10 +22,10 @@ import android.util.Log;
  * message using custom intent filters.
  * 
  */
-public class MQTTService {
+public class MqttWorker {
 
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
-	private static final String SERVICE_NAME = "MQTTService";
+	private static final String SERVICE_NAME = "MqttWorker";
 
 	public static final String ACTION_DATA = "data";
 	public static final String ACTION_INSTALL = "install";
@@ -46,7 +46,7 @@ public class MQTTService {
 	public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
 	public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
 
-	private static final String BROKER = "tcp://192.168.43.147:1883";
+	private static final String BROKER = "tcp://192.168.1.101:1883";
 	private static final String CLIENT_NAME = "dashboard";
 
 	private MqttClient mqttClient;
@@ -59,7 +59,7 @@ public class MQTTService {
 		public void onMessage(String topic, String payload);
 	}
 
-	public MQTTService(Callback callback) {
+	public MqttWorker(Callback callback) {
 		callbacks.add(callback);
 	}
 
@@ -121,9 +121,8 @@ public class MQTTService {
 							payload = message.toString();
 						}
 
-						Log.d(SERVICE_NAME, "messageArrived 2" + "topic:" + stringTopic + ", message:" + payload);
+						Log.d(SERVICE_NAME, "messageArrived" + "topic:" + stringTopic + ", message:" + payload);
 						notifyCallbacks(stringTopic, payload);
-						
 					}
 
 					private void notifyCallbacks(String stringTopic, String payload) {
@@ -167,7 +166,7 @@ public class MQTTService {
 	 *            should be stringified JSON
 	 */
 	public void publish(String topic, String message) {
-		Log.d("MQTTService", "publishing topic " + topic + " with message " + message);
+		Log.d("MqttWorker", "publishing topic " + topic + " with message " + message);
 		try {
 			MqttMessage payload = new MqttMessage(message.getBytes());
 			mqttClient.getTopic(topic).publish(payload);

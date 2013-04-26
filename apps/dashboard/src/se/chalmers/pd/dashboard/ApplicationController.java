@@ -22,7 +22,7 @@ import android.widget.Toast;
  * passed on as json to the container web application that is running in the
  * webview.
  */
-public class ApplicationController implements Decompresser.Callbacks, MQTTService.Callback {
+public class ApplicationController implements Decompresser.Callbacks, MqttWorker.Callback {
 
 	private static final String HTTP_LOCALHOST = "http://localhost:8080/";
 	private final String DEFAULT_URL = "file:///android_asset/index.html";
@@ -30,7 +30,7 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 
 	private WebView webView;
 	private Context context;
-	private MQTTService mqttService;
+	private MqttWorker mqttWorker;
 	private TextView statusView;
 	private boolean debug = true;
 
@@ -42,7 +42,7 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 	 * @param mainActivity
 	 */
 	public ApplicationController(WebView webView, Context context) {
-		this.mqttService = new MQTTService(this);
+		this.mqttWorker = new MqttWorker(this);
 		this.webView = webView;
 		this.context = context;
 	}
@@ -86,13 +86,7 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 	 */
 	public boolean start(String appName) {
 		final String url = HTTP_LOCALHOST + appName + "/index.html";
-		((MainActivity) context).runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				webView.loadUrl(url);
-			}
-		});
-		
+		updateWebView(url);
 		log("ApplicationController", "start " + url);
 		return true;
 	}
@@ -102,10 +96,21 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 	 * default url.
 	 */
 	public void stop() {
+		updateWebView(DEFAULT_URL);
+	}
+
+	/**
+	 * Helper method that creates a runnable that can be run on the main UI
+	 * thread to be able to update the web view.
+	 * 
+	 * @param url
+	 *            the url to load in the web view
+	 */
+	private void updateWebView(final String url) {
 		((MainActivity) context).runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				webView.loadUrl(DEFAULT_URL);
+				webView.loadUrl(url);
 			}
 		});
 	}
@@ -140,11 +145,11 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 		log("ApplicationController", "deleteRecursive " + appDir.getAbsolutePath());
 		appDir.delete();
 	}
-	
+
 	@Override
 	public void onMessage(String topic, String payload) {
 		log("ApplicationController", "onMessageReceived " + "topic: " + topic + " payload: " + payload);
-		if (topic.equals(MQTTService.TOPIC_SYSTEM)) {
+		if (topic.equals(MqttWorker.TOPIC_SYSTEM)) {
 			handleSystemMessage(payload);
 		} else {
 			handleMessage(topic, payload);
@@ -162,43 +167,42 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 		try {
 			JSONObject responsePayload = new JSONObject();
 			JSONObject json = new JSONObject(payload);
-			String action = json.getString(MQTTService.ACTION);
-			String data = json.getString(MQTTService.ACTION_DATA);
+			String action = json.getString(MqttWorker.ACTION);
+			String data = json.getString(MqttWorker.ACTION_DATA);
 			String privateTopic = "/app/webapp/1";
 
 			// TODO Add checking to make sure that action is one of a well
 			// defined enum or array
-			responsePayload.put(MQTTService.ACTION, action);
+			responsePayload.put(MqttWorker.ACTION, action);
 
-			if (action.equals(MQTTService.ACTION_EXIST)) {
-				// mqttService.subscribe("/app/webapp");
+			if (action.equals(MqttWorker.ACTION_EXIST)) {
 				if (applicationExists(data)) {
-					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
+					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
 				} else {
-					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
-					responsePayload.put(MQTTService.ACTION_ERROR, context.getString(R.string.application_does_not_exist_payload_was)
-							+ payload);
+					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_ERROR);
+					responsePayload.put(MqttWorker.ACTION_ERROR,
+							context.getString(R.string.application_does_not_exist_payload_was) + payload);
 				}
-			} else if (action.equals(MQTTService.ACTION_INSTALL)) {
-				responsePayload.put(MQTTService.ACTION_DATA, "pending");
-				data = mqttService.getApplicationRawData();
+			} else if (action.equals(MqttWorker.ACTION_INSTALL)) {
+				responsePayload.put(MqttWorker.ACTION_DATA, "pending");
+				data = mqttWorker.getApplicationRawData();
 				install(getInputStream(data), privateTopic);
-			} else if (action.equals(MQTTService.ACTION_START)) {
+			} else if (action.equals(MqttWorker.ACTION_START)) {
 				if (start(data)) {
-					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
+					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
 				} else {
-					responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
-					responsePayload.put(MQTTService.ACTION_ERROR, context.getString(R.string.could_not_start_the_application_payload_was)
-							+ payload);
+					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_ERROR);
+					responsePayload.put(MqttWorker.ACTION_ERROR,
+							context.getString(R.string.could_not_start_the_application_payload_was) + payload);
 				}
-			} else if (action.equals(MQTTService.ACTION_STOP)) {
+			} else if (action.equals(MqttWorker.ACTION_STOP)) {
 				stop();
-				
-				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
-			} else if (action.equals(MQTTService.ACTION_UNINSTALL)) {
+
+				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
+			} else if (action.equals(MqttWorker.ACTION_UNINSTALL)) {
 				stop();
 				uninstall(data);
-				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
+				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
 			}
 
 			sendResponse(privateTopic, responsePayload);
@@ -228,18 +232,9 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 	 * @throws JSONException
 	 */
 	private void sendResponse(String topic, JSONObject responsePayload) throws JSONException {
-		responsePayload.put(MQTTService.ACTION_TYPE, MQTTService.ACTION_RESPONSE);
-		mqttService.publish(topic, responsePayload.toString());
+		responsePayload.put(MqttWorker.ACTION_TYPE, MqttWorker.ACTION_RESPONSE);
+		mqttWorker.publish(topic, responsePayload.toString());
 	}
-
-	// public void onLoadComplete(String url) {
-	// if (init("webapp")) {
-	// // start("/webapp/index.html");
-	// // uninstall("webapp");
-	// } else {
-	// // install(getInputStream());
-	// }
-	// }
 
 	/**
 	 * Helper method to convert string data to input stream.
@@ -263,20 +258,20 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 	 */
 	public void publish(String topic, String payload) {
 		log("ApplicationController", "publish " + "topic: " + topic + " payload: " + payload);
-		mqttService.publish(topic, payload);
+		mqttWorker.publish(topic, payload);
 	}
 
 	@Override
 	public void decompressComplete(boolean result, String privateTopic) {
 		JSONObject responsePayload = new JSONObject();
 		try {
-			responsePayload.put(MQTTService.ACTION, MQTTService.ACTION_INSTALL);
+			responsePayload.put(MqttWorker.ACTION, MqttWorker.ACTION_INSTALL);
 			if (result) {
-				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_SUCCESS);
+				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
 				log("decompressComplete", "installation complete");
 			} else {
-				responsePayload.put(MQTTService.ACTION_DATA, MQTTService.ACTION_ERROR);
-				responsePayload.put(MQTTService.ACTION_ERROR, R.string.could_not_install_the_application);
+				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_ERROR);
+				responsePayload.put(MqttWorker.ACTION_ERROR, R.string.could_not_install_the_application);
 				log("decompressComplete", "failed to install");
 			}
 			sendResponse(privateTopic, responsePayload);
@@ -320,7 +315,7 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 	 * @param topic
 	 */
 	public void subscribe(String topic) {
-		mqttService.subscribe(topic);
+		mqttWorker.subscribe(topic);
 	}
 
 	/**
@@ -329,7 +324,7 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 	 * @param topic
 	 */
 	public void unsubscribe(String topic) {
-		mqttService.unsubscribe(topic);
+		mqttWorker.unsubscribe(topic);
 	}
 
 	/**
@@ -341,10 +336,10 @@ public class ApplicationController implements Decompresser.Callbacks, MQTTServic
 		Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
 	}
 
+	/**
+	 * Tells the mqtt worker to connect the mqtt client.
+	 */
 	public void connect() {
-		mqttService.connect();
+		mqttWorker.connect();
 	}
-
-	
-
 }

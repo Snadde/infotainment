@@ -18,7 +18,7 @@ import android.widget.TextView;
 
 /**
  * Main class which contains the WebView and hosts the application controller. This class
- * sets up the basic webview settings and starts the MQTTService which contains the MQTT
+ * sets up the basic webview settings and starts the MqttWorker which contains the MQTT
  * client who communicates with the controller.
  */
 public class MainActivity extends Activity {
@@ -27,11 +27,8 @@ public class MainActivity extends Activity {
 	private static final String STORAGE_FOLDER = "/infotainment/";
 	private WebView webView;
 	private ApplicationController controller;
-	private MQTTService mqttService;
-	private boolean isBound;
 	private Button connectButton;
 	
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -59,11 +56,8 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				controller.connect();
 			}
-		});
-		
+		});	
 	}
-
-
 
 	/**
 	 * A custom webchromeclient for the webview that hijacks that logging from the console and 

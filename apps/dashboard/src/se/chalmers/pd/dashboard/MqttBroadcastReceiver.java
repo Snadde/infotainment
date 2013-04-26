@@ -30,13 +30,13 @@ public class MqttBroadcastReceiver extends BroadcastReceiver {
 		Bundle extras = intent.getExtras();
 		String action = intent.getAction();
 		
-		if(action.equals(MQTTService.MQTT_MESSAGE_RECEIVED_INTENT)) {
-			String topic = extras.getString(MQTTService.MQTT_MESSAGE_RECEIVED_TOPIC);
-			String payload = extras.getString(MQTTService.MQTT_MESSAGE_RECEIVED_PAYLOAD);
+		if(action.equals(MqttWorker.MQTT_MESSAGE_RECEIVED_INTENT)) {
+			String topic = extras.getString(MqttWorker.MQTT_MESSAGE_RECEIVED_TOPIC);
+			String payload = extras.getString(MqttWorker.MQTT_MESSAGE_RECEIVED_PAYLOAD);
 			Log.d("MqttBroadcastReceiver", "Received message with topic " + topic + " and payload " + payload);
 			callback.onMessageReceived(topic, payload);
-		} else if(action.equals(MQTTService.MQTT_STATUS_INTENT)) {
-			String status = extras.getString(MQTTService.MQTT_STATUS_MESSAGE);
+		} else if(action.equals(MqttWorker.MQTT_STATUS_INTENT)) {
+			String status = extras.getString(MqttWorker.MQTT_STATUS_MESSAGE);
 			callback.onStatusUpdate(status);
 		}
 	}
