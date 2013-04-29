@@ -1,4 +1,4 @@
-package se.chalmers.pd.dashboard;
+package se.chalmers.pd.sensors;
 
 import java.util.ArrayList;
 
@@ -11,10 +11,12 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
-import org.json.JSONObject;
+import org.omg.CORBA.Environment;
 
-import android.os.Environment;
-import android.util.Log;
+import sun.rmi.runtime.Log;
+
+import com.google.gson.JsonObject;
+
 
 /**
  * This service launches an MQTT client in a separate thread and subscribes to
@@ -39,8 +41,7 @@ public class MqttWorker {
 	public static final String ACTION_START = "start";
 	public static final String ACTION_UNINSTALL = "uninstall";
 	public static final String ACTION_STOP = "stop";
-	public static final String ACTION_PENDING = "pending";
-	
+
 	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.dashboard.mqtt.STATUS";
 	public static final String MQTT_STATUS_MESSAGE = "se.chalmers.pd.dashboard.mqtt.STATUS_MESSAGE";
 	public static final String MQTT_MESSAGE_RECEIVED_INTENT = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED";
@@ -49,7 +50,6 @@ public class MqttWorker {
 
 	private static final String BROKER = "tcp://192.168.2.2:1883";
 	private static final String CLIENT_NAME = "dashboard";
-	
 
 	private MqttClient mqttClient;
 	private String data;
@@ -84,13 +84,15 @@ public class MqttWorker {
 				public void run() {
 					try {
 						// Sets up the client and subscribes to topics
+						// TODO Find external temp dir for client
 						String tmpDir = Environment.getExternalStorageDirectory() + STORAGE_DIRECTORY;
 						MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
 						mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
 						mqttClient.setCallback(new CustomMqttCallback());
 						mqttClient.connect();
 						mqttClient.subscribe(TOPIC_SYSTEM);
-						Log.d(SERVICE_NAME, "subscribing to system");
+						mqttClient.subscribe("/app/webapp");
+						Log.d(SERVICE_NAME, "subscribing");
 					} catch (MqttException e) {
 						e.printStackTrace();
 					}
@@ -107,7 +109,7 @@ public class MqttWorker {
 
 					@Override
 					public void messageArrived(MqttTopic topic, MqttMessage message) throws Exception {	
-						JSONObject json = new JSONObject(message.toString());
+						JsonObject json = new JsonObject(message.toString());
 						String payload = "";
 						String stringTopic = topic.toString();
 						

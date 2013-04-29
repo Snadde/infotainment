@@ -86,7 +86,7 @@ public class MainActivity extends Activity {
 
 		@Override
 		public void onPageFinished(WebView view, String url) {
-			//controller.onLoadComplete(url);
+			controller.onLoadComplete(url);
 			Log.d("CustomWebViewClient", "onPageFinished " + url);
 		}
 	}

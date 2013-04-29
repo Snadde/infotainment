@@ -33,6 +33,7 @@ public class ApplicationController implements Decompresser.Callbacks, MqttWorker
 	private MqttWorker mqttWorker;
 	private TextView statusView;
 	private boolean debug = true;
+	private String privateTopic;
 
 	/**
 	 * Sets up the receivers and initiates the object.
@@ -169,13 +170,12 @@ public class ApplicationController implements Decompresser.Callbacks, MqttWorker
 			JSONObject json = new JSONObject(payload);
 			String action = json.getString(MqttWorker.ACTION);
 			String data = json.getString(MqttWorker.ACTION_DATA);
-			String privateTopic = "/app/webapp/1";
-
 			// TODO Add checking to make sure that action is one of a well
 			// defined enum or array
 			responsePayload.put(MqttWorker.ACTION, action);
 
 			if (action.equals(MqttWorker.ACTION_EXIST)) {
+				privateTopic = "/" + data + "/1";
 				if (applicationExists(data)) {
 					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
 				} else {
@@ -184,12 +184,14 @@ public class ApplicationController implements Decompresser.Callbacks, MqttWorker
 							context.getString(R.string.application_does_not_exist_payload_was) + payload);
 				}
 			} else if (action.equals(MqttWorker.ACTION_INSTALL)) {
-				responsePayload.put(MqttWorker.ACTION_DATA, "pending");
+				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_PENDING);
 				data = mqttWorker.getApplicationRawData();
 				install(getInputStream(data), privateTopic);
+				// Waiting for decompressComplete before answering
 			} else if (action.equals(MqttWorker.ACTION_START)) {
 				if (start(data)) {
-					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
+					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_PENDING);
+					// Waiting for onLoadComplete before answering
 				} else {
 					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_ERROR);
 					responsePayload.put(MqttWorker.ACTION_ERROR,
@@ -341,5 +343,21 @@ public class ApplicationController implements Decompresser.Callbacks, MqttWorker
 	 */
 	public void connect() {
 		mqttWorker.connect();
+	}
+
+	/**
+	 * Creates and sends a response message of success when the webview has finished
+	 * loading the web application.
+	 * @param url
+	 */
+	public void onLoadComplete(String url) {
+		JSONObject json = new JSONObject();
+		try {
+			json.put(MqttWorker.ACTION, MqttWorker.ACTION_START);
+			json.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
+			sendResponse(privateTopic, json);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 	}
 }
