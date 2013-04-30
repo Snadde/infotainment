@@ -1,41 +1,24 @@
 package se.chalmers.pd.device;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import se.chalmers.pd.device.MqttWorker.Callback;
 import android.content.Context;
-import android.content.IntentFilter;
 import android.util.Log;
 
-public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
+public class ApplicationController implements Callback {
 	private Context context;
-	private MQTTService mqttService;
+	private MqttWorker mqttService;
 	private boolean debug = true;
 	private MainActivity mainActivity;
 
-	public ApplicationController(MQTTService mqttService, Context context) {
-		this.mqttService = mqttService;
+	public ApplicationController(Context context) {
+		this.mqttService = new MqttWorker(this);
 		this.context = context;
 		mainActivity = (MainActivity) context;
-		setupReceivers();
 	}
 
-	/**
-	 * Creates the broadcast receiver and registers it with the custom intent
-	 * filters defined in the service.
-	 */
-	private void setupReceivers() {
-		MqttBroadcastReceiver receiver = new MqttBroadcastReceiver(this);
-		IntentFilter messageReceivedFilter = new IntentFilter(MQTTService.MQTT_MESSAGE_RECEIVED_INTENT);
-		IntentFilter statusFilter = new IntentFilter(MQTTService.MQTT_STATUS_INTENT);
-		context.registerReceiver(receiver, messageReceivedFilter);
-		context.registerReceiver(receiver, statusFilter);
-	}
-
-	public void onMessageReceived(String topic, String payload) {
-		log("Message Received --> \n",  "\t Topic: " + topic + "\n \t Payload: " + payload);
-	}
-
-	public void onStatusUpdate(String status) {
-		log("ApplicationController", "onStatusUpdate " + "status: " + status);
-	}
 	
 	/**
 	 * Controller method to publish a message
@@ -46,7 +29,7 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 	 *            of message (should be stringified JSON)
 	 */
 	public void publish(String topic, String payload) {
-		log("ApplicationController", "publish " + "topic: " + topic + " payload: " + payload);
+		log("ApplicationController", "publish " + "topic: " + topic + " payload: ");
 		if(mqttService != null)
 			mqttService.publish(topic, payload);
 	}
@@ -92,6 +75,34 @@ public class ApplicationController implements MqttBroadcastReceiver.Callbacks {
 	 */
 	public void disconnect(){
 		mqttService.disconnect();
+	}
+	
+	/**
+	 * Disconnects from the mqtt broker
+	 */
+	public void connect(){
+		mqttService.connect();
+	}
+	
+
+	public void onMessage(String topic, String payload) {
+		try {
+			JSONObject responsePayload = new JSONObject();
+			JSONObject json = new JSONObject(payload);
+			String action = json.getString(MqttWorker.ACTION);
+			String data = json.getString(MqttWorker.ACTION_DATA);
+			mainActivity.setText(action + " " +  data);
+			//switch(action){
+			//case MqttWorker.ACTION_INSTALL:
+				
+			//	break;
+		//}
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
 	}
 
 }

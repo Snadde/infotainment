@@ -1,12 +1,9 @@
 package se.chalmers.pd.device;
 
 import android.app.Activity;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.View;
@@ -15,9 +12,7 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
 
-	private boolean isBound;
 	private ApplicationController controller;
-	private MQTTService mqttService;
 	private TextView status;
 	
 	@Override
@@ -26,6 +21,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.activity_main);	
 		status = (TextView) findViewById(R.id.status);
 		status.setMovementMethod(new ScrollingMovementMethod());
+		controller = new ApplicationController(this);
 		setupButtons();
 	}
 	
@@ -44,7 +40,7 @@ public class MainActivity extends Activity {
 		connect.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				bindService();				
+				controller.connect();			
 			}
 		});
 		
@@ -94,12 +90,20 @@ public class MainActivity extends Activity {
 		installurl.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				installURL();				
+				//installURL();
+				startSong();
 			}
 		});
 		
 		
 	}
+	protected void startSong()
+	{
+		String uri = "spotify:track:1DlBOQRf6gGpAS0azPizo7";
+		Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+		startActivity(i);
+	}
+	
 	protected void installURL() {
 		String message = DeviceMessage.installFromUrlMessage("webapp");
 		controller.publish("/system", message);
@@ -149,52 +153,13 @@ public class MainActivity extends Activity {
 		return true;
 	}
 
-	/**
-	 * A local implementation of the service connection callbacks that are
-	 * needed to that we can keep track of then the service has been launched,
-	 * stopped or disconnected.
-	 */
-	private ServiceConnection serviceConnection = new ServiceConnection() {
-		public void onServiceConnected(ComponentName className, IBinder service) {
-			mqttService = ((MQTTService.LocalBinder) service).getService();
-			controller = new ApplicationController(mqttService, MainActivity.this);
-		}
-
-		public void onServiceDisconnected(ComponentName className) {
-			mqttService = null;
-		}
-
-		// TODO Add reconnect feature
-	};
-
-	/**
-	 * Binds this activity to the mqtt service so we can communicate between
-	 * them
-	 */
-	private void bindService() {
-		Intent intent = new Intent(MainActivity.this, MQTTService.class);
-		bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
-		startService(intent);
-		isBound = true;
-	}
-
-	/**
-	 * Unbinds the service when it's no longer needed
-	 */
-	private void unbindService() {
-		if (isBound) {
-			unbindService(serviceConnection);
-			isBound = false;
-		}
-	}
-
+	
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		unbindService();
 	}
 	
 	public void setText(String text){
-		status.append("\n" + text);
+		status.setText(text);
 	}
 }
