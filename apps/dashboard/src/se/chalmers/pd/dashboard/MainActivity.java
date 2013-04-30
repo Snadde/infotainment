@@ -31,6 +31,11 @@ public class MainActivity extends Activity {
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+//		StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+//        .detectAll()
+//        .penaltyLog()
+//        .build());
+//		
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
