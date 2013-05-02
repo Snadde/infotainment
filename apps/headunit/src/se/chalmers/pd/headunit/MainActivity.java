@@ -1,4 +1,4 @@
-package se.chalmers.pd.dashboard;
+package se.chalmers.pd.headunit;
 
 import android.app.Activity;
 import android.os.Bundle;

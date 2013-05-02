@@ -1,4 +1,4 @@
-package se.chalmers.pd.dashboard;
+package se.chalmers.pd.headunit;
 
 import java.util.ArrayList;
 
@@ -41,14 +41,14 @@ public class MqttWorker {
 	public static final String ACTION_STOP = "stop";
 	public static final String ACTION_PENDING = "pending";
 	
-	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.dashboard.mqtt.STATUS";
-	public static final String MQTT_STATUS_MESSAGE = "se.chalmers.pd.dashboard.mqtt.STATUS_MESSAGE";
-	public static final String MQTT_MESSAGE_RECEIVED_INTENT = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED";
-	public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
-	public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
+	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.headunit.mqtt.STATUS";
+	public static final String MQTT_STATUS_MESSAGE = "se.chalmers.pd.headunit.mqtt.STATUS_MESSAGE";
+	public static final String MQTT_MESSAGE_RECEIVED_INTENT = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED";
+	public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED_TOPIC";
+	public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED_PAYLOAD";
 
 	private static final String BROKER = "tcp://192.168.2.2:1883";
-	private static final String CLIENT_NAME = "dashboard";
+	private static final String CLIENT_NAME = "headunit";
 	
 
 	private MqttClient mqttClient;

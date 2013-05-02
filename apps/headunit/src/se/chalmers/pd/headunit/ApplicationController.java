@@ -1,4 +1,4 @@
-package se.chalmers.pd.dashboard;
+package se.chalmers.pd.headunit;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
