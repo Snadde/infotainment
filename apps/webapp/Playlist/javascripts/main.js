@@ -2,7 +2,7 @@ $(document).ready(function() {
     var COMMAND_ADD = "add"
     var COMMAND_NEXT = "next";
     var COMMAND_PLAY = "play";
-    var PRIVATE_CHANNEL = "/webapp/playlist";
+    var PRIVATE_CHANNEL = "/playlist";
     var debug = true;
     
     /*
