@@ -1,7 +1,7 @@
 package se.chalmers.pd.device;
 
-import se.chalmers.pd.device.SpotifyController.PlaylistCallback;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
@@ -9,7 +9,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements PlaylistCallback{
+public class MainActivity extends Activity {
 
 	private ApplicationController controller;
 	private TextView status;
@@ -21,21 +21,8 @@ public class MainActivity extends Activity implements PlaylistCallback{
 		setContentView(R.layout.activity_main);	
 		status = (TextView) findViewById(R.id.status);
 		status.setMovementMethod(new ScrollingMovementMethod());
-		controller = new ApplicationController(this);
-		spotifyController = new SpotifyController(this);
-		
+		controller = new ApplicationController(this);	
 		setupButtons();
-		setupPlaylist();
-	}
-	
-	private void setupPlaylist() {
-		
-		spotifyController.addTrackToPlaylist("The pretender", "Foo Fighters", "spotify:track:3ZsjgLDSvusBgxGWrTAVto");
-		//send to mqtt when initiated
-		spotifyController.addTrackToPlaylist("Rape me", "Nirvana", "spotify:track:47KVHb6cOVBZbmXQweE5p7");
-		spotifyController.addTrackToPlaylist("X you", "Avicii", "spotify:track:330r0K82tIDVr6f1GezAd8");
-		
-		
 	}
 
 	private void setupButtons(){
@@ -82,17 +69,17 @@ public class MainActivity extends Activity implements PlaylistCallback{
 		start.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				spotifyController.play();
-//				start();				
+				start();				
+				startPlayer();
 			}
+
+			
 		});
 		
 		stop.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				spotifyController.pause();
-				
-				//stop();				
+				stop();				
 			}
 		});
 		
@@ -106,19 +93,13 @@ public class MainActivity extends Activity implements PlaylistCallback{
 		installurl.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				//installURL();
-				spotifyController.playNext();
-				startSong();
+				installURL();
 			}
 		});
 		
 		
 	}
-	protected void startSong()
-	{
-			
-		
-	}
+	
 	
 	protected void installURL() {
 		String message = DeviceMessage.installFromUrlMessage("webapp");
@@ -181,36 +162,14 @@ public class MainActivity extends Activity implements PlaylistCallback{
 		status.setText(text);
 	}
 
-	public void onLoginSuccess() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onLoginFailed() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onPlay(boolean success) {
-		if(success){
-			int index = spotifyController.getIndexOfCurrentTrack();
-			Track currentTrack = spotifyController.getPlaylist().get(index);
-			setText("Currently Playing : " + currentTrack.getArtist() + " - " + currentTrack.getName());
-		}
-	}
-
-	public void onPause(boolean success) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onEndOfTrack() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	public void onEndOfPlaylist() {
-		// TODO Auto-generated method stub
+	
+	private void startPlayer() {
+		Intent playerActivity = new Intent();
+		//Bundle b = new Bundle();
+		//b.putParcelable(Constants.CUSTOM_LISTING, currentListing);
+		//i.putExtras(b);
+		playerActivity.setClass(this, PlayerActivity.class);
+		startActivity(playerActivity);
 		
 	}
 }
