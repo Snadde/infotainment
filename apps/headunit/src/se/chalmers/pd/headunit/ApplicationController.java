@@ -22,7 +22,7 @@ import android.widget.Toast;
  * passed on as json to the container web application that is running in the
  * webview.
  */
-public class ApplicationController implements Decompresser.Callbacks, MqttWorker.Callback {
+public class ApplicationController implements Decompresser.Callback, MqttWorker.Callback {
 
 	private static final String HTTP_LOCALHOST = "http://localhost:8080/";
 	private final String DEFAULT_URL = "file:///android_asset/index.html";

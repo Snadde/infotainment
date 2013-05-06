@@ -16,7 +16,7 @@ import android.util.Log;
  */
 public class Decompresser {
 
-	public interface Callbacks {
+	public interface Callback {
 		/**
 		 * Callback from the Decompresser that lets the implementing class know
 		 * when the decompressing has finished.
@@ -30,7 +30,7 @@ public class Decompresser {
 	}
 
 	private String location;
-	private Callbacks callback;
+	private Callback callback;
 	private String privateTopic;
 
 	/**
@@ -40,7 +40,7 @@ public class Decompresser {
 	 * @param callback
 	 * @param privateTopic
 	 */
-	public Decompresser(String location, Callbacks callback, String privateTopic) {
+	public Decompresser(String location, Callback callback, String privateTopic) {
 		this.location = location;
 		this.callback = callback;
 		this.privateTopic = privateTopic;
