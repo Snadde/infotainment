@@ -110,6 +110,11 @@ h1 {
     margin: 0.67em 0;
 }
 
+h1, h2, h3, h4, h5 {
+    -webkit-margin-before: 0;
+    -webkit-margin-after: 0;
+}
+
 /**
  * Address styling not present in IE 8/9, Safari 5, and Chrome.
  */

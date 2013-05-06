@@ -11,6 +11,15 @@ h1 {
     margin: 0 0 12px 0;
 }
 
+h2, h3, h4 {
+    font-weight: 200;
+}
+
+h4 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
 ul, li {
     list-style-type: none;
     margin: 0;
@@ -22,19 +31,38 @@ li {
     border-bottom: 1px solid #dedede;
 }
 
-li:nth-of-type(1):after {
+/*li:nth-of-type(1):after {
     content : "Now playing";
     font-size: 20px;
     color: #999;
     float: right;
     line-height: 0px;  
-}
+}*/
 
 #container {
-    width: 360px;
-    padding: 20px;
-    background: #212427;
-    margin: 20px auto;
+    width: 1160px;
+    margin: 40px auto;
+    overflow: hidden;
+}
+
+#playlist-section {
+    margin-right: 20px;
+}
+
+#current-section {
+    width: 700px;
+    margin: 0 auto 0 auto;
+    padding-top: 150px;
+    height: 563px;
+    text-align: center;
+}
+
+#current-song-section {
+    margin-top: 20px;
+}
+
+#music-controls-section {
+    margin-top: 40px;
 }
 
 #search, #options {
@@ -63,6 +91,11 @@ li:nth-of-type(1):after {
     font-size: 20px;
 }
 
+.wrapper-section {
+    float: left; 
+    background: #212427;
+    padding: 20px;
+}
 
 
 
