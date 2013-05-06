@@ -1,8 +1,7 @@
 package se.chalmers.pd.device;
 
+import se.chalmers.pd.device.SpotifyController.PlaylistCallback;
 import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
@@ -10,10 +9,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements PlaylistCallback{
 
 	private ApplicationController controller;
 	private TextView status;
+	private SpotifyController spotifyController;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -22,9 +22,22 @@ public class MainActivity extends Activity {
 		status = (TextView) findViewById(R.id.status);
 		status.setMovementMethod(new ScrollingMovementMethod());
 		controller = new ApplicationController(this);
+		spotifyController = new SpotifyController(this);
+		
 		setupButtons();
+		setupPlaylist();
 	}
 	
+	private void setupPlaylist() {
+		
+		spotifyController.addTrackToPlaylist("The pretender", "Foo Fighters", "spotify:track:3ZsjgLDSvusBgxGWrTAVto");
+		//send to mqtt when initiated
+		spotifyController.addTrackToPlaylist("Rape me", "Nirvana", "spotify:track:47KVHb6cOVBZbmXQweE5p7");
+		spotifyController.addTrackToPlaylist("X you", "Avicii", "spotify:track:330r0K82tIDVr6f1GezAd8");
+		
+		
+	}
+
 	private void setupButtons(){
 		Button connect, install, exist, uninstall, start, stop, disconnect, installurl;
 		connect = (Button) findViewById(R.id.connect);
@@ -37,7 +50,7 @@ public class MainActivity extends Activity {
 		installurl = (Button) findViewById(R.id.install_url);
 		
 		
-		connect.setOnClickListener(new View.OnClickListener() {
+	connect.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
 				controller.connect();			
@@ -69,21 +82,24 @@ public class MainActivity extends Activity {
 		start.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				start();				
+				spotifyController.play();
+//				start();				
 			}
 		});
 		
 		stop.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				stop();				
+				spotifyController.pause();
+				
+				//stop();				
 			}
 		});
 		
 		disconnect.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				disconnect();				
+				spotifyController.login();
 			}
 		});
 		
@@ -91,6 +107,7 @@ public class MainActivity extends Activity {
 			
 			public void onClick(View v) {
 				//installURL();
+				spotifyController.playNext();
 				startSong();
 			}
 		});
@@ -99,9 +116,8 @@ public class MainActivity extends Activity {
 	}
 	protected void startSong()
 	{
-		String uri = "spotify:track:1DlBOQRf6gGpAS0azPizo7";
-		Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
-		startActivity(i);
+			
+		
 	}
 	
 	protected void installURL() {
@@ -156,10 +172,45 @@ public class MainActivity extends Activity {
 	
 	@Override
 	protected void onDestroy() {
+		spotifyController.destroy();
 		super.onDestroy();
+		
 	}
 	
 	public void setText(String text){
 		status.setText(text);
+	}
+
+	public void onLoginSuccess() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onLoginFailed() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onPlay(boolean success) {
+		if(success){
+			int index = spotifyController.getIndexOfCurrentTrack();
+			Track currentTrack = spotifyController.getPlaylist().get(index);
+			setText("Currently Playing : " + currentTrack.getArtist() + " - " + currentTrack.getName());
+		}
+	}
+
+	public void onPause(boolean success) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onEndOfTrack() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onEndOfPlaylist() {
+		// TODO Auto-generated method stub
+		
 	}
 }
