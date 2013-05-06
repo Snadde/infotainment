@@ -1,5 +1,7 @@
 $(document).ready(function() {
     var COMMAND_ADD = "add"
+    var COMMAND_NEXT = "next";
+    var COMMAND_PLAY = "play";
     var PRIVATE_CHANNEL = "/webapp/playlist";
     var debug = true;
     
@@ -31,12 +33,27 @@ $(document).ready(function() {
         onMessage(JSON.stringify(testMessage));
     }
     
+    function testPlayMessage() {
+        var testMessage = {
+            topic : PRIVATE_CHANNEL,
+            payload : {
+                action : 'play'
+            }
+        }
+        onMessage(JSON.stringify(testMessage));
+    }
+    
+    /*
+    testAddMessage();
+    testAddMessage();
+    testPlayMessage();
+    */
+    
     /*
      *  Implementation
      */
     
-    // Uncommented until it can be run in the proper environment
-    //subscribe(PRIVATE_CHANNEL);
+    subscribe(PRIVATE_CHANNEL);
     
     function subscribe(topic) {
         WebApp.publish(topic);        
@@ -58,15 +75,21 @@ $(document).ready(function() {
 		log("handleMessagePayload: " + payload);
         if(payload.action == COMMAND_ADD) {
             updateList(payload.data);
-        } else if (payload.action == 'next') {
+        } else if (payload.action == COMMAND_NEXT) {
             $('#options-list li:first').remove();
+        } else if(payload.action = COMMAND_PLAY) {
+            $('#current-song-section h2').html(
+                $('#options-list li:first span.artist').text() + " &ndash; " +
+                $('#options-list li:first span.track').text()
+            );
         }
     }
     
     function updateList(data) {
         $('#options-list').append(
             $('<li/>', {
-                html: '<span class="artist">' + data.artist + '</span>' + "<br/>" + '<span class="track">' + data.track + '</span>'
+                html: '<span class="artist">' + data.artist + '</span>' + "<br/>" + 
+                        '<span class="track">' + data.track + '</span>'
             })
         );
     }
