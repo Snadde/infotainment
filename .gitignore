@@ -3,3 +3,8 @@
 *.DS_Store
 *bin/
 apps/dashboard/gen/se/chalmers/pd/dashboard/R.java
+
+#libspotify
+jni/key.h
+obj
+
