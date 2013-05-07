@@ -52,8 +52,8 @@ li {
 #current-section {
     width: 700px;
     margin: 0 auto 0 auto;
-    padding-top: 150px;
-    height: 563px;
+    height: 513px;
+    padding-top: 100px;
     text-align: center;
 }
 
@@ -74,14 +74,13 @@ li {
 #search input {
     font-weight: 200;
     border: 0;
-    line-height: 55px;
-    padding: 0 20px;
+    padding: 15px 20px 10px 20px;
     width: 320px;
 
 }
 
 #options {
-    min-height: 525px;
+    min-height: 425px;
     margin-top: 20px;
     padding: 15px 20px;
     width: 320px;
@@ -97,9 +96,13 @@ li {
     padding: 20px;
 }
 
+img#pause {
+    display: none;
+}
 
-
-
+img.music-control {
+    margin: 0 40px;
+}
 
 
 
