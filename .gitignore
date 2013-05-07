@@ -2,4 +2,4 @@
 *.class
 *.DS_Store
 *bin/
-apps/dashboard/gen/se/chalmers/pd/dashboard/R.java
+apps/headunit/gen/se/chalmers/pd/headunit/R.java
