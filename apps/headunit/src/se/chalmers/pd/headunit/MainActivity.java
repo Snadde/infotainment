@@ -13,8 +13,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Button;
-import android.widget.TextView;
 
 /**
  * Main class which contains the WebView and hosts the application controller. This class
@@ -27,7 +25,6 @@ public class MainActivity extends Activity {
 	private static final String STORAGE_FOLDER = "/infotainment/";
 	private WebView webView;
 	private ApplicationController controller;
-	private Button connectButton;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -44,7 +41,6 @@ public class MainActivity extends Activity {
 		
 		// Create the app control
 		controller = new ApplicationController(webView, this);
-        controller.setStatusView((TextView) findViewById(R.id.status));
         
 		// Setup the webview and the settings we need
         webView.addJavascriptInterface(new WebAppInterface(controller), JAVASCRIPT_INTERFACE);
@@ -52,16 +48,14 @@ public class MainActivity extends Activity {
 		webSettings.setJavaScriptEnabled(true);
 		webSettings.setDomStorageEnabled(true);
 		webSettings.setGeolocationDatabasePath(Environment.getExternalStorageDirectory() + STORAGE_FOLDER);
+		webSettings.setUseWideViewPort(true);
+		webSettings.setLoadWithOverviewMode(true);
 		webView.setWebViewClient(new CustomWebViewClient());
 		webView.setWebChromeClient(new CustomWebChromeClient());
 		
-		connectButton = (Button) findViewById(R.id.connect);
-		connectButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				controller.connect();
-			}
-		});	
+		getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+		
+		controller.connect();
 	}
 
 	/**

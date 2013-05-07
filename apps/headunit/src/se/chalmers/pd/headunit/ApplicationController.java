@@ -12,7 +12,6 @@ import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -31,7 +30,6 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	private WebView webView;
 	private Context context;
 	private MqttWorker mqttWorker;
-	private TextView statusView;
 	private boolean debug = true;
 	private String privateTopic;
 
@@ -209,7 +207,7 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 
 			sendResponse(privateTopic, responsePayload);
 		} catch (JSONException e) {
-			e.printStackTrace();
+			Log.d("ApplicationController", "Not a properly formatted system message, " + e.getMessage());
 		}
 	}
 
@@ -221,9 +219,9 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	 * @param payload
 	 *            of the message
 	 */
-	private void handleMessage(String topic, String payload) {
+	private void handleMessage(final String topic, final String payload) {
 		log("ApplicationController:handleMessage", topic + " " + payload);
-		webView.loadUrl("javascript:onMessage('" + topic + "', " + payload + ")");
+		updateWebView("javascript:onMessage(\"" + topic + "\"," + payload + ")");
 	}
 
 	/**
@@ -283,15 +281,6 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	}
 
 	/**
-	 * Helper method for debugging text
-	 * 
-	 * @param view
-	 */
-	public void setStatusView(TextView view) {
-		statusView = view;
-	}
-
-	/**
 	 * Helper method for logging
 	 * 
 	 * @param tag
@@ -302,12 +291,6 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	private void log(String tag, final String message) {
 		if (debug) {
 			Log.d(tag, message);
-			((MainActivity) context).runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					statusView.setText(message);
-				}
-			});
 		}
 	}
 

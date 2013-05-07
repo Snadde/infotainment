@@ -11,6 +11,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Environment;
@@ -47,7 +48,7 @@ public class MqttWorker {
 	public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED_TOPIC";
 	public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED_PAYLOAD";
 
-	private static final String BROKER = "tcp://192.168.2.2:1883";
+	private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "headunit";
 	
 
@@ -106,20 +107,25 @@ public class MqttWorker {
 					private static final String ACTION_GET_METHOD = "getData";
 
 					@Override
-					public void messageArrived(MqttTopic topic, MqttMessage message) throws Exception {	
-						JSONObject json = new JSONObject(message.toString());
+					public void messageArrived(MqttTopic topic, MqttMessage message) {	
+						JSONObject json;
 						String payload = "";
-						String stringTopic = topic.toString();
-						
-						// Filter install messages and their data separately
-						if (json.getString(ACTION).equals(ACTION_INSTALL)) {
-							data = json.getString(ACTION_DATA);
-							json = new JSONObject();
-							json.put(ACTION, ACTION_INSTALL);
-							json.put(ACTION_DATA, ACTION_GET_METHOD);
-							payload = json.toString();
-						} else {
-							payload = message.toString();
+						String stringTopic = "";
+						try {
+							json = new JSONObject(message.toString());
+							stringTopic = topic.toString();
+							// Filter install messages and their data separately
+							if (json.getString(ACTION).equals(ACTION_INSTALL)) {
+								data = json.getString(ACTION_DATA);
+								json = new JSONObject();
+								json.put(ACTION, ACTION_INSTALL);
+								json.put(ACTION_DATA, ACTION_GET_METHOD);
+								payload = json.toString();
+							} else {
+								payload = message.toString();
+							}
+						} catch (JSONException e) {
+							e.printStackTrace();
 						}
 
 						Log.d(SERVICE_NAME, "messageArrived" + "topic:" + stringTopic + ", message:" + payload);
