@@ -94,7 +94,7 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	 * Stops the currently running application in the webview by loading the
 	 * default url.
 	 */
-	public void stop() {
+	public void loadStartScreen() {
 		updateWebView(DEFAULT_URL);
 	}
 
@@ -143,6 +143,11 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 		}
 		log("ApplicationController", "deleteRecursive " + appDir.getAbsolutePath());
 		appDir.delete();
+	}
+	
+	@Override
+	public void onConnected() {
+		loadStartScreen();
 	}
 
 	@Override
@@ -196,11 +201,11 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 							context.getString(R.string.could_not_start_the_application_payload_was) + payload);
 				}
 			} else if (action.equals(MqttWorker.ACTION_STOP)) {
-				stop();
+				loadStartScreen();
 
 				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
 			} else if (action.equals(MqttWorker.ACTION_UNINSTALL)) {
-				stop();
+				loadStartScreen();
 				uninstall(data);
 				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
 			}
@@ -334,13 +339,15 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	 * @param url
 	 */
 	public void onLoadComplete(String url) {
-		JSONObject json = new JSONObject();
-		try {
-			json.put(MqttWorker.ACTION, MqttWorker.ACTION_START);
-			json.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
-			sendResponse(privateTopic, json);
-		} catch (JSONException e) {
-			e.printStackTrace();
+		if(!url.equals(DEFAULT_URL)) {
+			JSONObject json = new JSONObject();
+			try {
+				json.put(MqttWorker.ACTION, MqttWorker.ACTION_START);
+				json.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
+				sendResponse(privateTopic, json);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

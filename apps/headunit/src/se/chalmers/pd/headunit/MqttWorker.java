@@ -60,6 +60,7 @@ public class MqttWorker {
 
 	public interface Callback {
 		public void onMessage(String topic, String payload);
+		public void onConnected();
 	}
 
 	public MqttWorker(Callback callback) {
@@ -91,9 +92,16 @@ public class MqttWorker {
 						mqttClient.setCallback(new CustomMqttCallback());
 						mqttClient.connect();
 						mqttClient.subscribe(TOPIC_SYSTEM);
+						notifyOnConnected();
 						Log.d(SERVICE_NAME, "subscribing to system");
 					} catch (MqttException e) {
 						e.printStackTrace();
+					}
+				}
+				
+				private void notifyOnConnected() {
+					for(Callback callback : callbacks) {
+						callback.onConnected();
 					}
 				}
 
