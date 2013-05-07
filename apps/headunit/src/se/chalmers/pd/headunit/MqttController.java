@@ -23,10 +23,10 @@ import android.util.Log;
  * message using custom intent filters.
  * 
  */
-public class MqttWorker {
+public class MqttController {
 
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
-	private static final String SERVICE_NAME = "MqttWorker";
+	private static final String SERVICE_NAME = "MqttController";
 
 	public static final String ACTION_DATA = "data";
 	public static final String ACTION_INSTALL = "install";
@@ -59,9 +59,10 @@ public class MqttWorker {
 
 	public interface Callback {
 		public void onMessage(String topic, String payload);
+		public void onConnected();
 	}
 
-	public MqttWorker(Callback callback) {
+	public MqttController(Callback callback) {
 		callbacks.add(callback);
 	}
 
@@ -90,9 +91,16 @@ public class MqttWorker {
 						mqttClient.setCallback(new CustomMqttCallback());
 						mqttClient.connect();
 						mqttClient.subscribe(TOPIC_SYSTEM);
+						notifyOnConnected();
 						Log.d(SERVICE_NAME, "subscribing to system");
 					} catch (MqttException e) {
 						e.printStackTrace();
+					}
+				}
+				
+				private void notifyOnConnected() {
+					for(Callback callback : callbacks) {
+						callback.onConnected();
 					}
 				}
 
@@ -172,7 +180,7 @@ public class MqttWorker {
 	 *            should be stringified JSON
 	 */
 	public void publish(String topic, String message) {
-		Log.d("MqttWorker", "publishing topic " + topic + " with message " + message);
+		Log.d("MqttController", "publishing topic " + topic + " with message " + message);
 		try {
 			MqttMessage payload = new MqttMessage(message.getBytes());
 			mqttClient.getTopic(topic).publish(payload);

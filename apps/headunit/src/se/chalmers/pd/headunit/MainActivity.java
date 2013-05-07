@@ -16,7 +16,7 @@ import android.webkit.WebViewClient;
 
 /**
  * Main class which contains the WebView and hosts the application controller. This class
- * sets up the basic webview settings and starts the MqttWorker which contains the MQTT
+ * sets up the basic webview settings and starts the MqttController which contains the MQTT
  * client who communicates with the controller.
  */
 public class MainActivity extends Activity {
