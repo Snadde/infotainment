@@ -233,7 +233,7 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	 */
 	private void sendResponse(String topic, JSONObject responsePayload) throws JSONException {
 		responsePayload.put(MqttWorker.ACTION_TYPE, MqttWorker.ACTION_RESPONSE);
-		mqttWorker.publish(topic, responsePayload.toString());
+		publish(topic, responsePayload.toString());
 	}
 
 	/**

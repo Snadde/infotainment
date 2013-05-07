@@ -48,10 +48,9 @@ public class MqttWorker {
 	public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED_TOPIC";
 	public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED_PAYLOAD";
 
-	private static final String BROKER = "tcp://192.168.43.147:1883";
+	private static final String BROKER = "tcp://192.168.2.2:1883";
 	private static final String CLIENT_NAME = "headunit";
 	
-
 	private MqttClient mqttClient;
 	private String data;
 
@@ -115,7 +114,7 @@ public class MqttWorker {
 							json = new JSONObject(message.toString());
 							stringTopic = topic.toString();
 							// Filter install messages and their data separately
-							if (json.getString(ACTION).equals(ACTION_INSTALL)) {
+							if (json.getString(ACTION).equals(ACTION_INSTALL) && stringTopic.equals(TOPIC_SYSTEM)) {
 								data = json.getString(ACTION_DATA);
 								json = new JSONObject();
 								json.put(ACTION, ACTION_INSTALL);
@@ -191,7 +190,7 @@ public class MqttWorker {
 	 */
 	public void subscribe(String topic) {
 		try {
-			mqttClient.subscribe(topic);
+			mqttClient.subscribe(topic, 2);
 		} catch (MqttSecurityException e) {
 			e.printStackTrace();
 		} catch (MqttException e) {
