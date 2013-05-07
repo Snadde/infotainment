@@ -1,23 +1,18 @@
 <!DOCTYPE html>
 <head>
 <title></title>
-<script type="text/javascript">
-	var debug = true;
+<style type="text/css">
+* {
+    margin: 0;
+    padding: 0;
+}
 
-	function onMessage(topic, payload) {
-		//log("web app got a message on topic: " + topic + " with payload: " + payload);
-		WebApp.showToast("web app got a message on topic: " + topic + " with payload: " + payload);
-	}
-
-	function log(message) {
-		if (debug) {
-			console.log(message);
-		}
-	}
-</script>
+body {
+    background: #f57f20;
+}
+</style>
 </head>
 <body>
-	<h1>Default application.</h1>
-	<img src="kitten81.jpg" />
+	<img src="webapp-splash.png" />
 </body>
 </html>
