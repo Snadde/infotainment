@@ -11,6 +11,15 @@ import javax.swing.JPanel;
 
 public class Main implements ActionListener {
 
+	private static final String SENSOR_PLAY = "Play sensor";
+	private static final String SENSOR_NEXT = "Next sensor";
+	private static final String SENSOR_PAUSE = "Pause sensor";
+	
+	private static final String ACTION_PLAY = "play";
+	private static final String ACTION_NEXT = "next";
+	private static final String ACTION_PAUSE = "pause";
+	
+	
 	private JButton sensor1;
 	private JButton sensor2;
 	private JButton sensor3;
@@ -18,24 +27,26 @@ public class Main implements ActionListener {
 	private JLabel label2;
 	private JLabel label3;
 	private JFrame jframe;
+	private Controller controller;
 	
 	public Main() {
 		createComponents();
 		addComponents();
 		addListeners();
 		
+		controller = new Controller();
 		jframe.setVisible(true);
 	}
 	
 	private void createComponents() {
 		jframe = new JFrame("Sensors");
 		jframe.setSize(600, 400);
-		sensor1 = new JButton("Sensor 1");
-		sensor1.setActionCommand("1");
-		sensor2 = new JButton("Sensor 2");
-		sensor2.setActionCommand("2");
-		sensor3 = new JButton("Sensor 3");
-		sensor3.setActionCommand("3");
+		sensor1 = new JButton(SENSOR_PLAY);
+		sensor1.setActionCommand(ACTION_PLAY);
+		sensor2 = new JButton(SENSOR_NEXT);
+		sensor2.setActionCommand(ACTION_NEXT);
+		sensor3 = new JButton(SENSOR_PAUSE);
+		sensor3.setActionCommand(ACTION_PAUSE);
 		label1 = new JLabel("Label 1");
 		label2 = new JLabel("Label 2");
 		label3 = new JLabel("Label 3");
@@ -61,16 +72,19 @@ public class Main implements ActionListener {
 		sensor2.addActionListener(this);
 		sensor3.addActionListener(this);
 	}
-
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
-		if(command.equals("1")) {
-			label1.setText("Clicked button 1");
-		} else if(command.equals("2")) {
-			label2.setText("Clicked button 2");
-		} else if(command.equals("3")) {
-			label3.setText("Clicked button 3");
+		if(command.equals(ACTION_PLAY)) {
+			label1.setText("Clicked button play");
+			controller.play();
+		} else if(command.equals(ACTION_NEXT)) {
+			label2.setText("Clicked button next");
+			controller.next();
+		} else if(command.equals(ACTION_PAUSE)) {
+			label3.setText("Clicked button pause");
+			controller.pause();
 		}
 	}
 	
