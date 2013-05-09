@@ -3,3 +3,4 @@
 *.DS_Store
 *bin/
 apps/headunit/gen/se/chalmers/pd/headunit/R.java
+apps/sensors/infotainment/
