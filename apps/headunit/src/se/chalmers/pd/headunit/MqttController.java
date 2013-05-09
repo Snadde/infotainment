@@ -24,6 +24,7 @@ import android.util.Log;
  * 
  */
 public class MqttController {
+	
 
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
 	private static final String SERVICE_NAME = "MqttController";
@@ -41,12 +42,6 @@ public class MqttController {
 	public static final String ACTION_UNINSTALL = "uninstall";
 	public static final String ACTION_STOP = "stop";
 	public static final String ACTION_PENDING = "pending";
-	
-	public static final String MQTT_STATUS_INTENT = "se.chalmers.pd.headunit.mqtt.STATUS";
-	public static final String MQTT_STATUS_MESSAGE = "se.chalmers.pd.headunit.mqtt.STATUS_MESSAGE";
-	public static final String MQTT_MESSAGE_RECEIVED_INTENT = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED";
-	public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED_TOPIC";
-	public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.headunit.mqtt.MESSAGE_RECEIVED_PAYLOAD";
 
 	private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "headunit";
@@ -160,17 +155,6 @@ public class MqttController {
 			mqttClientThread.start();
 		}
 
-	}
-
-	/**
-	 * Helper method to disconnect from broker
-	 */
-	private void disconnect() {
-		try {
-			mqttClient.disconnect();
-		} catch (MqttException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**
