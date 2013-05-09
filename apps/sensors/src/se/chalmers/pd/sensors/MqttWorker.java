@@ -16,7 +16,7 @@ import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 public class MqttWorker extends Thread {
 
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
-	private static final String WORKER_NAME = "MqttController";
+	private static final String WORKER_NAME = "MqttWorker";
 	private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "sensors";
 	private MqttClient mqttClient;

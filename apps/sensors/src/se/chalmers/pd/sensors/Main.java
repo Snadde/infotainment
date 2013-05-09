@@ -5,7 +5,6 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 
@@ -19,13 +18,9 @@ public class Main implements ActionListener {
 	private static final String ACTION_NEXT = "next";
 	private static final String ACTION_PAUSE = "pause";
 	
-	
 	private JButton sensor1;
 	private JButton sensor2;
 	private JButton sensor3;
-	private JLabel label1;
-	private JLabel label2;
-	private JLabel label3;
 	private JFrame jframe;
 	private Controller controller;
 	
@@ -33,7 +28,6 @@ public class Main implements ActionListener {
 		createComponents();
 		addComponents();
 		addListeners();
-		
 		controller = new Controller();
 		jframe.setVisible(true);
 	}
@@ -47,9 +41,6 @@ public class Main implements ActionListener {
 		sensor2.setActionCommand(ACTION_NEXT);
 		sensor3 = new JButton(SENSOR_PAUSE);
 		sensor3.setActionCommand(ACTION_PAUSE);
-		label1 = new JLabel("Label 1");
-		label2 = new JLabel("Label 2");
-		label3 = new JLabel("Label 3");
 	}
 	
 	private void addComponents() {
@@ -57,11 +48,8 @@ public class Main implements ActionListener {
 		GridLayout grid = new GridLayout(3,2);
 		panel.setLayout(grid);
 		panel.add(sensor1);
-		panel.add(label1);
 		panel.add(sensor2);
-		panel.add(label2);
 		panel.add(sensor3);		
-		panel.add(label3);
 		
 		jframe.getContentPane().add(panel);
 		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -77,13 +65,10 @@ public class Main implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		String command = e.getActionCommand();
 		if(command.equals(ACTION_PLAY)) {
-			label1.setText("Clicked button play");
 			controller.play();
 		} else if(command.equals(ACTION_NEXT)) {
-			label2.setText("Clicked button next");
 			controller.next();
 		} else if(command.equals(ACTION_PAUSE)) {
-			label3.setText("Clicked button pause");
 			controller.pause();
 		}
 	}
