@@ -2,7 +2,6 @@
 <resources>
 
     <string name="app_name">dashboard</string>
-    <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="could_not_install_the_application">Could not install the application.</string>
     <string name="application_does_not_exist_payload_was">"Application does not exist, payload was: "</string>
