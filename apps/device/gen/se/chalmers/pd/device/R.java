@@ -32,18 +32,16 @@ or to a theme attribute in the form "<code>?[<i>package</i>:][<i>type</i>:]<i>na
     public static final class id {
         public static final int connect=0x7f080000;
         public static final int disconnect=0x7f080001;
-        public static final int exist=0x7f080002;
-        public static final int install=0x7f080003;
-        public static final int install_url=0x7f080004;
-        public static final int menu_settings=0x7f08000d;
-        public static final int next=0x7f08000c;
-        public static final int pause=0x7f08000b;
-        public static final int play=0x7f080009;
-        public static final int prev=0x7f08000a;
-        public static final int start=0x7f080005;
-        public static final int status=0x7f080008;
-        public static final int stop=0x7f080006;
-        public static final int uninstall=0x7f080007;
+        public static final int install=0x7f080002;
+        public static final int menu_settings=0x7f08000b;
+        public static final int next=0x7f08000a;
+        public static final int pause=0x7f080009;
+        public static final int play=0x7f080007;
+        public static final int prev=0x7f080008;
+        public static final int start=0x7f080003;
+        public static final int status=0x7f080006;
+        public static final int stop=0x7f080004;
+        public static final int uninstall=0x7f080005;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;

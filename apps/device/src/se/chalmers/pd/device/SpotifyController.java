@@ -112,4 +112,5 @@ public class SpotifyController {
 	public Track getCurrentTrack() {
 		return currentTrack;
 	}
+	
 }

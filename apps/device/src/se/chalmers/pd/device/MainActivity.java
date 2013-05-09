@@ -10,12 +10,12 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements Callbacks {
+public class MainActivity extends Activity implements Callbacks, View.OnClickListener {
 
 	private ApplicationController controller;
 	private TextView status;
 	ImageButton previous, play, next, pause;
-	Button connect, install, exist, uninstall, start, stop, disconnect, installurl;
+	Button connect, install, uninstall, start, stop, disconnect;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -31,114 +31,16 @@ public class MainActivity extends Activity implements Callbacks {
 
 		connect = (Button) findViewById(R.id.connect);
 		install = (Button) findViewById(R.id.install);
-		exist = (Button) findViewById(R.id.exist);
 		uninstall = (Button) findViewById(R.id.uninstall);
 		start = (Button) findViewById(R.id.start);
 		stop = (Button) findViewById(R.id.stop);
 		disconnect = (Button) findViewById(R.id.disconnect);
-		installurl = (Button) findViewById(R.id.install_url);
-
-		connect.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				controller.connect();
-			}
-		});
-
-		install.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				install();
-			}
-		});
-
-		exist.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				exist();
-			}
-		});
-
-		uninstall.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				uninstall();
-			}
-		});
-
-		start.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				 start();
-				controller.login();
-
-			}
-
-		});
-
-		stop.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				stop();
-			}
-		});
-
-		disconnect.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				disconnect();
-			}
-		});
-
-		installurl.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				installURL();
-			}
-		});
-
-	}
-
-	protected void installURL() {
-		String message = DeviceMessage.installFromUrlMessage("playlist");
-		controller.publish("/system", message);
-		setText("Installing from URL");
-	}
-
-	protected void disconnect() {
-		controller.disconnect();
-		setText("Disconnecting");
-	}
-
-	protected void stop() {
-		String message = DeviceMessage.stopMessage("playlist");
-		controller.publish("/system", message);
-		setText("Stopping application");
-	}
-
-	protected void start() {
-		String message = DeviceMessage.startMessage("playlist");
-		controller.publish("/system", message);
-		setText("starting application");
-	}
-
-	protected void uninstall() {
-		String message = DeviceMessage.unInstallMessage("playlist");
-		controller.publish("/system", message);
-		setText("Uninstalling application");
-	}
-
-	protected void exist() {
-		String message = DeviceMessage.existMessage("playlist");
-		controller.publish("/system", message);
-	}
-
-	private void install() {
-		StreamToBase64String streamToBase64String = StreamToBase64String.getInstance(this);
-		String data = streamToBase64String.getBase64StringFromAssets("Playlist.zip");
-		String message = DeviceMessage.installMessage(data);
-		controller.publish("/system", message);
-		setText("Installing from device");
+		connect.setOnClickListener(this);
+		install.setOnClickListener(this);
+		uninstall.setOnClickListener(this);
+		start.setOnClickListener(this);
+		stop.setOnClickListener(this);
+		disconnect.setOnClickListener(this);
 	}
 
 	@Override
@@ -159,49 +61,16 @@ public class MainActivity extends Activity implements Callbacks {
 	}
 
 	private void setupPlayerButtons() {
-
-		connect.setVisibility(View.GONE);
-		install.setVisibility(View.GONE);
-		exist.setVisibility(View.GONE);
-		uninstall.setVisibility(View.GONE);
-		start.setVisibility(View.GONE);
-		stop.setVisibility(View.GONE);
-		disconnect.setVisibility(View.GONE);
-		installurl.setVisibility(View.GONE);
-
 		previous = (ImageButton) findViewById(R.id.prev);
 		next = (ImageButton) findViewById(R.id.next);
 		play = (ImageButton) findViewById(R.id.play);
 		pause = (ImageButton) findViewById(R.id.pause);
-
-		previous.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				controller.previous();
-			}
-		});
-
-		next.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				controller.next();
-			}
-		});
-
-		play.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				controller.play();
-			}
-		});
-
-		pause.setOnClickListener(new View.OnClickListener() {
-
-			public void onClick(View v) {
-				controller.pause();
-			}
-		});
-
+		
+		previous.setOnClickListener(this); 
+		next.setOnClickListener(this);
+		play.setOnClickListener(this);
+		pause.setOnClickListener(this);
+		
 		previous.setVisibility(View.VISIBLE);
 		play.setVisibility(View.VISIBLE);
 		next.setVisibility(View.VISIBLE);
@@ -221,4 +90,84 @@ public class MainActivity extends Activity implements Callbacks {
 		pause.setVisibility(View.GONE);
 	}
 
+	public void onStartedApplication(final boolean show) {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				if (show) {
+					stop.setVisibility(View.VISIBLE);
+					start.setVisibility(View.GONE);
+					uninstall.setVisibility(View.GONE);
+				} else {
+					stop.setVisibility(View.GONE);
+					start.setVisibility(View.VISIBLE);
+					uninstall.setVisibility(View.VISIBLE);
+				}
+			}
+		});
+
+	}
+
+	public void onInstalledApplication(final boolean show) {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				if (show) {
+					start.setVisibility(View.VISIBLE);
+					uninstall.setVisibility(View.VISIBLE);
+					install.setVisibility(View.GONE);
+				} else {
+					start.setVisibility(View.GONE);
+					uninstall.setVisibility(View.GONE);
+					install.setVisibility(View.VISIBLE);
+				}
+			}
+		});
+	}
+
+	public void onConnectedMQTT() {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				connect.setVisibility(View.GONE);
+				disconnect.setVisibility(View.VISIBLE);
+			}
+
+		});
+	}
+
+	public void onClick(View v) {
+		switch(v.getId()){
+		case R.id.connect:
+			controller.connect();
+			break;
+		case R.id.disconnect:
+			controller.disconnect();
+			break;
+		case R.id.install:
+			controller.install();
+			setText("Installing from device");
+			break;
+		case R.id.uninstall:
+			controller.uninstall();
+			break;
+		case R.id.start:
+			controller.start();
+			controller.login();
+			break;
+		case R.id.stop:
+			controller.stop();
+			break;
+		case R.id.play:
+			controller.play();
+			break;
+		case R.id.next:
+			controller.next();
+			break;
+		case R.id.pause:
+			controller.pause();
+			break;
+		case R.id.prev:
+			controller.previous();
+			break;
+		}
+		
+	}
 }

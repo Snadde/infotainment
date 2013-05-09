@@ -66,6 +66,14 @@ public class MqttWorker {
 		void onStop(boolean success);
 
 		void onUninstall(boolean success);
+
+		void onConnected();
+
+		void onActionPlay();
+
+		void onActionPause();
+
+		void onActionNext();
 	}
 
 	public MqttWorker(MQTTCallback mQTTCallback) {
@@ -98,7 +106,11 @@ public class MqttWorker {
 						mqttClient.connect();
 						// mqttClient.subscribe(TOPIC_SYSTEM);
 						mqttClient.subscribe("/playlist/1");
+						mqttClient.subscribe("/sensor/infotainment");
 						// TODO subscribe to steering wheel input
+						for (MQTTCallback callback : mQTTCallbacks) {
+							callback.onConnected();
+						}
 						Log.d(SERVICE_NAME, "subscribing");
 					} catch (MqttException e) {
 						e.printStackTrace();
@@ -124,23 +136,33 @@ public class MqttWorker {
 
 						try {
 							String action = json.getString("action");
-							String type = json.getString("type");
-							String data = json.getString("data");
+							String type = json.optString("type");
+							String data = json.optString("data");
 							boolean success = data.equals("success");
+
 							for (MQTTCallback callback : mQTTCallbacks) {
-								
-								if (type != null && type.equals("response")) {
-									if (action.equals("exist")) {
-										callback.onExist(success);
-									} else if (action.equals("install")) {
-										callback.onInstall(data);
-									} else if (action.equals("start")) {
-										callback.onStart(data);
-									} else if (action.equals("stop")) {
-										callback.onStop(success);
-									} else if (action.equals("uninstall")) {
-										callback.onUninstall(success);
-									}
+														
+									if (type.equals("response")) {
+										if (action.equals("exist")) {
+											callback.onExist(success);
+										} else if (action.equals("install")) {
+											callback.onInstall(data);
+										} else if (action.equals("start")) {
+											callback.onStart(data);
+										} else if (action.equals("stop")) {
+											callback.onStop(success);
+										} else if (action.equals("uninstall")) {
+											callback.onUninstall(success);
+										}
+									}else{
+										if (action.equals("play")) {
+											callback.onActionPlay();
+										} else if (action.equals("pause")) {
+											callback.onActionPause();
+										} else if (action.equals("next")) {
+											callback.onActionNext();
+										}
+										
 								}
 							}
 

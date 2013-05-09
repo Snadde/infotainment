@@ -24,43 +24,38 @@
                 android:id="@+id/disconnect"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Disconnect" />
+                android:text="Disconnect" 
+                android:visibility="gone"/>
 
-            <Button
-                android:id="@+id/exist"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Exist" />
 
             <Button
                 android:id="@+id/install"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Install" />
+                android:text="Install" 
+                android:visibility="gone"/>
 
-            <Button
-                android:id="@+id/install_url"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Install url" />
 
             <Button
                 android:id="@+id/start"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Start" />
+                android:text="Start" 
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/stop"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Stop" />
+                android:text="Stop" 
+                android:visibility="gone"/>
 
             <Button
                 android:id="@+id/uninstall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Uninstall" />
+                android:text="Uninstall" 
+                android:visibility="gone"/>
         </LinearLayout>
 
         <LinearLayout
