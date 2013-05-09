@@ -1,74 +1,120 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
-
-    <LinearLayout
-        android:layout_width="200px"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
-
-        <Button
-            android:id="@+id/connect"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Connect" />
-
-        <Button
-            android:id="@+id/disconnect"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Disconnect" />
-
-        <Button
-            android:id="@+id/exist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Exist" />
-
-        <Button
-            android:id="@+id/install"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Install" />
-
-        <Button
-            android:id="@+id/install_url"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Install url" />
-
-        <Button
-            android:id="@+id/start"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Start" />
-
-        <Button
-            android:id="@+id/stop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Stop" />
-
-        <Button
-            android:id="@+id/uninstall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Uninstall" />
-    </LinearLayout>
+    android:background="#000000" >
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical" >
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
 
-        <TextView
-            android:maxLines="1"
-            android:id="@+id/status"
+        <LinearLayout
+            android:layout_width="200px"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <Button
+                android:id="@+id/connect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Connect" />
+
+            <Button
+                android:id="@+id/disconnect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Disconnect" />
+
+            <Button
+                android:id="@+id/exist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Exist" />
+
+            <Button
+                android:id="@+id/install"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Install" />
+
+            <Button
+                android:id="@+id/install_url"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Install url" />
+
+            <Button
+                android:id="@+id/start"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Start" />
+
+            <Button
+                android:id="@+id/stop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Stop" />
+
+            <Button
+                android:id="@+id/uninstall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Uninstall" />
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="Hejsan" />
+            android:layout_height="wrap_content"
+            android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:maxLines="1"
+                android:text="Hejsan" />
+        </LinearLayout>
     </LinearLayout>
 
-</LinearLayout>
+
+        <ImageButton
+            android:id="@+id/play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/prev"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/play"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/prev"
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/pause"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/next"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/play"
+            android:layout_marginLeft="40dp"
+            android:layout_toRightOf="@+id/play"
+            android:src="@drawable/next"
+            android:visibility="gone" />
+
+        <ImageButton
+            android:id="@+id/prev"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginRight="40dp"
+            android:layout_toLeftOf="@+id/play"
+            android:src="@drawable/previous"
+            android:visibility="gone" />
+
+
+</RelativeLayout>
