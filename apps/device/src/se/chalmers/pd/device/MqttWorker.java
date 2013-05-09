@@ -11,11 +11,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Environment;
 import android.util.Log;
-
 
 /**
  * This service launches an MQTT client in a separate thread and subscribes to
@@ -47,21 +47,29 @@ public class MqttWorker {
 	public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
 	public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
 
-	private static final String BROKER = "tcp://192.168.2.2:1883";
+	private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "device";
 
 	private MqttClient mqttClient;
 	private String data;
 
-	private ArrayList<Callback> callbacks = new ArrayList<Callback>();
+	private ArrayList<MQTTCallback> mQTTCallbacks = new ArrayList<MQTTCallback>();
 	private Thread mqttClientThread;
 
-	public interface Callback {
-		public void onMessage(String topic, String payload);
+	public interface MQTTCallback {
+		void onExist(boolean success);
+
+		void onInstall(String result);
+
+		void onStart(String result);
+
+		void onStop(boolean success);
+
+		void onUninstall(boolean success);
 	}
 
-	public MqttWorker(Callback callback) {
-		callbacks.add(callback);
+	public MqttWorker(MQTTCallback mQTTCallback) {
+		mQTTCallbacks.add(mQTTCallback);
 	}
 
 	/**
@@ -88,9 +96,9 @@ public class MqttWorker {
 						mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
 						mqttClient.setCallback(new CustomMqttCallback());
 						mqttClient.connect();
-						mqttClient.subscribe(TOPIC_SYSTEM);
-						mqttClient.subscribe("/webapp/1");
-						//TODO subscribe to steering wheel input
+						// mqttClient.subscribe(TOPIC_SYSTEM);
+						mqttClient.subscribe("/playlist/1");
+						// TODO subscribe to steering wheel input
 						Log.d(SERVICE_NAME, "subscribing");
 					} catch (MqttException e) {
 						e.printStackTrace();
@@ -104,21 +112,42 @@ public class MqttWorker {
 				 */
 				class CustomMqttCallback implements MqttCallback {
 
-
-					public void messageArrived(MqttTopic topic, MqttMessage message) throws Exception {	
+					public void messageArrived(MqttTopic topic, MqttMessage message) throws Exception {
 						JSONObject json = new JSONObject(message.toString());
-						String payload = "";
-						String stringTopic = topic.toString();
-						payload = message.toString();
-						
-						Log.d(SERVICE_NAME, "messageArrived" + "topic:" + stringTopic + ", message:" + payload);
-						notifyCallbacks(stringTopic, payload);
+
+						Log.d(SERVICE_NAME,
+								"messageArrived" + "topic:" + topic.toString() + ", message:" + message.toString());
+						notifyCallbacks(json);
 					}
 
-					private void notifyCallbacks(String stringTopic, String payload) {
-						for (Callback callback : callbacks) {
-							callback.onMessage(stringTopic, payload);
+					private void notifyCallbacks(JSONObject json) {
+
+						try {
+							String action = json.getString("action");
+							String type = json.getString("type");
+							String data = json.getString("data");
+							boolean success = data.equals("success");
+							for (MQTTCallback callback : mQTTCallbacks) {
+								
+								if (type != null && type.equals("response")) {
+									if (action.equals("exist")) {
+										callback.onExist(success);
+									} else if (action.equals("install")) {
+										callback.onInstall(data);
+									} else if (action.equals("start")) {
+										callback.onStart(data);
+									} else if (action.equals("stop")) {
+										callback.onStop(success);
+									} else if (action.equals("uninstall")) {
+										callback.onUninstall(success);
+									}
+								}
+							}
+
+						} catch (JSONException e) {
+							e.printStackTrace();
 						}
+
 					}
 
 					public void deliveryComplete(MqttDeliveryToken token) {
@@ -157,7 +186,8 @@ public class MqttWorker {
 		Log.d("MqttWorker", "publishing topic " + topic + " with message " + message);
 		try {
 			MqttMessage payload = new MqttMessage(message.getBytes());
-			mqttClient.getTopic(topic).publish(payload);
+			// mqttClient.getTopic(topic).publish(payload);
+			mqttClient.getTopic(topic).publish(payload.getPayload(), 2, false);
 		} catch (MqttPersistenceException e) {
 			e.printStackTrace();
 		} catch (MqttException e) {

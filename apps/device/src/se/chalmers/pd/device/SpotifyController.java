@@ -13,7 +13,7 @@ public class SpotifyController {
 	interface PlaylistCallback {
 		void onLoginSuccess();
 
-		void onLoginFailed();
+		void onLoginFailed(String message);
 
 		void onPlay(boolean success);
 
@@ -21,7 +21,6 @@ public class SpotifyController {
 
 		void onEndOfTrack();
 
-		void onEndOfPlaylist();
 	}
 
 	private static final int USER_NAME = 0;
@@ -32,6 +31,7 @@ public class SpotifyController {
 	private boolean emptyList = true;
 	private ArrayList<Track> playlist;
 	private PlaylistCallback playlistCallback;
+	private Track currentTrack;
 	private Context context;
 
 	public SpotifyController(PlaylistCallback playlistCallback, Context context) {
@@ -56,28 +56,32 @@ public class SpotifyController {
 
 	public void play() {
 		if (!isPlaying && !emptyList) {
-			LibSpotifyWrapper.togglePlay(playlist.get(currentTrackIndex).getUri());
+			currentTrack = playlist.get(currentTrackIndex);
+			LibSpotifyWrapper.togglePlay(currentTrack.getUri());
 			isPlaying = true;
+		} else {
+			playlistCallback.onPlay(false);
 		}
-		playlistCallback.onPlay(isPlaying);
 	}
 
 	public void pause() {
 		if (isPlaying) {
-			LibSpotifyWrapper.togglePlay(playlist.get(currentTrackIndex).getUri());
+			LibSpotifyWrapper.togglePlay(currentTrack.getUri());
 			isPlaying = false;
+		} else {
+			playlistCallback.onPause(false);
 		}
-		playlistCallback.onPause(!isPlaying);
 	}
 
 	public void playNext() {
 		currentTrackIndex++;
 		if (playlist.size() <= currentTrackIndex) {
-			// callback to onEndOfPlaylist
-			emptyList = true;
-		} else {
-			LibSpotifyWrapper.playNext(playlist.get(currentTrackIndex).getUri());
+			currentTrackIndex = 0;
 		}
+
+		currentTrack = playlist.get(currentTrackIndex);
+		LibSpotifyWrapper.playNext(currentTrack.getUri());
+
 	}
 
 	public void login() {
@@ -87,11 +91,10 @@ public class SpotifyController {
 			int length = reader.read(buf);
 			String userDetails = new String(buf, 0, length);
 			String[] loginDetails = userDetails.split(",");
-			LibSpotifyWrapper.loginUser(loginDetails[USER_NAME], loginDetails[PASSWORD]);
+			LibSpotifyWrapper.loginUser(loginDetails[USER_NAME], loginDetails[PASSWORD], this.playlistCallback);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 	}
 
 	public void destroy() {
@@ -104,5 +107,9 @@ public class SpotifyController {
 
 	public int getIndexOfCurrentTrack() {
 		return currentTrackIndex;
+	}
+
+	public Track getCurrentTrack() {
+		return currentTrack;
 	}
 }

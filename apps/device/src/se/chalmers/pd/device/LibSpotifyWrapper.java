@@ -1,10 +1,12 @@
 package se.chalmers.pd.device;
 
+import se.chalmers.pd.device.SpotifyController.PlaylistCallback;
 import android.os.Handler;
 
 public class LibSpotifyWrapper {
 
 	private static Handler handler = new Handler();
+	private static PlaylistCallback callback;
 
 	native public static void init(ClassLoader loader, String storagePath);
 
@@ -22,8 +24,8 @@ public class LibSpotifyWrapper {
 
 	native public static void unstar();
 
-	public static void loginUser(String username, String password) {
-
+	public static void loginUser(String username, String password, PlaylistCallback playlistCallback) {
+		callback = playlistCallback;
 		login(username, password);
 	}
 
@@ -39,11 +41,11 @@ public class LibSpotifyWrapper {
 		handler.post(new Runnable() {
 			public void run() {
 				if (success) {
-					// mLoginDelegate.onLogin();
+					callback.onLoginSuccess();
 					System.out.println("onLogin success");
 				} else {
 					System.out.println("onLogin fail");
-					// mLoginDelegate.onLoginFailed(message);
+					callback.onLoginFailed(message);
 
 				}
 			}
@@ -55,8 +57,7 @@ public class LibSpotifyWrapper {
 		handler.post(new Runnable() {
 
 			public void run() {
-				// mPlayerPositionDelegate.onEndOfTrack();
-
+				callback.onEndOfTrack();
 			}
 		});
 	}
@@ -75,8 +76,7 @@ public class LibSpotifyWrapper {
 		handler.post(new Runnable() {
 
 			public void run() {
-				// mPlayerPositionDelegate.onPlayerPause();
-
+				callback.onPause(true);
 			}
 		});
 	}
@@ -85,7 +85,7 @@ public class LibSpotifyWrapper {
 		handler.post(new Runnable() {
 
 			public void run() {
-				// mPlayerPositionDelegate.onPlayerPlay();
+				callback.onPlay(true);
 				System.out.println("onPlayerPlay");
 			}
 		});
