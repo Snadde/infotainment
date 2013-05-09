@@ -11,7 +11,6 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.os.Environment;
@@ -134,40 +133,34 @@ public class MqttWorker {
 
 					private void notifyCallbacks(JSONObject json) {
 
-						try {
-							String action = json.getString("action");
-							String type = json.optString("type");
-							String data = json.optString("data");
-							boolean success = data.equals("success");
+						String action = json.optString("action");
+						String type = json.optString("type");
+						String data = json.optString("data");
+						boolean success = data.equals("success");
 
-							for (MQTTCallback callback : mQTTCallbacks) {
-														
-									if (type.equals("response")) {
-										if (action.equals("exist")) {
-											callback.onExist(success);
-										} else if (action.equals("install")) {
-											callback.onInstall(data);
-										} else if (action.equals("start")) {
-											callback.onStart(data);
-										} else if (action.equals("stop")) {
-											callback.onStop(success);
-										} else if (action.equals("uninstall")) {
-											callback.onUninstall(success);
-										}
-									}else{
-										if (action.equals("play")) {
-											callback.onActionPlay();
-										} else if (action.equals("pause")) {
-											callback.onActionPause();
-										} else if (action.equals("next")) {
-											callback.onActionNext();
-										}
-										
+						for (MQTTCallback callback : mQTTCallbacks) {
+
+							if (type.equals("response")) {
+								if (action.equals("exist")) {
+									callback.onExist(success);
+								} else if (action.equals("install")) {
+									callback.onInstall(data);
+								} else if (action.equals("start")) {
+									callback.onStart(data);
+								} else if (action.equals("stop")) {
+									callback.onStop(success);
+								} else if (action.equals("uninstall")) {
+									callback.onUninstall(success);
+								}
+							} else {
+								if (action.equals("play")) {
+									callback.onActionPlay();
+								} else if (action.equals("pause")) {
+									callback.onActionPause();
+								} else if (action.equals("next")) {
+									callback.onActionNext();
 								}
 							}
-
-						} catch (JSONException e) {
-							e.printStackTrace();
 						}
 
 					}
