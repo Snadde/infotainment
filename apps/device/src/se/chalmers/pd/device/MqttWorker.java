@@ -117,9 +117,7 @@ public class MqttWorker {
 				}
 
 				/**
-				 * Called when messages are received. Filters out data from
-				 * installation messages since it is too much to pass around as
-				 * Strings.
+				 * Called when messages are received.
 				 */
 				class CustomMqttCallback implements MqttCallback {
 
@@ -130,7 +128,11 @@ public class MqttWorker {
 								"messageArrived" + "topic:" + topic.toString() + ", message:" + message.toString());
 						notifyCallbacks(json);
 					}
-
+					/**
+					 * 	Calls different callbacks pending on what action it is in the Json object, 
+					 *  there is also a check for the type "response" for the system messages.
+					 * @param json
+					 */
 					private void notifyCallbacks(JSONObject json) {
 
 						String action = json.optString("action");

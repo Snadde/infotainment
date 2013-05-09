@@ -8,6 +8,13 @@ import java.util.List;
 import android.content.Context;
 import android.os.Environment;
 
+/**
+ * This class has the playlist and the connection with the libsspotifywrapper.
+ * It initializes the wrapper class and forwards different actions.
+ * 
+ * @author Patrik Thituson
+ * 
+ */
 public class SpotifyController {
 
 	interface PlaylistCallback {
@@ -40,6 +47,9 @@ public class SpotifyController {
 		init();
 	}
 
+	/**
+	 * Initiates the spotifywrapper by loading the libraries and playlist
+	 */
 	private void init() {
 		playlist = new ArrayList<Track>();
 		System.loadLibrary("spotify");
@@ -48,12 +58,26 @@ public class SpotifyController {
 				.getAbsolutePath() + "/Android/data/se.chalmers.pd.device");
 	}
 
+	/**
+	 * Adds a track to the playlist.
+	 * 
+	 * @param name
+	 *            the name of the track
+	 * @param artist
+	 *            name of the artist
+	 * @param spotifyUri
+	 *            the uri of the track
+	 */
 	public void addTrackToPlaylist(String name, String artist, String spotifyUri) {
 		Track newTrack = new Track(name, artist, spotifyUri);
 		playlist.add(newTrack);
 		emptyList = false;
 	}
-
+	
+	/**
+	 * Tries to start playing a track if it is not already playing or the playlist is empty.
+	 * uses the callback to notify back to the application controller.
+	 */
 	public void play() {
 		if (!isPlaying && !emptyList) {
 			currentTrack = playlist.get(currentTrackIndex);
@@ -63,7 +87,11 @@ public class SpotifyController {
 			playlistCallback.onPlay(false);
 		}
 	}
-
+	
+	/**
+	 * Tries to pause the playing a track if it is not already paused.
+	 * uses the callback to notify back to the application controller.
+	 */
 	public void pause() {
 		if (isPlaying) {
 			LibSpotifyWrapper.togglePlay(currentTrack.getUri());
@@ -72,7 +100,12 @@ public class SpotifyController {
 			playlistCallback.onPause(false);
 		}
 	}
-
+	
+	/**
+	 * Tries to play the next track of the playlist. If it is at the end 
+	 * it starts over.
+	 * uses the callback to notify back to the application controller.
+	 */
 	public void playNext() {
 		currentTrackIndex++;
 		if (playlist.size() <= currentTrackIndex) {
@@ -83,7 +116,10 @@ public class SpotifyController {
 		LibSpotifyWrapper.playNext(currentTrack.getUri());
 
 	}
-
+	/**
+	 * Reads the user name and password for spotify in a file called userdetails.txt.
+	 * Then tries to log in by calling the Lobsspotifywrapper.
+	 */
 	public void login() {
 		try {
 			InputStreamReader reader = new InputStreamReader(context.getAssets().open("userdetails.txt"));
@@ -96,21 +132,36 @@ public class SpotifyController {
 			e.printStackTrace();
 		}
 	}
-
+	/**
+	 * Destroys the libspotifywrapper
+	 */
 	public void destroy() {
 		LibSpotifyWrapper.destroy();
 	}
-
+	/**
+	 * 
+	 * @return playlist
+	 * 				the playlist with all tracks
+	 */
 	public List<Track> getPlaylist() {
 		return playlist;
 	}
-
+	/**
+	 * 
+	 * @return currentTrackIndex
+	 * 				the index of the current track
+	 */
 	public int getIndexOfCurrentTrack() {
 		return currentTrackIndex;
 	}
 
+	/**
+	 * 
+	 * @return currentTrack
+	 * 				the current track
+	 */
 	public Track getCurrentTrack() {
 		return currentTrack;
 	}
-	
+
 }
