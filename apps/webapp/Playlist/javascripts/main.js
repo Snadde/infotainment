@@ -21,7 +21,9 @@ $(document).ready(function() {
  var COMMAND_PLAY = "play";
  var COMMAND_PAUSE = "pause";
  var PRIVATE_CHANNEL = "/playlist";
+ var SENSOR_CHANNEL = "/sensor/infotainment"
  var debug = true;
+ var playing = false;
  
  /*
   *  Dev tests
@@ -62,7 +64,8 @@ $(document).ready(function() {
   *  Implementation
   */
  
- subscribe(PRIVATE_CHANNEL);
+subscribe(PRIVATE_CHANNEL);
+subscribe(SENSOR_CHANNEL);
  
  function subscribe(topic) {
      WebApp.subscribe(topic);        
@@ -74,7 +77,7 @@ $(document).ready(function() {
 
 function onMessage(topic, payload) {
 	log("onMessage: " + topic + " payload " + JSON.stringify(payload));
-     if(topic == PRIVATE_CHANNEL) {
+     if(topic == PRIVATE_CHANNEL || topic == SENSOR_CHANNEL) {
          handleMessagePayload(payload);
      }
 }
@@ -88,10 +91,11 @@ function onMessage(topic, payload) {
              $(this).parent('ul').append($(this)).find('li:last').fadeIn();
              updatePlayingInfo();
          });
-     } else if(payload.action = COMMAND_PLAY) {
+     } else if(payload.action == COMMAND_PLAY) {
+         playing = true;
          updatePlayingInfo();
          toggleButtons();
-     } else if(payload.action = COMMAND_PAUSE) {
+     } else if(payload.action == COMMAND_PAUSE) {
          playing = false;
          toggleButtons();
      }
@@ -105,8 +109,13 @@ function onMessage(topic, payload) {
  }
  
  function toggleButtons() {
-     $('#play').toggle();
-     $('#pause').toggle();
+     if(playing) {
+         $('#play').hide();
+         $('#pause').show();
+     } else {
+         $('#play').show();
+         $('#pause').hide();
+     }
  }
  
  function updateList(payload) {
