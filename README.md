@@ -1,8 +1,8 @@
 Infotainment and mobile devices project
 ---------------------------------------
+Please see the wiki for more detailed information about this project. https://github.com/Snadde/infotainment/wiki
 
-Experiments can be found in experiments folder.
-
+This readme will be updated once the project is finished.
 
 
 Device
