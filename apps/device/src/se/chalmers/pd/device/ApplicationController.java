@@ -22,6 +22,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		void onPlayerLoggedIn();
 
 		void onPlayerPlay();
+		
+		void onPlayerNext();
 
 		void onPlayerPause();
 
@@ -159,10 +161,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 */
 	public void onPlay(boolean success) {
 		if (success) {
-			int index = spotifyController.getIndexOfCurrentTrack();
-			Track currentTrack = spotifyController.getPlaylist().get(index);
-			// textview.setText("Currently Playing : " +
-			// currentTrack.getArtist() + " - " + currentTrack.getName());
 			callbacks.onPlayerPlay();
 		}
 
@@ -179,6 +177,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 */
 	public void onEndOfTrack() {
 		next();
+		callbacks.onPlayerNext();
 	}
 	
 	/**
@@ -320,6 +319,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 */
 	public void onActionPlay() {
 		spotifyController.play();
+		callbacks.onPlayerPlay();
 	}
 	
 	/**
@@ -328,6 +328,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 */
 	public void onActionPause() {
 		spotifyController.pause();
+		callbacks.onPlayerPause();
 	}
 	
 	/**
@@ -336,8 +337,22 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 */
 	public void onActionNext() {
 		spotifyController.playNext();
+		callbacks.onPlayerNext();
 	}
-
-
+	/**
+	 * 
+	 */
+	public boolean isConnectedToBroker(){
+		return mqttWorker.isConnected();
+	}
+	
+	public String getCurrentTrack() {
+		Track track = spotifyController.getCurrentTrack();		
+		if(track!=null){
+		return track.getArtist() + " - " + track.getName();
+		}
+		else
+			return "No tracks available";
+	}
 
 }
