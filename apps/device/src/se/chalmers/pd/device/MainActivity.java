@@ -111,16 +111,22 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	 * Callback that is called when the Player has started playing
 	 */
 	public void onPlayerPlay() {
-		play.setVisibility(View.GONE);
+		runOnUiThread(new Runnable() {
+			public void run() {
+				play.setVisibility(View.GONE);
 		pause.setVisibility(View.VISIBLE);
+			}});
 	}
 
 	/**
 	 * Callback that is called when the Player has paused playing
 	 */
 	public void onPlayerPause() {
+		runOnUiThread(new Runnable() {
+			public void run() {
 		play.setVisibility(View.VISIBLE);
 		pause.setVisibility(View.GONE);
+			}});
 	}
 	
 	/**
