@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -23,7 +22,7 @@ import android.widget.ToggleButton;
 public class MainActivity extends Activity implements Callbacks, View.OnClickListener {
 
 	private ApplicationController controller;
-	private TextView status;
+	private TextView currentTrack, status;
 	ImageButton previous, play, next, pause;
 	ToggleButton start;
 	MenuItem connect, disconnect, install, uninstall;
@@ -32,8 +31,8 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		currentTrack = (TextView) findViewById(R.id.currenttrack);
 		status = (TextView) findViewById(R.id.status);
-		status.setMovementMethod(new ScrollingMovementMethod());
 		controller = new ApplicationController(this);
 		setupButtons();
 		// log in to spotify
@@ -87,7 +86,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	 * @param text
 	 */
 	public void setText(String text) {
-		status.setText(text);
+		currentTrack.setText(text);
 	}
 
 	/**
@@ -137,13 +136,21 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	 * or stopped. The parameter 'show' will decide whether to show or hide the
 	 * buttons
 	 */
-	public void onStartedApplication(final boolean show) {
+	public void onStartedApplication(final String status) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				if (show) {
+				String message;
+				if (status.equals("start")) {
 					uninstall.setEnabled(false);
-				} else {
+					start.setChecked(true);
+					message = "Started application";
+				} else if (status.equals("stop")){
 					uninstall.setEnabled(true);
+					start.setChecked(false);
+					message = "Stopped application";
+				} else if (status.equals("error")){
+					start.setChecked(false);
+					alert("No application installed !");
 				}
 			}
 		});
@@ -159,8 +166,10 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 			public void run() {
 				if (show) {
 					uninstall.setEnabled(true);
+					changeStatus("Installed application found");
 				} else {
 					install.setEnabled(true);
+					changeStatus("No installed application");
 				}
 			}
 		});
@@ -169,11 +178,20 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	/**
 	 * Callback that is called when the application is connected with the broker
 	 */
-	public void onConnectedMQTT() {
+	public void onConnectedMQTT(final boolean connected) {
 		runOnUiThread(new Runnable() {
 			public void run() {
+				if(connected){
 				connect.setEnabled(false);
 				disconnect.setEnabled(true);
+				changeStatus("Connected to broker");
+				}
+				else{
+					connect.setEnabled(true);
+					disconnect.setEnabled(false);
+					changeStatus("Disconnected from broker");
+				}
+					
 			}
 
 		});
@@ -209,13 +227,14 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		case R.id.start:
 			if (controller.isConnectedToBroker()) {
 				if (start.isChecked()) {
+					start.setChecked(false);
 					controller.start();
 				} else {
 					controller.stop();
 				}
 			} else {
 				start.setChecked(false);
-				alert("Not connected to broker!");
+				alert("Not connected to broker! ");
 			}
 			break;
 		case R.id.play:
@@ -242,10 +261,14 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		AlertDialog alert = new AlertDialog.Builder(this).setTitle("Warning").setMessage(message)
 				.setNeutralButton("ok", new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
-						controller.connect();
+						// TODO maybe implement ? controller.connect();
 						dialog.cancel();
 					}
 				}).create();
 		alert.show();
 	}
+	
+	private void changeStatus(String message){
+		status.setText(message);
+		}
 }

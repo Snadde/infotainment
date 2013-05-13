@@ -13,6 +13,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="start" />
+        <TextView
+            android:id="@+id/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Not connected"
+            android:textAllCaps="true"
+            android:textSize="15sp" /> 
     </LinearLayout>
 
     <LinearLayout
@@ -22,7 +29,7 @@
         android:orientation="vertical" >
 
         <TextView
-            android:id="@+id/status"
+            android:id="@+id/currenttrack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
