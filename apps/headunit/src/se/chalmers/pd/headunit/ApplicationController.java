@@ -21,7 +21,7 @@ import android.widget.Toast;
  * passed on as json to the container web application that is running in the
  * webview.
  */
-public class ApplicationController implements Decompresser.Callback, MqttWorker.Callback {
+public class ApplicationController implements Decompresser.Callback, MqttWorker.Callback, DialogFactory.Callback {
 
 	private static final String HTTP_LOCALHOST = "http://localhost:8080/";
 	private final String DEFAULT_URL = "file:///android_asset/index.html";
@@ -41,17 +41,36 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	 * @param mainActivity
 	 */
 	public ApplicationController(WebView webView, Context context) {
-		this.mqttWorker = new MqttWorker(this);
+		this.mqttWorker = new MqttWorker(this, context);
 		this.webView = webView;
 		this.context = context;
+	}
+	
+	public void reconnect() {
+		mqttWorker.interrupt();
+		mqttWorker = new MqttWorker(this, context);
 		mqttWorker.start();
 	}
 	
-	/**
-	 * Tells the mqtt worker to connect the mqtt client.
-	 */
-	public void connect() {
-		mqttWorker.connect();
+	@Override
+	public void onConnected(boolean connected) {
+		if(connected) {
+			loadStartScreen();
+		} else {
+			((MainActivity) context).runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					DialogFactory.buildConnectDialog(context, ApplicationController.this).show();
+				}
+			});
+		}
+	}
+	
+	@Override
+	public void onConnectDialogAnswer(boolean result) {
+		if(result) {
+			reconnect();
+		}
 	}
 
 	/**
@@ -151,11 +170,6 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 		}
 		log("ApplicationController", "deleteRecursive " + appDir.getAbsolutePath());
 		appDir.delete();
-	}
-	
-	@Override
-	public void onConnected() {
-		loadStartScreen();
 	}
 
 	@Override
