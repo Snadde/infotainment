@@ -35,6 +35,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		void onInstalledApplication(boolean show);
 
 		void onConnectedMQTT(boolean connected);
+		
+		void onUpdateSeekbar(float position);	
 	}
 
 	private Context context;
@@ -360,6 +362,14 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 			return track.getArtist() + " - " + track.getName();
 		} else
 			return "No tracks available";
+	}
+	
+	public void seek(float position){
+		spotifyController.seek(position);
+	}
+
+	public void onPositionChanged(float position) {
+		callbacks.onUpdateSeekbar(position);		
 	}
 
 }

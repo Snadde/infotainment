@@ -66,7 +66,7 @@ public class LibSpotifyWrapper {
 		handler.post(new Runnable() {
 
 			public void run() {
-				// mPlayerPositionDelegate.onPlayerPositionChanged(position);
+				callback.onPositionChanged(position);
 
 			}
 		});

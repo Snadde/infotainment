@@ -27,6 +27,8 @@ public class SpotifyController {
 		void onPause(boolean success);
 
 		void onEndOfTrack();
+		
+		void onPositionChanged(float position);
 
 	}
 
@@ -162,6 +164,13 @@ public class SpotifyController {
 	 */
 	public Track getCurrentTrack() {
 		return currentTrack;
+	}
+	/**
+	 * Method for updating the tracks position
+	 * @param position
+	 */
+	public void seek(float position) {
+		LibSpotifyWrapper.seek(position);
 	}
 
 }

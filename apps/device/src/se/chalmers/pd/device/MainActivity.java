@@ -9,6 +9,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
@@ -23,9 +25,10 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 
 	private ApplicationController controller;
 	private TextView currentTrack, status;
-	ImageButton previous, play, next, pause;
-	ToggleButton start;
-	MenuItem connect, disconnect, install, uninstall;
+	private ImageButton previous, play, next, pause;
+	private ToggleButton start;
+	private MenuItem connect, disconnect, install, uninstall;
+	private SeekBar seekbar;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -33,6 +36,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		setContentView(R.layout.activity_main);
 		currentTrack = (TextView) findViewById(R.id.currenttrack);
 		status = (TextView) findViewById(R.id.status);
+		seekbar = (SeekBar) findViewById(R.id.seekbar);
 		controller = new ApplicationController(this);
 		setupButtons();
 		// log in to spotify
@@ -54,6 +58,17 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		next.setOnClickListener(this);
 		play.setOnClickListener(this);
 		pause.setOnClickListener(this);
+		seekbar.setMax(300);
+		seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+
+			public void onStopTrackingTouch(SeekBar seekBar) {
+					controller.seek((float) seekBar.getProgress() / seekBar.getMax());
+			}
+
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
+
+			public void onStartTrackingTouch(SeekBar seekBar) {}
+		});
 	}
 
 	@Override
@@ -277,4 +292,8 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	private void changeStatus(String message){
 		status.setText(message);
 		}
+
+	public void onUpdateSeekbar(float position) {
+		seekbar.setProgress((int) (position * seekbar.getMax()));	
+	}
 }
