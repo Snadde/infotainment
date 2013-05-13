@@ -68,7 +68,7 @@ public class MainActivity extends FragmentActivity {
 
 			switch (position) {
 			case FIRST_PAGE:
-				
+				fragment = new SearchFragment();
 				break;
 			case SECOND_PAGE:
 				args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
