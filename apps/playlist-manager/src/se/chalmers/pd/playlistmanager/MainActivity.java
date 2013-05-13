@@ -14,6 +14,11 @@ import android.widget.TextView;
 
 public class MainActivity extends FragmentActivity {
 
+	private static final int FIRST_PAGE = 0;
+	private static final int SECOND_PAGE = 1;
+	private static final int THIRD_PAGE = 2;
+	private static final int TOTAL_PAGES = 3;
+
 	/**
 	 * The {@link android.support.v4.view.PagerAdapter} that will provide
 	 * fragments for each of the sections. We use a
@@ -43,7 +48,7 @@ public class MainActivity extends FragmentActivity {
 		// Set up the ViewPager with the sections adapter.
 		mViewPager = (ViewPager) findViewById(R.id.pager);
 		mViewPager.setAdapter(mSectionsPagerAdapter);
-		controller = new ApplicationController();
+		controller = new ApplicationController(this);
 	}
 
 	/**
@@ -58,11 +63,18 @@ public class MainActivity extends FragmentActivity {
 
 		@Override
 		public Fragment getItem(int position) {
-			// getItem is called to instantiate the fragment for the given page.
-			// Return a DummySectionFragment (defined as a static inner class
-			// below) with the page number as its lone argument.
 			Fragment fragment = new DummySectionFragment();
 			Bundle args = new Bundle();
+
+			switch (position) {
+			case FIRST_PAGE:
+				break;
+			case SECOND_PAGE:
+				break;
+			case THIRD_PAGE:
+				break;
+			}
+
 			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
 			fragment.setArguments(args);
 			return fragment;
@@ -70,18 +82,17 @@ public class MainActivity extends FragmentActivity {
 
 		@Override
 		public int getCount() {
-			// Show 3 total pages.
-			return 3;
+			return TOTAL_PAGES;
 		}
 
 		@Override
 		public CharSequence getPageTitle(int position) {
 			switch (position) {
-			case 0:
+			case FIRST_PAGE:
 				return getString(R.string.title_section1).toUpperCase();
-			case 1:
+			case SECOND_PAGE:
 				return getString(R.string.title_section2).toUpperCase();
-			case 2:
+			case THIRD_PAGE:
 				return getString(R.string.title_section3).toUpperCase();
 			}
 			return null;

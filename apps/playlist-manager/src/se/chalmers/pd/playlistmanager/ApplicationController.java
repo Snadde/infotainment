@@ -1,12 +1,43 @@
 package se.chalmers.pd.playlistmanager;
 
-public class ApplicationController implements MqttWorker.Callback {
+import android.content.Context;
+
+public class ApplicationController implements MqttWorker.Callback, DialogFactory.Callback {
 	
 	private MqttWorker mqttWorker;
+	private Context context;
 
-	public ApplicationController() {
+	public ApplicationController(Context context) {
 		mqttWorker = new MqttWorker(this);
 		mqttWorker.start();
+		this.context = context;
+	}
+	
+	public void reconnect() {
+		mqttWorker.interrupt();
+		mqttWorker = new MqttWorker(this);
+		mqttWorker.start();
+	}
+	
+	@Override
+	public void onConnected(boolean connected) {
+		if(connected) {
+			
+		} else {
+			((MainActivity) context).runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					DialogFactory.buildConnectDialog(context, ApplicationController.this).show();
+				}
+			});
+		}
+	}
+	
+	@Override
+	public void onConnectDialogAnswer(boolean result) {
+		if(result) {
+			reconnect();
+		}
 	}
 
 	@Override
@@ -14,8 +45,4 @@ public class ApplicationController implements MqttWorker.Callback {
 		
 	}
 
-	@Override
-	public void onConnected(boolean connected) {
-		
-	}
 }
