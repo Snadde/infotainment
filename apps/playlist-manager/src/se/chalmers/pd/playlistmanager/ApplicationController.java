@@ -1,9 +1,12 @@
 package se.chalmers.pd.playlistmanager;
 
 import android.content.Context;
+import android.util.Log;
 
 public class ApplicationController implements MqttWorker.Callback, DialogFactory.Callback {
 	
+	private static final String TOPIC_PLAYLIST = "/playlist";
+	private static final String TAG = "ApplicationController";
 	private MqttWorker mqttWorker;
 	private Context context;
 
@@ -22,8 +25,10 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	@Override
 	public void onConnected(boolean connected) {
 		if(connected) {
-			
+			mqttWorker.subscribe(TOPIC_PLAYLIST);
+			Log.d(TAG, "Now subscribing to " + TOPIC_PLAYLIST);
 		} else {
+			
 			((MainActivity) context).runOnUiThread(new Runnable() {
 				@Override
 				public void run() {

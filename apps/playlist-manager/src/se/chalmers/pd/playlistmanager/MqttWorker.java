@@ -81,7 +81,7 @@ public class MqttWorker extends Thread {
 				mqttClient.subscribe(TOPIC_SYSTEM);
 				notifyOnConnected();
 				connected = true;
-				Log.d(WORKER_NAME, "Connected and subscribing to system");
+				Log.d(WORKER_NAME, "Connected and subscribing to " + TOPIC_SYSTEM);
 			} catch (MqttSecurityException e) {
 				Log.e(WORKER_NAME, "Could not connect to the broker " + e.getMessage());
 			} catch (MqttException e) {

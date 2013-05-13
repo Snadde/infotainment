@@ -68,15 +68,19 @@ public class MainActivity extends FragmentActivity {
 
 			switch (position) {
 			case FIRST_PAGE:
+				
 				break;
 			case SECOND_PAGE:
+				args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
+				fragment.setArguments(args);
 				break;
 			case THIRD_PAGE:
+				args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
+				fragment.setArguments(args);
 				break;
 			}
 
-			args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, position + 1);
-			fragment.setArguments(args);
+			
 			return fragment;
 		}
 
