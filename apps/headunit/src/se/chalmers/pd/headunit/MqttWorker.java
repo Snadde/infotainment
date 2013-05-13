@@ -12,17 +12,18 @@ import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
 /**
- * This thread launches an MQTT client and subscribes to
- * the systems basic topics. When a message is received, it broadcasts the
- * message using custom intent filters.
+ * This thread launches an MQTT client and subscribes to the systems basic
+ * topics. When a message is received, it broadcasts the message using custom
+ * intent filters.
  * 
  */
 public class MqttWorker extends Thread {
-	
+
 	public static final String ACTION_DATA = "data";
 	public static final String ACTION_INSTALL = "install";
 	public static final String ACTION = "action";
@@ -36,24 +37,26 @@ public class MqttWorker extends Thread {
 	public static final String ACTION_STOP = "stop";
 	public static final String ACTION_PENDING = "pending";
 	public static final String TOPIC_SYSTEM = "/system";
-	
+
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
 	private static final String WORKER_NAME = "MqttWorker";
-	private static final String BROKER = "tcp://192.168.2.2:1883";
+	private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "headunit";
-	
-	
+
 	private MqttClient mqttClient;
 	private Callback callback;
 	private String data;
-	
+	private Context context;
+
 	public interface Callback {
 		public void onMessage(String topic, String payload);
-		public void onConnected();
+
+		public void onConnected(boolean connected);
 	}
-	
-	public MqttWorker(Callback callback) {
+
+	public MqttWorker(Callback callback, Context context) {
 		this.callback = callback;
+		this.context = context;
 	}
 
 	@Override
@@ -64,22 +67,31 @@ public class MqttWorker extends Thread {
 			MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
 			mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
 			mqttClient.setCallback(new CustomMqttCallback());
+			if(!connect()) {
+				callback.onConnected(false);
+				return;
+			}
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public void connect() {
-		try {
-			mqttClient.connect();
-			mqttClient.subscribe(TOPIC_SYSTEM);
-			notifyOnConnected();
-			Log.d(WORKER_NAME, "Connected and subscribing to system");
-		} catch (MqttSecurityException e) {
-			e.printStackTrace();
-		} catch (MqttException e) {
-			e.printStackTrace();
+
+	private boolean connect() {
+		boolean connected = false;
+		if (mqttClient != null) {
+			try {
+				mqttClient.connect();
+				mqttClient.subscribe(TOPIC_SYSTEM);
+				notifyOnConnected();
+				connected = true;
+				Log.d(WORKER_NAME, "Connected and subscribing to system");
+			} catch (MqttSecurityException e) {
+				Log.e(WORKER_NAME, "Could not connect to the broker " + e.getMessage());
+			} catch (MqttException e) {
+				Log.e(WORKER_NAME, "Could not connect to the broker " + e.getMessage());
+			}
 		}
+		return connected;
 	}
 
 	/**
@@ -130,9 +142,9 @@ public class MqttWorker extends Thread {
 	}
 
 	private void notifyOnConnected() {
-		callback.onConnected();
+		callback.onConnected(true);
 	}
-	
+
 	public String getApplicationRawData() {
 		return data;
 	}
@@ -166,7 +178,7 @@ public class MqttWorker extends Thread {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			
+
 			callback.onMessage(stringTopic, payload);
 			Log.d(WORKER_NAME, "messageArrived" + "topic:" + stringTopic + ", message:" + payload);
 		}
