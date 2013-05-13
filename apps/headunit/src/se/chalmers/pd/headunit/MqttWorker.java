@@ -46,7 +46,6 @@ public class MqttWorker extends Thread {
 	private MqttClient mqttClient;
 	private Callback callback;
 	private String data;
-	private Context context;
 
 	public interface Callback {
 		public void onMessage(String topic, String payload);
@@ -56,7 +55,6 @@ public class MqttWorker extends Thread {
 
 	public MqttWorker(Callback callback, Context context) {
 		this.callback = callback;
-		this.context = context;
 	}
 
 	@Override
