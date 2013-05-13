@@ -6,6 +6,7 @@
 apps/headunit/gen/se/chalmers/pd/headunit/R.java
 apps/sensors/infotainment/
 apps/dashboard/gen/se/chalmers/pd/dashboard/R.java
+apps/playlist-manager/gen/*
 
 #libspotify
 jni/key.h
