@@ -2,9 +2,10 @@
 *.class
 *.DS_Store
 *bin/
-apps/dashboard/gen/se/chalmers/pd/dashboard/R.java
+*/R.java
 
 #libspotify
 jni/key.h
 obj
 apps/device/assets/userdetails.txt
+apps/device/libs/armeabi/libspotifywrapper.so
