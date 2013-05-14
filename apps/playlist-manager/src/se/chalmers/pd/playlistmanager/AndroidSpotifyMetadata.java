@@ -47,7 +47,7 @@ public class AndroidSpotifyMetadata {
 		
 		AsyncTask<String, Void, Response> worker = new AsyncTask<String, Void, Response>() {
 			Response response;
-
+			
 			@Override
 			protected Response doInBackground(String... params) {
 				URL url;

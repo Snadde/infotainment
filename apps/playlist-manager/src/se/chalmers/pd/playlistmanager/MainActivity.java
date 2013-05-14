@@ -10,12 +10,13 @@ import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.widget.SearchView;
 
-public class MainActivity extends FragmentActivity implements AndroidSpotifyMetadata.Callback, ApplicationController.Callback {
+public class MainActivity extends FragmentActivity implements AndroidSpotifyMetadata.Callback, ApplicationController.Callback, QueryTextListener.Callback {
 
 	
 	private SectionsPagerAdapter sectionsPagerAdapter;
 	private ViewPager viewPager;
 	private ApplicationController controller;
+	private LoadingDialogFragment loadingFragment;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +38,19 @@ public class MainActivity extends FragmentActivity implements AndroidSpotifyMeta
 		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 		SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
 		searchView.setSearchableInfo(searchManager.getSearchableInfo(this.getComponentName()));
-		searchView.setOnQueryTextListener(new QueryTextListener(this));
+		searchView.setOnQueryTextListener(new QueryTextListener(this, this));
 		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public void onSearchBegin() {
+		loadingFragment = LoadingDialogFragment.newInstance();
+		loadingFragment.show(getFragmentManager(), "LoadingFragment");
 	}
 
 	@Override
 	public void onSearchResult(ArrayList<Track> tracks) {
+		loadingFragment.dismiss();
 		viewPager.setCurrentItem(SectionsPagerAdapter.FIRST_PAGE, true);
 		sectionsPagerAdapter.updateResults(tracks);
 	}
