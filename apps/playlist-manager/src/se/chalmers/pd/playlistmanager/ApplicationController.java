@@ -2,25 +2,37 @@ package se.chalmers.pd.playlistmanager;
 
 import java.util.ArrayList;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.util.Log;
 
 public class ApplicationController implements MqttWorker.Callback, DialogFactory.Callback {
 	
+
 	public interface Callback {
 		public void onSearchResult(ArrayList<Track> tracks);
+		public void onUpdatePlaylist(Track track);
 	}
 	
 	private static final String TOPIC_PLAYLIST = "/playlist";
 	private static final String TAG = "ApplicationController";
+	private static final String ACTION = "action";
+	private static final String ACTION_ADD = "add";
+	private static final String TRACK_URI = "uri";
+	private static final String TRACK_NAME = "track_name";
+	private static final String TRACK_ARTIST = "artist";
+	
 	private MqttWorker mqttWorker;
 	private Context context;
-	private ArrayList<Track> tracks;
+	private Callback callback;
 
-	public ApplicationController(Context context) {
+	public ApplicationController(Context context, Callback callback) {
 		mqttWorker = new MqttWorker(this);
 		mqttWorker.start();
 		this.context = context;
+		this.callback = callback;
 	}
 	
 	public void reconnect() {
@@ -55,6 +67,20 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	@Override
 	public void onMessage(String topic, String payload) {
 		
+	}
+
+	public void addTrack(Track track) {
+		JSONObject message = new JSONObject();
+		try {
+			message.put(ACTION, ACTION_ADD);
+			message.put(TRACK_ARTIST, track.getArtist());
+			message.put(TRACK_NAME, track.getName());
+			message.put(TRACK_URI, track.getUri());
+			mqttWorker.publish(TOPIC_PLAYLIST, message.toString());
+			callback.onUpdatePlaylist(track);
+		} catch (JSONException e) {
+			Log.e(TAG, "Could not create and send json object from track " + track.toString() + " with error: " + e.getMessage());
+		}
 	}
 
 	

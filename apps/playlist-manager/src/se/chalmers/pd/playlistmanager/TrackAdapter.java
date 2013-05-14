@@ -19,6 +19,11 @@ public class TrackAdapter extends ArrayAdapter<Track> {
 		this.tracks = tracks;
 		this.context = context;
 	}
+	
+	public void addTrack(Track track) {
+		tracks.add(track);
+		notifyDataSetChanged();
+	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {

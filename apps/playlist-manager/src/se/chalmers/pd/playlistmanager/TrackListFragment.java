@@ -11,10 +11,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class TrackListFragment extends ListFragment {
-
 	
-	public TrackListFragment() {
-	}
+	public TrackListFragment() { }
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -30,13 +28,9 @@ public class TrackListFragment extends ListFragment {
 	}
 
 	@Override
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
-	}
-
-	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-
+		Track track = (Track) getListAdapter().getItem(position);
+		((MainActivity)getActivity()).onTrackSelected(track);
 	}
 
 	public void updateResults(ArrayList<Track> tracks) {
@@ -46,6 +40,10 @@ public class TrackListFragment extends ListFragment {
 	private void setupAdapter(final ArrayList<Track> tracks) {
 		ArrayAdapter<Track> adapter = new TrackAdapter(getActivity(), android.R.layout.simple_list_item_2, tracks);
 		setListAdapter(adapter);
+	}
+
+	public void updatePlaylist(Track track) {
+		((TrackAdapter) getListAdapter()).add(track);
 	}
 
 }

@@ -16,11 +16,12 @@ import android.view.ViewGroup;
 import android.widget.SearchView;
 import android.widget.TextView;
 
-public class MainActivity extends FragmentActivity implements AndroidSpotifyMetadata.Callback {
+public class MainActivity extends FragmentActivity implements AndroidSpotifyMetadata.Callback, ApplicationController.Callback {
 
 	
 	private SectionsPagerAdapter sectionsPagerAdapter;
 	private ViewPager viewPager;
+	private ApplicationController controller;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -35,10 +36,9 @@ public class MainActivity extends FragmentActivity implements AndroidSpotifyMeta
 		sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), searchTracks, playlistTracks, this);
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		viewPager.setAdapter(sectionsPagerAdapter);
-		new ApplicationController(this);
+		controller = new ApplicationController(this, this);
 	}
 	
-
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.search_menu, menu);
@@ -53,6 +53,15 @@ public class MainActivity extends FragmentActivity implements AndroidSpotifyMeta
 	public void onSearchResult(ArrayList<Track> tracks) {
 		viewPager.setCurrentItem(SectionsPagerAdapter.FIRST_PAGE, true);
 		sectionsPagerAdapter.updateResults(tracks);
+	}
+	
+	public void onTrackSelected(Track track) {
+		controller.addTrack(track);
+	}
+	
+	@Override
+	public void onUpdatePlaylist(Track track) {
+		sectionsPagerAdapter.updatePlaylist(track);
 	}
 
 	public static class DummySectionFragment extends Fragment {
