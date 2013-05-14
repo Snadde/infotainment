@@ -21,7 +21,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	private static final String ACTION = "action";
 	private static final String ACTION_ADD = "add";
 	private static final String TRACK_URI = "uri";
-	private static final String TRACK_NAME = "track_name";
+	private static final String TRACK_NAME = "track";
 	private static final String TRACK_ARTIST = "artist";
 	
 	private MqttWorker mqttWorker;
