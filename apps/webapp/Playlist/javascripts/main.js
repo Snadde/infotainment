@@ -6,9 +6,14 @@ var PRIVATE_CHANNEL = "/playlist";
 var SENSOR_CHANNEL = "/sensor/infotainment"
 var debug = true;
 var playing = false;
+var playlist = [];
+var currentTrack = 0;
+var currentTime = 0;
+var totalTime = 0;
+var meter;
 
 $(document).ready(function () {
-
+    meter = $('#meter span');
     $('#search-form').submit(function () {
         $.spotifyTrackSearch($('#search-input').val(), function (data) {
             var html = '';
@@ -29,10 +34,23 @@ $(document).ready(function () {
         }
         publish(PRIVATE_CHANNEL, JSON.stringify(message));
     });
+    
+    meter.timer({
+        callback: function() { 
+            currentTime++;
+            var percent = (currentTime / totalTime) * 100;
+            if(percent <= 100) {
+                meter.css('width', percent + '%');
+            }
+        },
+        delay: 1000,
+        repeat: true,
+        autostart: false
+    });
+    
+    subscribe(PRIVATE_CHANNEL);
+    subscribe(SENSOR_CHANNEL);
 });
-
-subscribe(PRIVATE_CHANNEL);
-subscribe(SENSOR_CHANNEL);
 
 function subscribe(topic) {
     WebApp.subscribe(topic);
@@ -54,7 +72,9 @@ function handleMessagePayload(payload) {
     log("handleMessagePayload: " + payload);
     if (payload.action == COMMAND_ADD) {
         updateList(payload);
+        playlist.push(payload);
     } else if (payload.action == COMMAND_NEXT) {
+        currentTrack = ++currentTrack % playlist.length;
         var elem = $('#options-list li:first');
         while (elem.is(':animated')) {
             elem = elem.next('li');
@@ -63,20 +83,27 @@ function handleMessagePayload(payload) {
             $(this).parent('ul').append($(this)).find('li:last').fadeIn();
             updatePlayingInfo();
         });
+        currentTime = 0;
+        totalTime = playlist[currentTrack].tracklength;
+        meter.css('width', '0%');
     } else if (payload.action == COMMAND_PLAY) {
         playing = true;
         updatePlayingInfo();
         toggleButtons();
+        totalTime = playlist[currentTrack].tracklength;
+        meter.timer('start');
     } else if (payload.action == COMMAND_PAUSE) {
         playing = false;
         toggleButtons();
+        meter.timer('stop');
     }
 }
 
-function updatePlayingInfo() {
+function updatePlayingInfo() {    
     $('#current-song-section h2').html(
         $('#options-list li:first span.artist').text() + " &ndash; " +
-        $('#options-list li:first span.track').text());
+        $('#options-list li:first span.track').text()
+    );
 }
 
 function toggleButtons() {
@@ -92,7 +119,7 @@ function toggleButtons() {
 function updateList(payload) {
     $('#options-list').append(
         $('<li/>', {
-        html: '<span class="artist">' + payload.artist + '</span>' + "<br/>" + '<span class="track">' + payload.track + '</span>'
+        html: '<span class="artist">' + payload.artist + '</span>' + "<br/>" + '<span class="track">' + payload.track + '</span>' + '<span class="tracklength"> &ndash; ' + payload.tracklength + ' s.</span>'
     }).hide().fadeIn());
 }
 

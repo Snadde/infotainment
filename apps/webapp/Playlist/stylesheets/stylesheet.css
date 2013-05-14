@@ -86,8 +86,20 @@ li {
     width: 320px;
 }
 
-#options span.track {
+#options span.track, #options span.tracklength {
     font-size: 20px;
+}
+
+#meter {
+    width: 450px;
+    margin: 25px auto 0px;
+    background: #333;
+}
+
+#meter span {
+    background: #33b5e5;
+    height: 3px;
+    display: block;
 }
 
 .wrapper-section {
