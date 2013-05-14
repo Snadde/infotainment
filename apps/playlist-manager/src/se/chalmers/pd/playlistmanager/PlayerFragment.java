@@ -39,7 +39,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 	@Override
 	public void onClick(View v) {
 		
-		Action action;
+		Action action = Action.NONE;
 		switch (v.getId()) {
 		case R.id.play:
 			action = Action.play;

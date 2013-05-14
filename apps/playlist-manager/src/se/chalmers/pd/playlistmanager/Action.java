@@ -6,5 +6,6 @@ public enum Action {
 	play,
 	next,
 	pause,
-	prev
+	prev,
+	NONE
 }
