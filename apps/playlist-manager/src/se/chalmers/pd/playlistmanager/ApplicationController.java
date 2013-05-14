@@ -97,4 +97,27 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 		}
 	}
 
+	public void performAction(Action action) {
+		switch (action) {
+		case play:
+		case pause:
+		case prev:
+		case next:
+			mqttWorker.publish(TOPIC_PLAYLIST, getJsonActionMessage(action.toString()));
+			break;
+		default:
+			break;
+		}
+	}
+
+	private String getJsonActionMessage(String action) {
+		JSONObject json = new JSONObject();
+		try {
+			json.put(Action.action.toString(), action);
+		} catch (JSONException e) {
+			Log.e(TAG, "Could not create and send json object from action " + action + " with error: " + e.getMessage());
+		}
+		return json.toString();
+	}
+
 }
