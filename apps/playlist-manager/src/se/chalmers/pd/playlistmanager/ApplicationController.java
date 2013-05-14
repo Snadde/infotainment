@@ -1,14 +1,21 @@
 package se.chalmers.pd.playlistmanager;
 
+import java.util.ArrayList;
+
 import android.content.Context;
 import android.util.Log;
 
 public class ApplicationController implements MqttWorker.Callback, DialogFactory.Callback {
 	
+	public interface Callback {
+		public void onSearchResult(ArrayList<Track> tracks);
+	}
+	
 	private static final String TOPIC_PLAYLIST = "/playlist";
 	private static final String TAG = "ApplicationController";
 	private MqttWorker mqttWorker;
 	private Context context;
+	private ArrayList<Track> tracks;
 
 	public ApplicationController(Context context) {
 		mqttWorker = new MqttWorker(this);
@@ -49,5 +56,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	public void onMessage(String topic, String payload) {
 		
 	}
+
+	
 
 }
