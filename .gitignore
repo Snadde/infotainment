@@ -3,12 +3,13 @@
 *.DS_Store
 *bin/
 
-apps/headunit/gen/se/chalmers/pd/headunit/R.java
 apps/sensors/infotainment/
-apps/dashboard/gen/se/chalmers/pd/dashboard/R.java
+apps/playlist-manager/gen/*
+*/R.java
 
 #libspotify
 jni/key.h
 obj
-userdetails.txt
+apps/device/assets/userdetails.txt
+apps/device/libs/armeabi/libspotifywrapper.so
 
