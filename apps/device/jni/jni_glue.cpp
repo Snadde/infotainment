@@ -104,14 +104,6 @@ JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_playnext(JNI
 	je->ReleaseStringUTFChars(j_uri, uri);
 }
 
-JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_star(JNIEnv *je, jclass jc) {
-	addTask(star, "star");
-}
-
-JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_unstar(JNIEnv *je, jclass jc) {
-	addTask(unstar, "unstar");
-}
-
 JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_seek(JNIEnv *je, jclass jc, jfloat position) {
 	list<int> int_params;
 	int_params.push_back((int) (position * 100.0));

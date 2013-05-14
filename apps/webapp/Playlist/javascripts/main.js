@@ -87,7 +87,11 @@ function onMessage(topic, payload) {
      if(payload.action == COMMAND_ADD) {
          updateList(payload);
      } else if (payload.action == COMMAND_NEXT) {
-         $('#options-list li:first').slideUp(function() {
+         var elem = $('#options-list li:first');
+         while(elem.is(':animated')) {
+             elem = elem.next('li');
+         }
+         elem.slideUp(function() {
              $(this).parent('ul').append($(this)).find('li:last').fadeIn();
              updatePlayingInfo();
          });

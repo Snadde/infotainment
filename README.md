@@ -1,5 +1,6 @@
 Infotainment and mobile devices project
 ---------------------------------------
+
 Please see the wiki for more detailed information about this project.
 https://github.com/Snadde/infotainment/wiki
 

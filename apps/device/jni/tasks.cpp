@@ -42,9 +42,6 @@ static bool s_play_after_loaded = false;
 
 static void on_pause();
 static void on_play();
-static void on_starred();
-static void on_unstarred();
-static void set_star(bool is_starred, sp_session *session, sp_track *track);
 
 void login(list<int> int_params, list<string> string_params, sp_session *session, sp_track *track) {
 	if (session == NULL)
@@ -66,7 +63,6 @@ static void load_and_play_track(sp_session *session, sp_track *track) {
 	sp_session_player_load(session, track);
 	if (s_play_after_loaded)
 		play_track(session, track);
-	(sp_track_is_starred(session, track)) ? on_starred() : on_unstarred();
 }
 
 // Load the track if the metadata update was concerning the track
@@ -131,16 +127,6 @@ void pause(list<int> int_params, list<string> string_params, sp_session *session
 	}
 }
 
-void star(list<int> int_params, list<string> string_params, sp_session *session, sp_track *track) {
-	set_star(true, session, track);
-	on_starred();
-}
-
-void unstar(list<int> int_params, list<string> string_params, sp_session *session, sp_track *track) {
-	set_star(false, session, track);
-	on_unstarred();
-}
-
 void seek(list<int> int_params, list<string> string_params, sp_session *session, sp_track *track) {
 	float position = (float)int_params.front() / 100.0;
 	int pos_ms = (int) ((float) sp_track_duration(track) * position);
@@ -202,15 +188,4 @@ static void on_pause() {
 static void on_play() {
 	call_static_void_method("onPlayerPlay");
 }
-static void on_starred() {
-	call_static_void_method("onTrackStarred");
-}
-static void on_unstarred() {
-	log("Unstarred now");
-	call_static_void_method("onTrackUnStarred");
-}
 
-static void set_star(bool is_starred, sp_session *session, sp_track *track) {
-	if (sp_track_set_starred(session, &track, 1, is_starred) != SP_ERROR_OK)
-		exitl("Could not star/unstar the track");
-}

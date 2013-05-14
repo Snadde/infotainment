@@ -1,10 +1,11 @@
 package se.chalmers.pd.sensors;
 
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttDefaultFilePersistence;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
+import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 /**
  * This worker launches an MQTT client in a separate thread and subscribes to
@@ -23,6 +24,7 @@ public class MqttWorker extends Thread {
 	private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "sensors";
 	private MqttClient mqttClient;
+	private MqttConnectOptions connectionOptions;
 
 	public MqttWorker() {
 
@@ -34,6 +36,8 @@ public class MqttWorker extends Thread {
 			this.setName(WORKER_NAME);
 			String tmpDir = System.getProperty("user.dir") + STORAGE_DIRECTORY;
 			MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
+			connectionOptions = new MqttConnectOptions();
+            connectionOptions.setKeepAliveInterval(10);
 			mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
 			mqttClient.connect();
 		} catch (MqttException e) {
