@@ -70,6 +70,7 @@ public class MainActivity extends FragmentActivity implements AndroidSpotifyMeta
 	}
 
 	public void onPlayerAction(Action action) {
+		controller.performAction(action);
 		// FIXME: handle action from player fragment
 		// FIXME: refactor all actions to use Action
 	}
