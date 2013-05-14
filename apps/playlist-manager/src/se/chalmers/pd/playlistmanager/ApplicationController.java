@@ -96,6 +96,4 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 		}
 	}
 
-	
-
 }

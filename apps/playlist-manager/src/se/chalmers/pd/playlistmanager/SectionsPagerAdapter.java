@@ -2,7 +2,6 @@ package se.chalmers.pd.playlistmanager;
 
 import java.util.ArrayList;
 
-import se.chalmers.pd.playlistmanager.MainActivity.DummySectionFragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -21,6 +20,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	private ArrayList<Track> searchTracks;
 	private ArrayList<Track> playlistTracks;
 	private Context context;
+	private PlayerFragment playerFragment;
 	
 	
 	public SectionsPagerAdapter(FragmentManager fm, ArrayList<Track> searchTracks, ArrayList<Track> playlistTracks, Context context) {
@@ -32,7 +32,6 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
 	@Override
 	public Fragment getItem(int position) {
-		Fragment f = new Fragment();
 		Bundle args = new Bundle();
 		switch (position) {
 		case FIRST_PAGE:
@@ -48,11 +47,10 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 			playlistFragment.setArguments(args);
 			return playlistFragment;
 		case THIRD_PAGE:
-			f = new DummySectionFragment();
-			break;
+			playerFragment = new PlayerFragment();
+			return playerFragment;
 		}
-		f.setArguments(args);
-		return f;
+		return null;
 	}
 
 	@Override

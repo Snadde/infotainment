@@ -5,16 +5,10 @@ import java.util.ArrayList;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.SearchView;
-import android.widget.TextView;
 
 public class MainActivity extends FragmentActivity implements AndroidSpotifyMetadata.Callback, ApplicationController.Callback {
 
@@ -69,18 +63,8 @@ public class MainActivity extends FragmentActivity implements AndroidSpotifyMeta
 		sectionsPagerAdapter.updatePlaylist(track);
 	}
 
-	public static class DummySectionFragment extends Fragment {
-
-		public static final String ARG_SECTION_NUMBER = "section_number";
-
-		public DummySectionFragment() { }
-
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-			TextView textView = new TextView(getActivity());
-			textView.setGravity(Gravity.CENTER);
-			textView.setText(Integer.toString(getArguments().getInt(ARG_SECTION_NUMBER)));
-			return textView;
-		}
+	public void onPlayerAction(Action action) {
+		// FIXME: handle action from player fragment
+		// FIXME: refactor all actions to use Action
 	}
 }
