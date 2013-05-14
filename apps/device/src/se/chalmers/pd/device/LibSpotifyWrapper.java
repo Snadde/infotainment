@@ -20,10 +20,6 @@ public class LibSpotifyWrapper {
 
 	native public static void seek(float position);
 
-	native public static void star();
-
-	native public static void unstar();
-
 	public static void loginUser(String username, String password, PlaylistCallback playlistCallback) {
 		callback = playlistCallback;
 		login(username, password);
@@ -66,7 +62,7 @@ public class LibSpotifyWrapper {
 		handler.post(new Runnable() {
 
 			public void run() {
-				// mPlayerPositionDelegate.onPlayerPositionChanged(position);
+				callback.onPositionChanged(position);
 
 			}
 		});
@@ -90,39 +86,4 @@ public class LibSpotifyWrapper {
 			}
 		});
 	}
-
-	static private float simTimer;
-
-	static void simulateTimer() {
-		handler.postDelayed(new Runnable() {
-
-			public void run() {
-
-				// mPlayerPositionDelegate.onPlayerPositionChanged(simTimer);
-				simTimer += 0.1;
-				simulateTimer();
-
-			}
-		}, 1000);
-	}
-	public static void onTrackStarred() {
-		handler.post(new Runnable() {
-
-			public void run() {
-			//	mPlayerPositionDelegate.onTrackStarred();
-
-			}
-		});
-	}
-
-	public static void onTrackUnStarred() {
-		handler.post(new Runnable() {
-
-			public void run() {
-			//	mPlayerPositionDelegate.onTrackUnStarred();
-
-			}
-		});
-	}
-
 }

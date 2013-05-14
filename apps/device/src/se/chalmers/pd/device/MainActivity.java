@@ -2,74 +2,93 @@ package se.chalmers.pd.device;
 
 import se.chalmers.pd.device.ApplicationController.Callbacks;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.text.method.ScrollingMovementMethod;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 /**
- * This Class is separated from all logic and consist only of the view part
- * of the application. It sets up all the buttons and adds onclicklisteners.
+ * This Class is separated from all logic and consist only of the view part of
+ * the application. It sets up all the buttons and adds onclicklisteners.
  * 
  * @author Patrik Thituson
- *
+ * 
  */
 public class MainActivity extends Activity implements Callbacks, View.OnClickListener {
 
 	private ApplicationController controller;
-	private TextView status;
-	ImageButton previous, play, next, pause;
-	Button connect, install, uninstall, start, stop, disconnect;
+	private TextView currentTrack, status;
+	private ImageButton previous, play, next, pause;
+	private ToggleButton start;
+	private MenuItem connect, disconnect, install, uninstall;
+	private SeekBar seekbar;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		currentTrack = (TextView) findViewById(R.id.currenttrack);
 		status = (TextView) findViewById(R.id.status);
-		status.setMovementMethod(new ScrollingMovementMethod());
+		seekbar = (SeekBar) findViewById(R.id.seekbar);
 		controller = new ApplicationController(this);
 		setupButtons();
+		// log in to spotify
+		controller.login();
 	}
 
 	/**
 	 * Sets up all the buttons for the view and adds onclick listeners.
 	 */
 	private void setupButtons() {
-		connect = (Button) findViewById(R.id.connect);
-		install = (Button) findViewById(R.id.install);
-		uninstall = (Button) findViewById(R.id.uninstall);
-		start = (Button) findViewById(R.id.start);
-		stop = (Button) findViewById(R.id.stop);
-		disconnect = (Button) findViewById(R.id.disconnect);
+
+		start = (ToggleButton) findViewById(R.id.start);
 		previous = (ImageButton) findViewById(R.id.prev);
 		next = (ImageButton) findViewById(R.id.next);
 		play = (ImageButton) findViewById(R.id.play);
 		pause = (ImageButton) findViewById(R.id.pause);
-		
-		connect.setOnClickListener(this);
-		install.setOnClickListener(this);
-		uninstall.setOnClickListener(this);
 		start.setOnClickListener(this);
-		stop.setOnClickListener(this);
-		disconnect.setOnClickListener(this);
-		previous.setOnClickListener(this); 
+		previous.setOnClickListener(this);
 		next.setOnClickListener(this);
 		play.setOnClickListener(this);
 		pause.setOnClickListener(this);
+		seekbar.setMax(300);
+		seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				controller.seek((float) seekBar.getProgress() / seekBar.getMax());
+			}
+
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			}
+
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+		});
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_main, menu);
+		getMenuInflater().inflate(R.menu.menu, menu);
+
+		connect = (MenuItem) menu.findItem(R.id.connect);
+		install = (MenuItem) menu.findItem(R.id.install);
+		uninstall = (MenuItem) menu.findItem(R.id.uninstall);
+		disconnect = (MenuItem) menu.findItem(R.id.disconnect);
+		install.setEnabled(false);
+		disconnect.setEnabled(false);
+		uninstall.setEnabled(false);
 		return true;
 	}
-	
+
 	/**
-	 * Calls the controllers onDestroy to prevent crash in
-	 *  other threads
+	 * Calls the controllers onDestroy to prevent crash in other threads
 	 */
 	@Override
 	protected void onDestroy() {
@@ -77,129 +96,175 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		super.onDestroy();
 
 	}
-	
+
 	/**
 	 * Sets the text of stats view
+	 * 
 	 * @param text
 	 */
 	public void setText(String text) {
-		status.setText(text);
+		currentTrack.setText(text);
 	}
-	
+
 	/**
-	 * Helper method that makes the Player buttons visible
-	 * called when user is loged in.
+	 * Helper method that makes the Player buttons visible called when user is
+	 * loged in.
 	 */
 	private void showPlayerButtons() {
-			
+
 		previous.setVisibility(View.VISIBLE);
 		play.setVisibility(View.VISIBLE);
 		next.setVisibility(View.VISIBLE);
 	}
-	
+
 	/**
-	 * Callback that is called when the user has successfully
-	 * logged in
+	 * Callback that is called when the user has successfully logged in
 	 */
 	public void onPlayerLoggedIn() {
 		showPlayerButtons();
 	}
-	
+
 	/**
 	 * Callback that is called when the Player has started playing
 	 */
 	public void onPlayerPlay() {
-		play.setVisibility(View.GONE);
-		pause.setVisibility(View.VISIBLE);
+		runOnUiThread(new Runnable() {
+			public void run() {
+				play.setVisibility(View.GONE);
+				pause.setVisibility(View.VISIBLE);
+				setCurrentTrack();
+			}
+		});
 	}
-	
+
 	/**
 	 * Callback that is called when the Player has paused playing
 	 */
 	public void onPlayerPause() {
-		play.setVisibility(View.VISIBLE);
-		pause.setVisibility(View.GONE);
-	}
-	
-	/**
-	 * Callback that is called when the Web application has started
-	 * successfully or stopped. The parameter 'show' will decide whether to show
-	 * or hide the buttons
-	 */
-	public void onStartedApplication(final boolean show) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				if (show) {
-					stop.setVisibility(View.VISIBLE);
-					start.setVisibility(View.GONE);
-					uninstall.setVisibility(View.GONE);
-				} else {
-					stop.setVisibility(View.GONE);
-					start.setVisibility(View.VISIBLE);
-					uninstall.setVisibility(View.VISIBLE);
+				play.setVisibility(View.VISIBLE);
+				pause.setVisibility(View.GONE);
+			}
+		});
+	}
+
+	/**
+	 * Callback that is called when the Player has paused playing
+	 */
+	public void onPlayerNext() {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				setCurrentTrack();
+			}
+		});
+	}
+
+	/**
+	 * Callback that is called when the Web application has started successfully
+	 * or stopped. The parameter 'show' will decide whether to show or hide the
+	 * buttons
+	 */
+	public void onStartedApplication(final String status) {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				String message = "";
+				if (status.equals("start")) {
+					uninstall.setEnabled(false);
+					start.setChecked(true);
+					message = "Started application";
+				} else if (status.equals("stop")) {
+					uninstall.setEnabled(true);
+					start.setChecked(false);
+					message = "Stopped application";
+				} else if (status.equals("error")) {
+					start.setChecked(false);
+					alert("No application installed !");
 				}
+				changeStatus(message);
 			}
 		});
 
 	}
+
 	/**
-	 * Callback that is called when we want to change the visibility of the 
-	 * buttons start, uninstall and install. 
+	 * Callback that is called when we want to change the visibility of the
+	 * buttons start, uninstall and install.
 	 */
 	public void onInstalledApplication(final boolean show) {
 		runOnUiThread(new Runnable() {
 			public void run() {
 				if (show) {
-					start.setVisibility(View.VISIBLE);
-					uninstall.setVisibility(View.VISIBLE);
-					install.setVisibility(View.GONE);
+					uninstall.setEnabled(true);
+					changeStatus("Installed application found");
 				} else {
-					start.setVisibility(View.GONE);
-					uninstall.setVisibility(View.GONE);
-					install.setVisibility(View.VISIBLE);
+					install.setEnabled(true);
+					changeStatus("No installed application");
 				}
 			}
 		});
 	}
-	
+
 	/**
 	 * Callback that is called when the application is connected with the broker
 	 */
-	public void onConnectedMQTT() {
+	public void onConnectedMQTT(final boolean connected) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				connect.setVisibility(View.GONE);
-				disconnect.setVisibility(View.VISIBLE);
+				if (connected) {
+					connect.setEnabled(false);
+					disconnect.setEnabled(true);
+					changeStatus("Connected to broker");
+				} else {
+					connect.setEnabled(true);
+					disconnect.setEnabled(false);
+					changeStatus("Disconnected from broker");
+				}
+
 			}
 
 		});
 	}
-	
-	/**
-	 * The onclick method will check which button was clicked and forward this to the 
-	 * controller.
-	 */
-	public void onClick(View v) {
-		switch(v.getId()){
-		case R.id.connect:
-			controller.connect();
-			break;
-		case R.id.disconnect:
-			controller.disconnect();
-			break;
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle item selection
+		switch (item.getItemId()) {
 		case R.id.install:
 			controller.install();
-			setText("Installing from device");
-			break;
+			return true;
 		case R.id.uninstall:
 			controller.uninstall();
-			break;
+			return true;
+		case R.id.connect:
+			controller.connect();
+			return true;
+		case R.id.disconnect:
+			controller.disconnect();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	/**
+	 * The onclick method will check which button was clicked and forward this
+	 * to the controller.
+	 */
+	public void onClick(View v) {
+		switch (v.getId()) {
 		case R.id.start:
-			controller.start();
-			controller.login();
-			break;
-		case R.id.stop:
-			controller.stop();
+			if (controller.isConnectedToBroker()) {
+				if (start.isChecked()) {
+					start.setChecked(false);
+					controller.start();
+				} else {
+					controller.stop();
+				}
+			} else {
+				start.setChecked(false);
+				alert("Not connected to broker! ");
+			}
 			break;
 		case R.id.play:
 			controller.play();
@@ -214,6 +279,29 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 			controller.previous();
 			break;
 		}
-		
+		setCurrentTrack();
+	}
+
+	private void setCurrentTrack() {
+		setText(controller.getCurrentTrack());
+	}
+
+	private void alert(String message) {
+		AlertDialog alert = new AlertDialog.Builder(this).setTitle("Warning").setMessage(message)
+				.setNeutralButton("ok", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						// TODO maybe implement ? controller.connect();
+						dialog.cancel();
+					}
+				}).create();
+		alert.show();
+	}
+
+	private void changeStatus(String message) {
+		status.setText(message);
+	}
+
+	public void onUpdateSeekbar(float position) {
+		seekbar.setProgress((int) (position * seekbar.getMax()));
 	}
 }

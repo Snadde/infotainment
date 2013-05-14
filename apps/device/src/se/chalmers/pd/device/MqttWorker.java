@@ -248,5 +248,15 @@ public class MqttWorker {
 	public String getApplicationRawData() {
 		return data;
 	}
+	/**
+	 * 
+	 * @return true if client is connected to broker
+	 */
+	public boolean isConnected(){
+		if(mqttClient != null)
+			return mqttClient.isConnected();
+		else
+			return false;
+	}
 
 }
