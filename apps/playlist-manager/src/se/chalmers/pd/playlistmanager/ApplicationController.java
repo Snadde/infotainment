@@ -91,7 +91,6 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 			message.put(TRACK_NAME, track.getName());
 			message.put(TRACK_URI, track.getUri());
 			mqttWorker.publish(TOPIC_PLAYLIST, message.toString());
-			callback.onUpdatePlaylist(track);
 		} catch (JSONException e) {
 			Log.e(TAG, "Could not create and send json object from track " + track.toString() + " with error: " + e.getMessage());
 		}
