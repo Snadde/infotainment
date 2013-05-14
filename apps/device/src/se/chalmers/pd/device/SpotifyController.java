@@ -70,8 +70,13 @@ public class SpotifyController {
 	 * @param spotifyUri
 	 *            the uri of the track
 	 */
-	public void addTrackToPlaylist(String name, String artist, String spotifyUri) {
-		Track newTrack = new Track(name, artist, spotifyUri);
+	public void addTrackToPlaylist(String name, String artist, String spotifyUri, int length) {
+		Track newTrack = new Track(name, artist, spotifyUri, length);
+		playlist.add(newTrack);
+		emptyList = false;
+	}
+	
+	public void addTrackToPlaylist(Track newTrack){
 		playlist.add(newTrack);
 		emptyList = false;
 	}

@@ -73,6 +73,8 @@ public class MqttWorker {
 		void onActionPause();
 
 		void onActionNext();
+		
+		void onActionAdd(Track newTrack);
 	}
 
 	public MqttWorker(MQTTCallback mQTTCallback) {
@@ -103,10 +105,9 @@ public class MqttWorker {
 						mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
 						mqttClient.setCallback(new CustomMqttCallback());
 						mqttClient.connect();
-						// mqttClient.subscribe(TOPIC_SYSTEM);
 						mqttClient.subscribe("/playlist/1");
+						mqttClient.subscribe("/playlist");
 						mqttClient.subscribe("/sensor/infotainment");
-						// TODO subscribe to steering wheel input
 						for (MQTTCallback callback : mQTTCallbacks) {
 							callback.onConnected();
 						}
@@ -161,6 +162,13 @@ public class MqttWorker {
 									callback.onActionPause();
 								} else if (action.equals("next")) {
 									callback.onActionNext();
+								} else if(action.equals("add")){
+									String name = json.optString("track");
+									String artist = json.optString("artist");
+									String spotifyUri = json.optString("uri");
+									int length = json.optInt("length");
+									Track newTrack = new Track(name, artist, spotifyUri, length);
+									callback.onActionAdd(newTrack);
 								}
 							}
 						}

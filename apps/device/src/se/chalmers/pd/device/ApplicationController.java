@@ -49,18 +49,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		this.context = context;
 		this.callbacks = (Callbacks) context;
 		spotifyController = new SpotifyController(this, context);
-		setupPlaylist();
 	}
 
-	/**
-	 * Helper method that adds a few tracks to the playlist for testing
-	 * purposes.
-	 */
-	private void setupPlaylist() {
-		spotifyController.addTrackToPlaylist("The pretender", "Foo Fighters", "spotify:track:3ZsjgLDSvusBgxGWrTAVto");
-		spotifyController.addTrackToPlaylist("Rape me", "Nirvana", "spotify:track:47KVHb6cOVBZbmXQweE5p7");
-		spotifyController.addTrackToPlaylist("X you", "Avicii", "spotify:track:330r0K82tIDVr6f1GezAd8");
-	}
 
 	/**
 	 * Helper method that publish the playlist to the topic "/playlist" for
@@ -70,11 +60,15 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		JSONObject payload = new JSONObject();
 		String[] artists = { "Foo Fighters", "Nirvana", "Avicii" };
 		String[] tracks = { "The Pretender", "Rape me", "X You" };
+		String[] uris = { "spotify:track:3ZsjgLDSvusBgxGWrTAVto", "spotify:track:47KVHb6cOVBZbmXQweE5p7", "spotify:track:330r0K82tIDVr6f1GezAd8" };
+		String[] lengths = {"270","170","200"};
 		try {
 			payload.put("action", "add");
 			for (int i = 0; i < 3; i++) {
 				payload.put("track", tracks[i]);
 				payload.put("artist", artists[i]);
+				payload.put("uri", uris[i]);
+				payload.put("length", lengths[i]);
 				mqttWorker.publish("/playlist", payload.toString());
 			}
 
@@ -104,7 +98,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 				e.printStackTrace();
 			}
 		}
-		spotifyController.play();
 	}
 
 	/**
@@ -121,7 +114,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 				e.printStackTrace();
 			}
 		}
-		spotifyController.pause();
 	}
 
 	/**
@@ -129,7 +121,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * controller to select the next song
 	 */
 	public void next() {
-		spotifyController.playNext();
 		if (isConnectedToBroker()) {
 			JSONObject payload = new JSONObject();
 			try {
@@ -370,6 +361,11 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 
 	public void onPositionChanged(float position) {
 		callbacks.onUpdateSeekbar(position);		
+	}
+
+	public void onActionAdd(Track newTrack) {
+		spotifyController.addTrackToPlaylist(newTrack);
+		
 	}
 
 }

@@ -218,6 +218,8 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 				} else {
 					connect.setEnabled(true);
 					disconnect.setEnabled(false);
+					install.setEnabled(false);
+					uninstall.setEnabled(false);
 					changeStatus("Disconnected from broker");
 				}
 
