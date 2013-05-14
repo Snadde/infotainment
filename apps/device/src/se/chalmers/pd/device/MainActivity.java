@@ -62,19 +62,21 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
 			public void onStopTrackingTouch(SeekBar seekBar) {
-					controller.seek((float) seekBar.getProgress() / seekBar.getMax());
+				controller.seek((float) seekBar.getProgress() / seekBar.getMax());
 			}
 
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {}
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+			}
 
-			public void onStartTrackingTouch(SeekBar seekBar) {}
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
 		});
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu, menu);
-		
+
 		connect = (MenuItem) menu.findItem(R.id.connect);
 		install = (MenuItem) menu.findItem(R.id.install);
 		uninstall = (MenuItem) menu.findItem(R.id.uninstall);
@@ -129,8 +131,10 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		runOnUiThread(new Runnable() {
 			public void run() {
 				play.setVisibility(View.GONE);
-		pause.setVisibility(View.VISIBLE);
-			}});
+				pause.setVisibility(View.VISIBLE);
+				setCurrentTrack();
+			}
+		});
 	}
 
 	/**
@@ -139,18 +143,22 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onPlayerPause() {
 		runOnUiThread(new Runnable() {
 			public void run() {
-		play.setVisibility(View.VISIBLE);
-		pause.setVisibility(View.GONE);
-			}});
+				play.setVisibility(View.VISIBLE);
+				pause.setVisibility(View.GONE);
+			}
+		});
 	}
-	
+
 	/**
 	 * Callback that is called when the Player has paused playing
 	 */
 	public void onPlayerNext() {
-		setCurrentTrack();
+		runOnUiThread(new Runnable() {
+			public void run() {
+				setCurrentTrack();
+			}
+		});
 	}
-	
 
 	/**
 	 * Callback that is called when the Web application has started successfully
@@ -160,19 +168,20 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onStartedApplication(final String status) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				String message;
+				String message = "";
 				if (status.equals("start")) {
 					uninstall.setEnabled(false);
 					start.setChecked(true);
 					message = "Started application";
-				} else if (status.equals("stop")){
+				} else if (status.equals("stop")) {
 					uninstall.setEnabled(true);
 					start.setChecked(false);
 					message = "Stopped application";
-				} else if (status.equals("error")){
+				} else if (status.equals("error")) {
 					start.setChecked(false);
 					alert("No application installed !");
 				}
+				changeStatus(message);
 			}
 		});
 
@@ -202,17 +211,16 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onConnectedMQTT(final boolean connected) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				if(connected){
-				connect.setEnabled(false);
-				disconnect.setEnabled(true);
-				changeStatus("Connected to broker");
-				}
-				else{
+				if (connected) {
+					connect.setEnabled(false);
+					disconnect.setEnabled(true);
+					changeStatus("Connected to broker");
+				} else {
 					connect.setEnabled(true);
 					disconnect.setEnabled(false);
 					changeStatus("Disconnected from broker");
 				}
-					
+
 			}
 
 		});
@@ -288,12 +296,12 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 				}).create();
 		alert.show();
 	}
-	
-	private void changeStatus(String message){
+
+	private void changeStatus(String message) {
 		status.setText(message);
-		}
+	}
 
 	public void onUpdateSeekbar(float position) {
-		seekbar.setProgress((int) (position * seekbar.getMax()));	
+		seekbar.setProgress((int) (position * seekbar.getMax()));
 	}
 }
