@@ -31,8 +31,8 @@ public class MainActivity extends FragmentActivity implements AndroidSpotifyMeta
 		searchTracks.add(new Track("test", "testa", "uri"));
 		searchTracks.add(new Track("test", "testa", "uri2"));
 		ArrayList<Track> playlistTracks = new ArrayList<Track>();
-		playlistTracks.add(new Track("playlistTracks", "testa", "uri"));
-		playlistTracks.add(new Track("playlistTracks", "testa", "uri2"));
+//		playlistTracks.add(new Track("playlistTracks", "testa", "uri"));
+//		playlistTracks.add(new Track("playlistTracks", "testa", "uri2"));
 		sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), searchTracks, playlistTracks, this);
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		viewPager.setAdapter(sectionsPagerAdapter);

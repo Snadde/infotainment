@@ -9,8 +9,6 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttPersistenceException;
 import org.eclipse.paho.client.mqttv3.MqttSecurityException;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.os.Environment;
 import android.util.Log;
@@ -23,20 +21,6 @@ import android.util.Log;
  */
 public class MqttWorker extends Thread {
 
-	public static final String ACTION_DATA = "data";
-	public static final String ACTION_INSTALL = "install";
-	public static final String ACTION = "action";
-	public static final String ACTION_EXIST = "exist";
-	public static final String ACTION_SUCCESS = "success";
-	public static final String ACTION_ERROR = "error";
-	public static final String ACTION_TYPE = "type";
-	public static final String ACTION_RESPONSE = "response";
-	public static final String ACTION_START = "start";
-	public static final String ACTION_UNINSTALL = "uninstall";
-	public static final String ACTION_STOP = "stop";
-	public static final String ACTION_PENDING = "pending";
-	public static final String TOPIC_SYSTEM = "/system";
-
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
 	private static final String WORKER_NAME = "MqttWorker";
 	private static final String BROKER = "tcp://192.168.43.147:1883";
@@ -44,7 +28,6 @@ public class MqttWorker extends Thread {
 
 	private MqttClient mqttClient;
 	private Callback callback;
-	private String data;
 
 	public interface Callback {
 		public void onMessage(String topic, String payload);
@@ -78,10 +61,8 @@ public class MqttWorker extends Thread {
 		if (mqttClient != null) {
 			try {
 				mqttClient.connect();
-				mqttClient.subscribe(TOPIC_SYSTEM);
 				notifyOnConnected();
 				connected = true;
-				Log.d(WORKER_NAME, "Connected and subscribing to " + TOPIC_SYSTEM);
 			} catch (MqttSecurityException e) {
 				Log.e(WORKER_NAME, "Could not connect to the broker " + e.getMessage());
 			} catch (MqttException e) {
@@ -142,40 +123,16 @@ public class MqttWorker extends Thread {
 		callback.onConnected(true);
 	}
 
-	public String getApplicationRawData() {
-		return data;
-	}
-
 	/**
 	 * Called when messages are received. Filters out data from installation
 	 * messages since it is too much to pass around as Strings.
 	 */
 	class CustomMqttCallback implements MqttCallback {
 
-		private static final String ACTION_GET_METHOD = "getData";
-
 		@Override
 		public void messageArrived(MqttTopic topic, MqttMessage message) {
-			JSONObject json;
-			String payload = "";
-			String stringTopic = "";
-			try {
-				json = new JSONObject(message.toString());
-				stringTopic = topic.toString();
-				// Filter install messages and their data separately
-				if (json.getString(ACTION).equals(ACTION_INSTALL) && stringTopic.equals(TOPIC_SYSTEM)) {
-					data = json.getString(ACTION_DATA);
-					json = new JSONObject();
-					json.put(ACTION, ACTION_INSTALL);
-					json.put(ACTION_DATA, ACTION_GET_METHOD);
-					payload = json.toString();
-				} else {
-					payload = message.toString();
-				}
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-
+			String payload = message.toString();
+			String stringTopic = topic.toString();
 			callback.onMessage(stringTopic, payload);
 			Log.d(WORKER_NAME, "messageArrived" + "topic:" + stringTopic + ", message:" + payload);
 		}

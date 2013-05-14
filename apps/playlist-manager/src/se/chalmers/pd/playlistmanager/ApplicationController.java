@@ -66,7 +66,21 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 
 	@Override
 	public void onMessage(String topic, String payload) {
-		
+		try {
+			JSONObject json = new JSONObject(payload);
+			String action = json.getString(ACTION);
+			if(action.equals("add")) {
+				final Track track = new Track(json.getString(TRACK_NAME), json.getString(TRACK_ARTIST), json.optString(TRACK_URI));
+				((MainActivity) context).runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						callback.onUpdatePlaylist(track);
+					}
+				});
+			}
+		} catch (JSONException e) {
+			Log.e(TAG, "Could not create json object from payload " + payload + " with error: " + e.getMessage());
+		}
 	}
 
 	public void addTrack(Track track) {
