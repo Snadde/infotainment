@@ -7,19 +7,22 @@ public class Track implements Parcelable {
 	private String name;
 	private String artist;
 	private String spotifyUri;
+	private int length;
 
 	public Track() { }
 
-	public Track(String name, String artist, String spotifyUri) {
+	public Track(String name, String artist, String spotifyUri, int length) {
 		this.name = name;
 		this.artist = artist;
 		this.spotifyUri = spotifyUri;
+		this.length = length;
 	}
 
 	public Track(Parcel parcel) {
 		this.name = parcel.readString();
 		this.artist = parcel.readString();
 		this.spotifyUri = parcel.readString();
+		this.length = parcel.readInt();
 	}
 
 	/**
@@ -78,7 +81,6 @@ public class Track implements Parcelable {
 		return false;
 	}
 
-	@Override
 	public int describeContents() {
 		return 0;
 	}
@@ -86,11 +88,25 @@ public class Track implements Parcelable {
 	/**
      * Writes the data to the parcel
      */
-	@Override
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeString(name);
 		dest.writeString(artist);
 		dest.writeString(spotifyUri);
+		dest.writeInt(length);
+	}
+
+	/**
+	 * @return the length
+	 */
+	public int getLength() {
+		return length;
+	}
+
+	/**
+	 * @param length the length to set
+	 */
+	public void setLength(int length) {
+		this.length = length;
 	}
 
 	/**

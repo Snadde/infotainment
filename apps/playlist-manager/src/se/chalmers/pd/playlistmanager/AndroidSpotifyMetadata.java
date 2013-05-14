@@ -70,17 +70,13 @@ public class AndroidSpotifyMetadata {
 				super.onPostExecute(response);
 				if (response.getInfo().getType() == RequestType.track) {
 					for (com.mixtape.spotify.api.Track t : response.getTracks()) {
-						Track track = new Track();
 						Artist a = (Artist) t.getArtists().toArray()[0];
-						track.setName(t.getName());
-						track.setArtist(a.getName());
-						track.setUri(t.getHref());
+						Track track = new Track(t.getName(), a.getName(), t.getHref(), t.getLength());
 						tracks.add(track);
 					}
 				}
 				callback.onSearchResult(tracks);
 			}
-
 		};
 		worker.execute(searchUrl);
 	}

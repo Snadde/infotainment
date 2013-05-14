@@ -23,6 +23,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	private static final String TRACK_URI = "uri";
 	private static final String TRACK_NAME = "track";
 	private static final String TRACK_ARTIST = "artist";
+	private static final String TRACK_LENGTH = "tracklength";
 	
 	private MqttWorker mqttWorker;
 	private Context context;
@@ -70,7 +71,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 			JSONObject json = new JSONObject(payload);
 			String action = json.getString(ACTION);
 			if(action.equals("add")) {
-				final Track track = new Track(json.getString(TRACK_NAME), json.getString(TRACK_ARTIST), json.optString(TRACK_URI));
+				final Track track = new Track(json.getString(TRACK_NAME), json.getString(TRACK_ARTIST), json.optString(TRACK_URI), json.optInt(TRACK_LENGTH));
 				((MainActivity) context).runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
