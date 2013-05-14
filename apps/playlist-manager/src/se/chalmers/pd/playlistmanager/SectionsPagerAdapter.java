@@ -16,11 +16,14 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	public static final int THIRD_PAGE = 2;
 	public static final int TOTAL_PAGES = 3;
 	
+	private int currentPage = FIRST_PAGE;
+	
 	private TrackListFragment playlistFragment;
 	private TrackListFragment searchFragment;
 	private ArrayList<Track> searchTracks;
 	private ArrayList<Track> playlistTracks;
 	private Context context;
+	
 	
 	public SectionsPagerAdapter(FragmentManager fm, ArrayList<Track> searchTracks, ArrayList<Track> playlistTracks, Context context) {
 		super(fm);
@@ -33,7 +36,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	public Fragment getItem(int position) {
 		Fragment f = new Fragment();
 		Bundle args = new Bundle();
-
+		currentPage  = position;
 		switch (position) {
 		case FIRST_PAGE:
 			searchFragment = new TrackListFragment();
@@ -69,6 +72,10 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 			return context.getString(R.string.title_section3).toUpperCase();
 		}
 		return null;
+	}
+	
+	public int getCurrentPage() {
+		return currentPage;
 	}
 
 	public void updateResults(ArrayList<Track> newTracksResult) {

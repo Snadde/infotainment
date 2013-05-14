@@ -56,7 +56,18 @@ public class MainActivity extends FragmentActivity implements AndroidSpotifyMeta
 	}
 	
 	public void onTrackSelected(Track track) {
-		controller.addTrack(track);
+		int currentPage = sectionsPagerAdapter.getCurrentPage();
+		
+		switch (currentPage) {
+		case SectionsPagerAdapter.FIRST_PAGE:
+			controller.addTrack(track);
+			break;
+		case SectionsPagerAdapter.SECOND_PAGE:
+			
+			break;
+		}
+		
+		
 	}
 	
 	@Override
