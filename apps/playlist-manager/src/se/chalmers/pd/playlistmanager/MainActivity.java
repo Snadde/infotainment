@@ -66,8 +66,6 @@ public class MainActivity extends FragmentActivity implements AndroidSpotifyMeta
 			
 			break;
 		}
-		
-		
 	}
 	
 	@Override
