@@ -16,14 +16,16 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	public static final int THIRD_PAGE = 2;
 	public static final int TOTAL_PAGES = 3;
 	
-	private TrackListFragment searchFragment;
-	private ArrayList<Track> tracks;
-	private Context context;
 	private TrackListFragment playlistFragment;
+	private TrackListFragment searchFragment;
+	private ArrayList<Track> searchTracks;
+	private ArrayList<Track> playlistTracks;
+	private Context context;
 	
-	public SectionsPagerAdapter(FragmentManager fm, ArrayList<Track> tracks, Context context) {
+	public SectionsPagerAdapter(FragmentManager fm, ArrayList<Track> searchTracks, ArrayList<Track> playlistTracks, Context context) {
 		super(fm);
-		this.tracks = tracks;
+		this.searchTracks = searchTracks;
+		this.playlistTracks = playlistTracks;
 		this.context = context;
 	}
 
@@ -35,12 +37,12 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 		switch (position) {
 		case FIRST_PAGE:
 			searchFragment = new TrackListFragment();
-			args.putParcelableArrayList("tracks", tracks);
+			args.putParcelableArrayList("tracks", searchTracks);
 			searchFragment.setArguments(args);
 			return searchFragment;
 		case SECOND_PAGE:
 			playlistFragment = new TrackListFragment();
-			args.putParcelableArrayList("tracks", tracks);
+			args.putParcelableArrayList("tracks", playlistTracks);
 			playlistFragment.setArguments(args);
 			return playlistFragment;
 		case THIRD_PAGE:
