@@ -38,7 +38,4 @@ JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_login(JNIEnv
 JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_toggleplay(JNIEnv *je, jclass jc, jstring uri);
 JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_playnext(JNIEnv *je, jclass jc, jstring j_uri);
 JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_seek(JNIEnv *je, jclass jc, jfloat position);
-JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_star(JNIEnv *je, jclass jc);
-JNIEXPORT void JNICALL Java_se_chalmers_pd_device_LibSpotifyWrapper_unstar(JNIEnv *je, jclass jc);
-
 }
