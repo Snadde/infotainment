@@ -9,21 +9,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class TrackListFragment extends ListFragment {
 	
+	private String title;
+
 	public TrackListFragment() { }
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		title = getArguments().getString("title", "");
 		ArrayList<Track> tracks = getArguments().getParcelableArrayList("tracks");
 		setupAdapter(tracks);
 	}
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.fragment_search, null);
+		View view = inflater.inflate(R.layout.fragment_tracklist, null);
+		TextView titleView = (TextView) view.findViewById(R.id.title);
+		titleView.setText(title);
 		return view;
 	}
 
@@ -45,5 +51,4 @@ public class TrackListFragment extends ListFragment {
 	public void updatePlaylist(Track track) {
 		((TrackAdapter) getListAdapter()).add(track);
 	}
-
 }

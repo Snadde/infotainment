@@ -1,6 +1,5 @@
 package se.chalmers.pd.playlistmanager;
 
-import se.chalmers.pd.playlistmanager.AndroidSpotifyMetadata.Callback;
 import android.widget.SearchView;
 
 import com.mixtape.spotify.api.RequestType;
@@ -13,10 +12,16 @@ import com.mixtape.spotify.api.RequestType;
 
 public class QueryTextListener implements SearchView.OnQueryTextListener {
 	
-	private Callback callback;
+	public interface Callback {
+		public void onSearchBegin();
+	}
+	
+	private AndroidSpotifyMetadata.Callback spotifyCallback;
+	private Callback searchCallback;
 
-	public QueryTextListener(AndroidSpotifyMetadata.Callback callback) {
-		this.callback = callback;
+	public QueryTextListener(AndroidSpotifyMetadata.Callback spotifyCallback, Callback searchCallback) {
+		this.spotifyCallback = spotifyCallback;
+		this.searchCallback = searchCallback;
 	}
 	
 	@Override
@@ -32,7 +37,8 @@ public class QueryTextListener implements SearchView.OnQueryTextListener {
 	}
 	
 	public void search(String query) {
+		searchCallback.onSearchBegin();
 		AndroidSpotifyMetadata s = new AndroidSpotifyMetadata();
-		s.search(query, RequestType.track, callback);
+		s.search(query, RequestType.track, spotifyCallback);
 	}
 }

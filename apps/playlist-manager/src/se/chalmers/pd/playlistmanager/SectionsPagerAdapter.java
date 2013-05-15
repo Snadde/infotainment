@@ -2,7 +2,6 @@ package se.chalmers.pd.playlistmanager;
 
 import java.util.ArrayList;
 
-import se.chalmers.pd.playlistmanager.MainActivity.DummySectionFragment;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -16,44 +15,42 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	public static final int THIRD_PAGE = 2;
 	public static final int TOTAL_PAGES = 3;
 	
-	private int currentPage = FIRST_PAGE;
-	
 	private TrackListFragment playlistFragment;
 	private TrackListFragment searchFragment;
 	private ArrayList<Track> searchTracks;
 	private ArrayList<Track> playlistTracks;
 	private Context context;
+	private PlayerFragment playerFragment;
 	
 	
 	public SectionsPagerAdapter(FragmentManager fm, ArrayList<Track> searchTracks, ArrayList<Track> playlistTracks, Context context) {
 		super(fm);
 		this.searchTracks = searchTracks;
 		this.playlistTracks = playlistTracks;
-		this.context = context;
+		this.context = context;	
 	}
 
 	@Override
 	public Fragment getItem(int position) {
-		Fragment f = new Fragment();
 		Bundle args = new Bundle();
-		currentPage  = position;
 		switch (position) {
 		case FIRST_PAGE:
 			searchFragment = new TrackListFragment();
+			args.putString("title", context.getString(R.string.search_title));
 			args.putParcelableArrayList("tracks", searchTracks);
 			searchFragment.setArguments(args);
 			return searchFragment;
 		case SECOND_PAGE:
 			playlistFragment = new TrackListFragment();
+			args.putString("title", context.getString(R.string.playlist_title));
 			args.putParcelableArrayList("tracks", playlistTracks);
 			playlistFragment.setArguments(args);
 			return playlistFragment;
 		case THIRD_PAGE:
-			f = new DummySectionFragment();
-			break;
+			playerFragment = new PlayerFragment();
+			return playerFragment;
 		}
-		f.setArguments(args);
-		return f;
+		return null;
 	}
 
 	@Override
@@ -72,10 +69,6 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 			return context.getString(R.string.title_section3).toUpperCase();
 		}
 		return null;
-	}
-	
-	public int getCurrentPage() {
-		return currentPage;
 	}
 
 	public void updateResults(ArrayList<Track> newTracksResult) {
