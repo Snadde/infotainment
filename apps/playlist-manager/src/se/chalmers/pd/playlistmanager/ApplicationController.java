@@ -68,7 +68,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 		try {
 			JSONObject json = new JSONObject(payload);
 			String action = json.getString(Action.action.toString());
-			if(action.equals("add")) {
+			if(action.equals(Action.add.toString())) {
 				final Track track = new Track(json.getString(TRACK_NAME), json.getString(TRACK_ARTIST), json.optString(TRACK_URI), json.optInt(TRACK_LENGTH));
 				((MainActivity) context).runOnUiThread(new Runnable() {
 					@Override
@@ -94,7 +94,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 			Log.e(TAG, "Could not create and send json object from track " + track.toString() + " with error: " + e.getMessage());
 		}
 	}
-
+	
 	public void performAction(Action action) {
 		switch (action) {
 		case play:

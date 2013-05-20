@@ -57,7 +57,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 			controller.addTrack(track);
 			break;
 		case SectionsPagerAdapter.SECOND_PAGE:
-			
+			onPlayerAction(Action.play);
 			break;
 		}
 	}
