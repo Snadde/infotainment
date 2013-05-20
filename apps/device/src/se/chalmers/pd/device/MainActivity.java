@@ -32,6 +32,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	private MenuItem connect, disconnect, install, uninstall;
 	private SeekBar seekbar;
 	private NfcReader nfcReader;
+	private LoadingDialogFragment loadingDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -172,6 +173,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onStartedApplication(final String status) {
 		runOnUiThread(new Runnable() {
 			public void run() {
+				loadingDialog.dismiss();
 				String message = "";
 				if (status.equals("start")) {
 					uninstall.setEnabled(false);
@@ -189,6 +191,10 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 			}
 		});
 
+	}
+	public void onPendingAction(String message){
+		loadingDialog = LoadingDialogFragment.newInstance(message);
+		loadingDialog.show(getFragmentManager(), "loadingDialog");
 	}
 
 	/**
