@@ -9,5 +9,9 @@
     <string name="search_title">Search and select a song to add</string>
     <string name="playlist_title">Click to play a song</string>
     <string name="loading_message">Searching for tracks...</string>
+    <string name="connect_error_title">Connection error</string>
+    <string name="connect_dialog_message">There was a problem connecting to the broker, what do you want to do?</string>
+    <string name="reconnect">Reconnect</string>
+    <string name="cancel">Cancel</string>
 
 </resources>
