@@ -63,11 +63,37 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 	}
 	
 	@Override
-	public void onUpdatePlaylist(Track track) {
-		sectionsPagerAdapter.updatePlaylist(track);
+	public void resetPlaylist() {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				sectionsPagerAdapter.resetPlaylist();
+			}
+		});
+	}
+	
+	@Override
+	public void onUpdatePlaylist(final Track track) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				sectionsPagerAdapter.addToPlaylist(track);
+			}
+		});
 	}
 
 	public void onPlayerAction(Action action) {
 		controller.performAction(action);
+	}
+	
+	
+	@Override
+	public void onMessageAction(final Action action) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				sectionsPagerAdapter.updateAction(action);
+			}
+		});
 	}
 }

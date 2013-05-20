@@ -2,6 +2,7 @@ package se.chalmers.pd.playlistmanager;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -13,7 +14,9 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 
 	public interface Callback {
 		public void onSearchResult(ArrayList<Track> tracks);
+		public void resetPlaylist();
 		public void onUpdatePlaylist(Track track);
+		public void onMessageAction(Action action);
 	}
 	
 	private static final String TOPIC_PLAYLIST = "/playlist";
@@ -45,8 +48,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 		if(connected) {
 			mqttWorker.subscribe(TOPIC_PLAYLIST);
 			Log.d(TAG, "Now subscribing to " + TOPIC_PLAYLIST);
-		} else {
-			
+		} else { 
 			((MainActivity) context).runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
@@ -68,18 +70,28 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 		try {
 			JSONObject json = new JSONObject(payload);
 			String action = json.getString(Action.action.toString());
-			if(action.equals(Action.add.toString())) {
-				final Track track = new Track(json.getString(TRACK_NAME), json.getString(TRACK_ARTIST), json.optString(TRACK_URI), json.optInt(TRACK_LENGTH));
-				((MainActivity) context).runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-						callback.onUpdatePlaylist(track);
-					}
-				});
+			Action newAction = Action.valueOf(action);
+			if(Action.add == newAction) {
+				Track track = jsonToTrack(json);
+				callback.onUpdatePlaylist(track);
+			} else if(Action.add_all == newAction) {
+				JSONArray trackArray = json.getJSONArray("data");
+				callback.resetPlaylist();
+				for(int i = 0; i < trackArray.length(); i++) {
+					JSONObject jsonTrack = trackArray.getJSONObject(i);
+					Track track = jsonToTrack(jsonTrack);
+					callback.onUpdatePlaylist(track);
+				}
+			} else {
+				callback.onMessageAction(newAction);
 			}
 		} catch (JSONException e) {
 			Log.e(TAG, "Could not create json object from payload " + payload + " with error: " + e.getMessage());
 		}
+	}
+	
+	private Track jsonToTrack(JSONObject jsonTrack) throws JSONException {
+		return new Track(jsonTrack.getString(TRACK_NAME), jsonTrack.getString(TRACK_ARTIST), jsonTrack.optString(TRACK_URI), jsonTrack.optInt(TRACK_LENGTH));
 	}
 
 	public void addTrack(Track track) {
@@ -89,6 +101,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 			message.put(TRACK_ARTIST, track.getArtist());
 			message.put(TRACK_NAME, track.getName());
 			message.put(TRACK_URI, track.getUri());
+			message.put(TRACK_LENGTH, track.getLength());
 			mqttWorker.publish(TOPIC_PLAYLIST, message.toString());
 		} catch (JSONException e) {
 			Log.e(TAG, "Could not create and send json object from track " + track.toString() + " with error: " + e.getMessage());

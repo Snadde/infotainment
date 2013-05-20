@@ -69,8 +69,17 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 		searchFragment.updateResults(newTracksResult);
 	}
 
-	public void updatePlaylist(Track track) {
-		playlistFragment.updatePlaylist(track);
+	public void addToPlaylist(Track track) {
+		playlistFragment.addToPlaylist(track);
+	}
+
+	public void updateAction(Action action) {
+		playlistFragment.updateAction(action);
+		playerFragment.updateAction(action);
+	}
+
+	public void resetPlaylist() {
+		playlistFragment.resetPlaylist();
 	}
 
 }

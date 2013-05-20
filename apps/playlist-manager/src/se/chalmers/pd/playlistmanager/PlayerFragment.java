@@ -8,23 +8,24 @@ import android.view.ViewGroup;
 
 public class PlayerFragment extends Fragment implements View.OnClickListener {
 
-    private View pause;
-    private View play;
+	private View pause;
+	private View play;
 
-	public PlayerFragment() {};
-	
+	public PlayerFragment() {
+	};
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 	}
-	
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_player, null);
 		setupButtons(rootView);
 		return rootView;
 	}
-	
+
 	/**
 	 * Sets up all the buttons for the view and adds onclick listeners.
 	 */
@@ -32,37 +33,31 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 		View previous = rootView.findViewById(R.id.prev);
 		View next = rootView.findViewById(R.id.next);
 		play = rootView.findViewById(R.id.play);
-        pause = rootView.findViewById(R.id.pause);
-        previous.setOnClickListener(this);
+		pause = rootView.findViewById(R.id.pause);
+		previous.setOnClickListener(this);
 		next.setOnClickListener(this);
 		play.setOnClickListener(this);
-		pause.setOnClickListener(this);		
+		pause.setOnClickListener(this);
 	}
 
-    /**
-     * TODO
-     * uppdarera artist, track vid next
-     * implementera nfc
-     * refaktorera headunit
-     */
+	/**
+	 * TODO uppdarera artist, track vid next implementera nfc refaktorera
+	 * headunit
+	 */
 
 	@Override
 	public void onClick(View v) {
-		
+
 		Action action = Action.NONE;
 		switch (v.getId()) {
 		case R.id.play:
 			action = Action.play;
-            pause.setVisibility(View.VISIBLE);
-            play.setVisibility(View.GONE);
 			break;
 		case R.id.next:
 			action = Action.next;
 			break;
 		case R.id.pause:
 			action = Action.pause;
-            pause.setVisibility(View.GONE);
-            play.setVisibility(View.VISIBLE);
 			break;
 		case R.id.prev:
 			action = Action.prev;
@@ -70,5 +65,25 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 		}
 		((MainActivity) getActivity()).onPlayerAction(action);
 	}
+
+	public void updateAction(Action action) {
+		switch(action) {
+		case pause:
+		case play:
+			togglePlayPause();
+			break;
+		}
+	}
 	
+	// saknar längd i add track
+
+	private void togglePlayPause() {
+		if (play.getVisibility() == View.VISIBLE) {
+			pause.setVisibility(View.VISIBLE);
+			play.setVisibility(View.GONE);
+		} else {
+			pause.setVisibility(View.GONE);
+			play.setVisibility(View.VISIBLE);
+		}
+	}
 }

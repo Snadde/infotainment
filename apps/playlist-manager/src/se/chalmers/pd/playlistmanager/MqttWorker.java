@@ -80,7 +80,7 @@ public class MqttWorker extends Thread {
 	 *            should be stringified JSON
 	 */
 	public void publish(String topic, String message) {
-		Log.d("MqttController", "publishing topic " + topic + " with message " + message);
+		Log.d(WORKER_NAME, "publishing topic " + topic + " with message " + message);
 		try {
 			MqttMessage payload = new MqttMessage(message.getBytes());
 			mqttClient.getTopic(topic).publish(payload);

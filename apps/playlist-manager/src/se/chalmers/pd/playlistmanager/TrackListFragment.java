@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class TrackListFragment extends ListFragment {
 	
@@ -47,8 +48,38 @@ public class TrackListFragment extends ListFragment {
 		ArrayAdapter<Track> adapter = new TrackAdapter(getActivity(), android.R.layout.simple_list_item_2, tracks);
 		setListAdapter(adapter);
 	}
+	
 
-	public void updatePlaylist(Track track) {
+	public void resetPlaylist() {
+		((TrackAdapter) getListAdapter()).clear();
+	}
+
+	public void addToPlaylist(Track track) {
 		((TrackAdapter) getListAdapter()).add(track);
+	}
+
+	public void updateAction(Action action) {
+		switch(action) {
+		case next:
+			highlightNext();
+			updatePlayer();
+			break;
+		case prev:
+			highlightPrev();
+			updatePlayer();
+			break;
+		}
+	}
+	
+	private void highlightNext() {
+		Toast.makeText(getActivity(), "Highlight next!", Toast.LENGTH_LONG).show();
+	}
+
+	private void highlightPrev() {
+		Toast.makeText(getActivity(), "Highlight prev!", Toast.LENGTH_LONG).show();
+	}
+
+	private void updatePlayer() {
+		
 	}
 }
