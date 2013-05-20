@@ -21,7 +21,7 @@ public class TrackListFragment extends ListFragment {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		title = getArguments().getString("title", "");
-		ArrayList<Track> tracks = getArguments().getParcelableArrayList("tracks");
+		ArrayList<Track> tracks = new ArrayList<Track>();
 		setupAdapter(tracks);
 	}
 	

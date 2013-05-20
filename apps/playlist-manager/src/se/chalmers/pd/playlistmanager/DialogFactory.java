@@ -1,7 +1,6 @@
 package se.chalmers.pd.playlistmanager;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 
@@ -28,7 +27,7 @@ public class DialogFactory {
 		return alertDialogBuilder.create();
 	}
 	
-	public static ProgressDialog buildLoadingDialog() {
-		return (ProgressDialog) LoadingDialogFragment.newInstance().getDialog();
+	public static LoadingDialogFragment buildLoadingDialog() {
+		return LoadingDialogFragment.newInstance();
 	}
 }

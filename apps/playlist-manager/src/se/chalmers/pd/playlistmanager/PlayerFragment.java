@@ -7,7 +7,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 public class PlayerFragment extends Fragment implements View.OnClickListener {
-	
+
+    private View pause;
+    private View play;
+
 	public PlayerFragment() {};
 	
 	@Override
@@ -28,13 +31,20 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 	private void setupButtons(View rootView) {
 		View previous = rootView.findViewById(R.id.prev);
 		View next = rootView.findViewById(R.id.next);
-		View play = rootView.findViewById(R.id.play);
-		View pause = rootView.findViewById(R.id.pause);
-		previous.setOnClickListener(this);
+		play = rootView.findViewById(R.id.play);
+        pause = rootView.findViewById(R.id.pause);
+        previous.setOnClickListener(this);
 		next.setOnClickListener(this);
 		play.setOnClickListener(this);
 		pause.setOnClickListener(this);		
 	}
+
+    /**
+     * TODO
+     * uppdarera artist, track vid next
+     * implementera nfc
+     * refaktorera headunit
+     */
 
 	@Override
 	public void onClick(View v) {
@@ -43,12 +53,16 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 		switch (v.getId()) {
 		case R.id.play:
 			action = Action.play;
+            pause.setVisibility(View.VISIBLE);
+            play.setVisibility(View.GONE);
 			break;
 		case R.id.next:
 			action = Action.next;
 			break;
 		case R.id.pause:
 			action = Action.pause;
+            pause.setVisibility(View.GONE);
+            play.setVisibility(View.VISIBLE);
 			break;
 		case R.id.prev:
 			action = Action.prev;
@@ -56,4 +70,5 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 		}
 		((MainActivity) getActivity()).onPlayerAction(action);
 	}
+	
 }

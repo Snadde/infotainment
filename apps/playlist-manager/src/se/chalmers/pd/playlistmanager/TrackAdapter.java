@@ -39,11 +39,11 @@ public class TrackAdapter extends ArrayAdapter<Track> {
 		
 		final Track track = tracks.get(position);
 		TextView v = (TextView) row.findViewById(android.R.id.text1);
-		v.setText(track.getName());
+        v.setText(track.getArtist());
 		v.setTextColor(context.getResources().getColorStateList(android.R.color.holo_blue_dark));
 		v = (TextView) row.findViewById(android.R.id.text2);
 		StringBuilder sb = new StringBuilder();
-		sb.append(track.getArtist());
+        sb.append(track.getName());
 		sb.append(", ");
 		sb.append(track.getUri());
 		v.setText(sb.toString());

@@ -1,5 +1,7 @@
 package se.chalmers.pd.playlistmanager;
 
+import java.util.ArrayList;
+
 import android.widget.SearchView;
 
 import com.mixtape.spotify.api.RequestType;
@@ -10,18 +12,17 @@ import com.mixtape.spotify.api.RequestType;
  * for the submission of a query.
  */
 
-public class QueryTextListener implements SearchView.OnQueryTextListener {
+public class QueryTextListener implements SearchView.OnQueryTextListener, AndroidSpotifyMetadata.Callback {
 	
 	public interface Callback {
 		public void onSearchBegin();
+		public void onSearchResult(ArrayList<Track> tracks);
 	}
 	
-	private AndroidSpotifyMetadata.Callback spotifyCallback;
-	private Callback searchCallback;
+	private Callback callback;
 
-	public QueryTextListener(AndroidSpotifyMetadata.Callback spotifyCallback, Callback searchCallback) {
-		this.spotifyCallback = spotifyCallback;
-		this.searchCallback = searchCallback;
+	public QueryTextListener(Callback callback) {
+		this.callback = callback;
 	}
 	
 	@Override
@@ -37,8 +38,13 @@ public class QueryTextListener implements SearchView.OnQueryTextListener {
 	}
 	
 	public void search(String query) {
-		searchCallback.onSearchBegin();
-		AndroidSpotifyMetadata s = new AndroidSpotifyMetadata();
-		s.search(query, RequestType.track, spotifyCallback);
+		callback.onSearchBegin();
+		AndroidSpotifyMetadata spotify = new AndroidSpotifyMetadata();
+		spotify.search(query, RequestType.track, this);
+	}
+
+	@Override
+	public void onSearchResult(ArrayList<Track> tracks) {
+		callback.onSearchResult(tracks);		
 	}
 }
