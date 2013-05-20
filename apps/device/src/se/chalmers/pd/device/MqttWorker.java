@@ -46,7 +46,7 @@ public class MqttWorker {
 	public static final String MQTT_MESSAGE_RECEIVED_TOPIC = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_TOPIC";
 	public static final String MQTT_MESSAGE_RECEIVED_PAYLOAD = "se.chalmers.pd.dashboard.mqtt.MESSAGE_RECEIVED_PAYLOAD";
 
-	private static final String BROKER = "tcp://192.168.43.147:1883";
+	//private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "device";
 
 	private MqttClient mqttClient;
@@ -85,7 +85,7 @@ public class MqttWorker {
 	 * Connects to the MQTT broker in a new Thread and defines some custom
 	 * callback that handle messages.
 	 */
-	public void connect() {
+	public void connect(final String url) {
 		if (mqttClientThread != null && mqttClientThread.isAlive()) {
 			try {
 				mqttClient.disconnect();
@@ -102,7 +102,7 @@ public class MqttWorker {
 						// TODO Find external temp dir for client
 						String tmpDir = Environment.getExternalStorageDirectory() + STORAGE_DIRECTORY;
 						MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
-						mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
+						mqttClient = new MqttClient(url, CLIENT_NAME, dataStore);
 						mqttClient.setCallback(new CustomMqttCallback());
 						mqttClient.connect();
 						mqttClient.subscribe("/playlist/1");
@@ -166,7 +166,7 @@ public class MqttWorker {
 									String name = json.optString("track");
 									String artist = json.optString("artist");
 									String spotifyUri = json.optString("uri");
-									int length = json.optInt("length");
+									int length = json.optInt("tracklength");
 									Track newTrack = new Track(name, artist, spotifyUri, length);
 									callback.onActionAdd(newTrack);
 								}

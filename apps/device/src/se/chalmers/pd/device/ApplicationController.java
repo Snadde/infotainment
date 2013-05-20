@@ -68,7 +68,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 				payload.put("track", tracks[i]);
 				payload.put("artist", artists[i]);
 				payload.put("uri", uris[i]);
-				payload.put("length", lengths[i]);
+				payload.put("tracklength", lengths[i]);
 				mqttWorker.publish("/playlist", payload.toString());
 			}
 
@@ -188,8 +188,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	/**
 	 * Connects to the mqtt broker
 	 */
-	public void connect() {
-		mqttWorker.connect();
+	public void connect(String url) {
+		mqttWorker.connect(url);
 	}
 
 	/**

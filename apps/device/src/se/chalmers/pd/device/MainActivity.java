@@ -1,9 +1,11 @@
 package se.chalmers.pd.device;
 
 import se.chalmers.pd.device.ApplicationController.Callbacks;
+import se.chalmers.pd.device.NfcReader.NFCCallback;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,7 +23,7 @@ import android.widget.ToggleButton;
  * @author Patrik Thituson
  * 
  */
-public class MainActivity extends Activity implements Callbacks, View.OnClickListener {
+public class MainActivity extends Activity implements Callbacks, View.OnClickListener, NFCCallback {
 
 	private ApplicationController controller;
 	private TextView currentTrack, status;
@@ -29,6 +31,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	private ToggleButton start;
 	private MenuItem connect, disconnect, install, uninstall;
 	private SeekBar seekbar;
+	private NfcReader nfcReader;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -41,6 +44,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		setupButtons();
 		// log in to spotify
 		controller.login();
+		nfcReader = new NfcReader(this);
 	}
 
 	/**
@@ -239,7 +243,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 			controller.uninstall();
 			return true;
 		case R.id.connect:
-			controller.connect();
+			controller.connect("tcp://192.168.43.147:1883"); // Backup button for connection with broker if NFC is unavailable
 			return true;
 		case R.id.disconnect:
 			controller.disconnect();
@@ -305,5 +309,25 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 
 	public void onUpdateSeekbar(float position) {
 		seekbar.setProgress((int) (position * seekbar.getMax()));
+	}
+
+	public void onNFCResult(String url) {
+		controller.connect(url);		
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		nfcReader.onPause();
+	}		
+	@Override	
+	protected void onResume() {
+		super.onResume();
+		nfcReader.onResume();
+	}
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		nfcReader.onNewIntent(intent);
 	}
 }
