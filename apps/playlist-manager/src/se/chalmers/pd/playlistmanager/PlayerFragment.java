@@ -5,11 +5,13 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 public class PlayerFragment extends Fragment implements View.OnClickListener {
 
 	private View pause;
 	private View play;
+	private TextView trackInfo;
 
 	public PlayerFragment() {
 	};
@@ -23,6 +25,11 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_player, null);
 		setupButtons(rootView);
+		
+		Bundle arguments = getArguments();
+		if(arguments != null) {
+			updateTrack((Track) arguments.getParcelable("track"));
+		}
 		return rootView;
 	}
 
@@ -32,22 +39,20 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 	private void setupButtons(View rootView) {
 		View previous = rootView.findViewById(R.id.prev);
 		View next = rootView.findViewById(R.id.next);
+		
 		play = rootView.findViewById(R.id.play);
 		pause = rootView.findViewById(R.id.pause);
 		previous.setOnClickListener(this);
 		next.setOnClickListener(this);
 		play.setOnClickListener(this);
 		pause.setOnClickListener(this);
+		
+		trackInfo = (TextView) rootView.findViewById(R.id.track_info);
+		
 	}
-
-	/**
-	 * TODO uppdarera artist, track vid next implementera nfc refaktorera
-	 * headunit
-	 */
 
 	@Override
 	public void onClick(View v) {
-
 		Action action = Action.NONE;
 		switch (v.getId()) {
 		case R.id.play:
@@ -74,8 +79,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 			break;
 		}
 	}
-	
-	// saknar längd i add track
 
 	private void togglePlayPause() {
 		if (play.getVisibility() == View.VISIBLE) {
@@ -85,5 +88,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 			pause.setVisibility(View.GONE);
 			play.setVisibility(View.VISIBLE);
 		}
+	}
+
+	public void updateTrack(Track track) {
+		trackInfo.setText(track.getArtist() + " - " + track.getName());
 	}
 }

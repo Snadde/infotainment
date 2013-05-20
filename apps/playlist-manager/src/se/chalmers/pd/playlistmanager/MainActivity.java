@@ -57,7 +57,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 			controller.addTrack(track);
 			break;
 		case SectionsPagerAdapter.SECOND_PAGE:
-			onPlayerAction(Action.play);
+			//onPlayerAction(Action.play); need to send uri data to be able to play selected track
 			break;
 		}
 	}
@@ -95,5 +95,9 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 				sectionsPagerAdapter.updateAction(action);
 			}
 		});
+	}
+
+	public void updatePlayer(Track track) {
+		sectionsPagerAdapter.updatePlayer(track);
 	}
 }

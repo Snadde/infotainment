@@ -121,5 +121,10 @@ public class Track implements Parcelable {
 			return new Track[size];
 		}
 	};
+	
+	@Override
+	public Track clone() {
+		return new Track(name, artist, spotifyUri, length);
+	}
 
 }

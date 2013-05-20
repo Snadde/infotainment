@@ -14,16 +14,16 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	public static final int SECOND_PAGE = 1;
 	public static final int THIRD_PAGE = 2;
 	public static final int TOTAL_PAGES = 3;
-	
+
 	private TrackListFragment playlistFragment;
 	private TrackListFragment searchFragment;
 	private Context context;
 	private PlayerFragment playerFragment;
-	
-	
+	private Track firstTrack;
+
 	public SectionsPagerAdapter(FragmentManager fm, Context context) {
 		super(fm);
-		this.context = context;	
+		this.context = context;
 	}
 
 	@Override
@@ -42,6 +42,8 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 			return playlistFragment;
 		case THIRD_PAGE:
 			playerFragment = new PlayerFragment();
+			args.putParcelable("track", firstTrack);
+			playerFragment.setArguments(args);
 			return playerFragment;
 		}
 		return null;
@@ -80,6 +82,14 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
 	public void resetPlaylist() {
 		playlistFragment.resetPlaylist();
+	}
+
+	public void updatePlayer(Track track) {
+		if (firstTrack == null) {
+			firstTrack = track;
+		} else if (playerFragment != null) {
+			playerFragment.updateTrack(track);
+		}
 	}
 
 }

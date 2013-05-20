@@ -7,14 +7,13 @@ import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class TrackListFragment extends ListFragment {
 	
 	private String title;
+	private TrackAdapter adapter;
 
 	public TrackListFragment() { }
 	
@@ -39,23 +38,26 @@ public class TrackListFragment extends ListFragment {
 		Track track = (Track) getListAdapter().getItem(position);
 		((MainActivity)getActivity()).onTrackSelected(track);
 	}
-
+	
 	public void updateResults(ArrayList<Track> tracks) {
 		setupAdapter(tracks);
 	}
 	
 	private void setupAdapter(final ArrayList<Track> tracks) {
-		ArrayAdapter<Track> adapter = new TrackAdapter(getActivity(), android.R.layout.simple_list_item_2, tracks);
+		adapter = new TrackAdapter(getActivity(), android.R.layout.simple_list_item_2, tracks);
 		setListAdapter(adapter);
 	}
 	
 
 	public void resetPlaylist() {
-		((TrackAdapter) getListAdapter()).clear();
+		adapter.clear();
 	}
 
 	public void addToPlaylist(Track track) {
-		((TrackAdapter) getListAdapter()).add(track);
+		adapter.add(track);
+		if(adapter.getCount() == 1) {
+			updatePlayer();
+		}
 	}
 
 	public void updateAction(Action action) {
@@ -72,14 +74,20 @@ public class TrackListFragment extends ListFragment {
 	}
 	
 	private void highlightNext() {
-		Toast.makeText(getActivity(), "Highlight next!", Toast.LENGTH_LONG).show();
+		Track originalTrack = adapter.getItem(0);
+		adapter.remove(originalTrack);
+		adapter.add(originalTrack);
+		adapter.notifyDataSetChanged();
 	}
 
 	private void highlightPrev() {
-		Toast.makeText(getActivity(), "Highlight prev!", Toast.LENGTH_LONG).show();
+		Track originalTrack = adapter.getItem(adapter.getCount() - 1);
+		adapter.remove(originalTrack);
+		adapter.insert(originalTrack, 0);
+		adapter.notifyDataSetChanged();
 	}
 
 	private void updatePlayer() {
-		
+		((MainActivity)getActivity()).updatePlayer(adapter.getItem(0));
 	}
 }
