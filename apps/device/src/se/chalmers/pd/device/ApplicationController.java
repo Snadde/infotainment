@@ -1,5 +1,6 @@
 package se.chalmers.pd.device;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,9 +18,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	/**
 	 * Callbacks that is used for the main activity to be able to update the
 	 * view
-	 * 
-	 * @author Snadde
-	 * 
 	 */
 	interface Callbacks {
 		void onPlayerLoggedIn();
@@ -35,8 +33,10 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		void onInstalledApplication(boolean show);
 
 		void onConnectedMQTT(boolean connected);
+
+		void onUpdateSeekbar(float position);
 		
-		void onUpdateSeekbar(float position);	
+		 void onPendingAction(String message);
 	}
 
 	private Context context;
@@ -51,27 +51,31 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		spotifyController = new SpotifyController(this, context);
 	}
 
-
 	/**
 	 * Helper method that publish the playlist to the topic "/playlist" for
 	 * testing purposes
 	 */
 	private void sendPlayList() {
 		JSONObject payload = new JSONObject();
+		JSONArray playlistArray = new JSONArray();
+		
 		String[] artists = { "Foo Fighters", "Nirvana", "Avicii" };
 		String[] tracks = { "The Pretender", "Rape me", "X You" };
-		String[] uris = { "spotify:track:3ZsjgLDSvusBgxGWrTAVto", "spotify:track:47KVHb6cOVBZbmXQweE5p7", "spotify:track:330r0K82tIDVr6f1GezAd8" };
-		String[] lengths = {"270","170","200"};
+		String[] uris = { "spotify:track:3ZsjgLDSvusBgxGWrTAVto", "spotify:track:47KVHb6cOVBZbmXQweE5p7",
+				"spotify:track:330r0K82tIDVr6f1GezAd8" };
+		String[] lengths = { "270", "170", "200" };
 		try {
-			payload.put("action", "add");
+			payload.put("action", "add_all");
 			for (int i = 0; i < 3; i++) {
-				payload.put("track", tracks[i]);
-				payload.put("artist", artists[i]);
-				payload.put("uri", uris[i]);
-				payload.put("tracklength", lengths[i]);
-				mqttWorker.publish("/playlist", payload.toString());
+				JSONObject jsonTrack = new JSONObject();
+				jsonTrack.put("track", tracks[i]);
+				jsonTrack.put("artist", artists[i]);
+				jsonTrack.put("uri", uris[i]);
+				jsonTrack.put("tracklength", lengths[i]);
+				playlistArray.put(jsonTrack);
 			}
-
+			payload.put("data", playlistArray);
+			mqttWorker.publish("/playlist", payload.toString());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -189,7 +193,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * Connects to the mqtt broker
 	 */
 	public void connect(String url) {
-		mqttWorker.connect(url);
+		mqttWorker.setBrokerURL(url);
+		mqttWorker.start();
 	}
 
 	/**
@@ -214,8 +219,9 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * callback is later called with the result
 	 */
 	public void start() {
+		callbacks.onPendingAction("Starting Application");
 		String message = DeviceMessage.startMessage("playlist");
-		mqttWorker.publish("/system", message);
+		mqttWorker.publish("/system", message);	
 	}
 
 	/**
@@ -233,6 +239,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * application a callback is later called with the result.
 	 */
 	public void install() {
+		callbacks.onPendingAction("Installing Application");
 		StreamToBase64String streamToBase64String = StreamToBase64String.getInstance(context);
 		String data = streamToBase64String.getBase64StringFromAssets("Playlist.zip");
 		String message = DeviceMessage.installMessage(data);
@@ -247,102 +254,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		mqttWorker.publish("/system", message);
 	}
 
-	/**
-	 * When the application is connected to the broker this callback is called
-	 * and then an exist message is published to see if there is an application
-	 * installed.
-	 */
-	public void onConnected() {
-		callbacks.onConnectedMQTT(true);
-		exist();
-	}
-
-	/**
-	 * When an application exists this callback method is called and forward it
-	 * to the callback in the main activity for updating the view.
-	 */
-	public void onExist(boolean success) {
-		callbacks.onInstalledApplication(success);
-	}
-
-	/**
-	 * When an application is started this callback method will publish a
-	 * playlist to the broker for testing purposes.
-	 */
-	public void onStart(String result) {
-		if (result.equals("success")) {
-			sendPlayList();
-			callbacks.onStartedApplication("start");
-		} else if (result.equals("error")) {
-			callbacks.onStartedApplication("error");
-		} else if (result.equals("pending")) {
-			// TODO animate something cool!
-		}
-
-	}
-
-	/**
-	 * When an application has stopped this callback method is called. This
-	 * method just calls a callback in the main acivity for updating the view.
-	 */
-	public void onStop(boolean success) {
-		callbacks.onStartedApplication("stop");
-	}
-
-	/**
-	 * When an application is installing, installed or an error has occured this
-	 * callback is called. This method forwards the succesfully installed
-	 * message to the main activity for updating the view
-	 */
-	public void onInstall(String result) {
-		if (result.equals("success")) {
-			callbacks.onInstalledApplication(true);
-		} else if (result.equals("error")) {
-			// TODO send feedback
-		} else if (result.equals("pending")) {
-			// TODO animate something cool!
-		}
-
-	}
-
-	/**
-	 * Forwards the onUninstall callback to the main activity for updating the
-	 * view.
-	 */
-	public void onUninstall(boolean success) {
-		callbacks.onInstalledApplication(false);
-	}
-
-	/**
-	 * Forwards the onActionPlay callback to the main activity for updating the
-	 * view.
-	 */
-	public void onActionPlay() {
-		spotifyController.play();
-		callbacks.onPlayerPlay();
-	}
-
-	/**
-	 * Forwards the onActionPause callback to the main activity for updating the
-	 * view.
-	 */
-	public void onActionPause() {
-		spotifyController.pause();
-		callbacks.onPlayerPause();
-	}
-
-	/**
-	 * Forwards the onActionNext callback to the main activity for updating the
-	 * view.
-	 */
-	public void onActionNext() {
-		spotifyController.playNext();
-		callbacks.onPlayerNext();
-	}
-
-	/**
-	 * 
-	 */
 	public boolean isConnectedToBroker() {
 		return mqttWorker.isConnected();
 	}
@@ -354,18 +265,107 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		} else
 			return "No tracks available";
 	}
-	
-	public void seek(float position){
+
+	public void seek(float position) {
 		spotifyController.seek(position);
 	}
 
 	public void onPositionChanged(float position) {
-		callbacks.onUpdateSeekbar(position);		
+		callbacks.onUpdateSeekbar(position);
 	}
+	
+	/**
+	 * Callback from Mqttworker thath handles all action-messages
+	 * and perform the corresponding 
+	 */
+	public void onMessage(String topic, String payload) {
+		JSONObject json;
+		try {
+			json = new JSONObject(payload);
+			String action = json.optString("action");
+			String type = json.optString("type");
+			String data = json.optString("data");
+			boolean success = data.equals("success");
+			switch (Action.valueOf(action)) {
+			case add:
+				addJsonTrackToPlaylist(json);
+				break;
+			case play:
+				spotifyController.play();
+				callbacks.onPlayerPlay();
+				break;
+			case pause:
+				spotifyController.pause();
+				callbacks.onPlayerPause();
+				break;
+			case next:
+				spotifyController.playNext();
+				callbacks.onPlayerNext();
+				break;
+			case install:
+				if (data.equals("success")) {
+					callbacks.onInstalledApplication(true);	
+				} else if (data.equals("error")) {
+					callbacks.onInstalledApplication(false);
+				} 
+				break;
+			case start:
+				if (data.equals("success")) {
+					sendPlayList();
+					callbacks.onStartedApplication("start");
+				} else if (data.equals("error")) {
+					callbacks.onStartedApplication("error");
+				} 
+				break;
+			case stop:
+				callbacks.onStartedApplication(action);
+				break;
+			case uninstall:
+				callbacks.onInstalledApplication(!success);
+				break;
+			case exist:
+				callbacks.onInstalledApplication(success);
+				break;
+			case add_all:
+				spotifyController.clearPlaylist();
+				JSONArray playlistArray = new JSONArray(data);
+				JSONObject jsonTrack;
+				for (int i = 0; i < playlistArray.length(); i++){
+					jsonTrack = new JSONObject(playlistArray.get(i).toString());
+					addJsonTrackToPlaylist(jsonTrack);
+				}
+				break;
+			}
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
 
-	public void onActionAdd(Track newTrack) {
+	}
+	/**
+	 * Helper method for adding a track to the playlist based
+	 * on the json object.
+	 * @param jsonTrack
+	 */
+	private void addJsonTrackToPlaylist(JSONObject jsonTrack){
+		String name = jsonTrack.optString("track");
+		String artist = jsonTrack.optString("artist");
+		String spotifyUri = jsonTrack.optString("uri");
+		int length = jsonTrack.optInt("tracklength");
+		Track newTrack = new Track(name, artist, spotifyUri, length);
 		spotifyController.addTrackToPlaylist(newTrack);
-		
+	}
+	
+	/**
+	 * When the application is connected to the broker this callback is called
+	 * and then an exist message is published to see if there is an application
+	 * installed.
+	 */
+	public void onConnected(boolean connected) {
+		callbacks.onConnectedMQTT(true);
+		mqttWorker.subscribe("/playlist");
+		mqttWorker.subscribe("/playlist/1");
+		exist();
 	}
 
 }
