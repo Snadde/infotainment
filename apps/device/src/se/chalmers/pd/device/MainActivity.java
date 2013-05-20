@@ -204,10 +204,15 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onInstalledApplication(final boolean show) {
 		runOnUiThread(new Runnable() {
 			public void run() {
+				if(loadingDialog!=null){
+					loadingDialog.dismiss();
+				}
 				if (show) {
 					uninstall.setEnabled(true);
+					install.setEnabled(false);
 					changeStatus("Installed application found");
 				} else {
+					uninstall.setEnabled(false);
 					install.setEnabled(true);
 					changeStatus("No installed application");
 				}

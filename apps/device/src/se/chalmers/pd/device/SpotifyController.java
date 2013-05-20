@@ -178,4 +178,8 @@ public class SpotifyController {
 		LibSpotifyWrapper.seek(position);
 	}
 
+	public void clearPlaylist() {
+		playlist.clear();		
+	}
+
 }
