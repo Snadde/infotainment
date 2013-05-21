@@ -1,4 +1,5 @@
-var COMMAND_ADD = "add"
+var COMMAND_ADD = "add";
+var COMMAND_ADD_ALL = "add_all";
 var COMMAND_NEXT = "next";
 var COMMAND_PLAY = "play";
 var COMMAND_PAUSE = "pause";
@@ -73,6 +74,12 @@ function handleMessagePayload(payload) {
     if (payload.action == COMMAND_ADD) {
         updateList(payload);
         playlist.push(payload);
+    } else if(payload.action == COMMAND_ADD_ALL) {
+        playlist.length = 0;
+        playlist = payload.data;
+        for(var i = 0; i < playlist.length; i++) {
+            updateList(playlist[i]);
+        }
     } else if (payload.action == COMMAND_NEXT) {
         currentTrack = ++currentTrack % playlist.length;
         var elem = $('#options-list li:first');
