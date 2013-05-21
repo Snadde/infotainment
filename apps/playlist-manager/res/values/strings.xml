@@ -13,5 +13,6 @@
     <string name="connect_dialog_message">There was a problem connecting to the broker, what do you want to do?</string>
     <string name="reconnect">Reconnect</string>
     <string name="cancel">Cancel</string>
+    <string name="cant_add_tracks_connect_to_broker">You are not connected to the broker and will not be able to add tracks!</string>
 
 </resources>

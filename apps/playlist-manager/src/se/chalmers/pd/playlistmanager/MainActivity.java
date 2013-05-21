@@ -4,18 +4,20 @@ import java.util.ArrayList;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.widget.SearchView;
 
-public class MainActivity extends FragmentActivity implements ApplicationController.Callback, QueryTextListener.Callback {
+public class MainActivity extends FragmentActivity implements ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NFCCallback {
 
 	private SectionsPagerAdapter sectionsPagerAdapter;
 	private ViewPager viewPager;
 	private ApplicationController controller;
 	private LoadingDialogFragment loadingDialog;
+	private NfcReader nfcReader;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +27,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 		viewPager = (ViewPager) findViewById(R.id.pager);
 		viewPager.setAdapter(sectionsPagerAdapter);
 		controller = new ApplicationController(this, this);
+		nfcReader = new NfcReader(this);
 	}
 	
 	
@@ -99,5 +102,25 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 
 	public void updatePlayer(Track track) {
 		sectionsPagerAdapter.updatePlayer(track);
+	}
+	
+	public void onNFCResult(String url) {
+		controller.connect(url);		
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		nfcReader.onPause();
+	}		
+	@Override	
+	protected void onResume() {
+		super.onResume();
+		nfcReader.onResume();
+	}
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		nfcReader.onNewIntent(intent);
 	}
 }
