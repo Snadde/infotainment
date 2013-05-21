@@ -35,8 +35,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		void onConnectedMQTT(boolean connected);
 
 		void onUpdateSeekbar(float position);
-		
-		 void onPendingAction(String message);
+
 	}
 
 	private Context context;
@@ -88,58 +87,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		spotifyController.login();
 	}
 
-	/**
-	 * Publish a play message to the topic "/playlist" and calls the spotify
-	 * controller to start playing.
-	 */
-	public void play() {
-		if (isConnectedToBroker()) {
-			JSONObject payload = new JSONObject();
-			try {
-				payload.put("action", "play");
-				mqttWorker.publish("/playlist", payload.toString());
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * Publish a pause message to the topic "/playlist" and calls the spotify
-	 * controller to pause playing.
-	 */
-	public void pause() {
-		if (isConnectedToBroker()) {
-			JSONObject payload = new JSONObject();
-			try {
-				payload.put("action", "pause");
-				mqttWorker.publish("/playlist", payload.toString());
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	/**
-	 * Publish a next message to the topic "/playlist" and calls the spotify
-	 * controller to select the next song
-	 */
-	public void next() {
-		if (isConnectedToBroker()) {
-			JSONObject payload = new JSONObject();
-			try {
-				payload.put("action", "next");
-				mqttWorker.publish("/playlist", payload.toString());
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-
-	public void previous() {
-		// TODO implement this feature
-		// spotifyController.playPrevious();
-	}
 
 	/**
 	 * Callback that let us know we have succesfully logged in to spotify
@@ -176,7 +123,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * Callback that is called when a song has ended and calls the functon next
 	 */
 	public void onEndOfTrack() {
-		next();
+		createAndPublishPlayerActions(Action.next);
 		callbacks.onPlayerNext();
 	}
 
@@ -202,57 +149,10 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 */
 	public void disconnect() {
 		mqttWorker.disconnect();
+        mqttWorker.destroy();
 		callbacks.onConnectedMQTT(false);
 	}
 
-	/**
-	 * Publish an exist message to the "/system" topic to see if an application
-	 * is installed, a callback is later called with the results
-	 */
-	public void exist() {
-		String message = DeviceMessage.existMessage("playlist");
-		mqttWorker.publish("/system", message);
-	}
-
-	/**
-	 * Publish an start message to the "/system" topic to start an application a
-	 * callback is later called with the result
-	 */
-	public void start() {
-		callbacks.onPendingAction("Starting Application");
-		String message = DeviceMessage.startMessage("playlist");
-		mqttWorker.publish("/system", message);	
-	}
-
-	/**
-	 * Publish an stop message to the "/system" topic to stop an application a
-	 * callback is later called with the result
-	 */
-	public void stop() {
-		String message = DeviceMessage.stopMessage("playlist");
-		mqttWorker.publish("/system", message);
-	}
-
-	/**
-	 * Reads a zip file in the assets folder and convert it to base64 then
-	 * publish an install message to the "/system" topic to install an
-	 * application a callback is later called with the result.
-	 */
-	public void install() {
-		callbacks.onPendingAction("Installing Application");
-		StreamToBase64String streamToBase64String = StreamToBase64String.getInstance(context);
-		String data = streamToBase64String.getBase64StringFromAssets("Playlist.zip");
-		String message = DeviceMessage.installMessage(data);
-		mqttWorker.publish("/system", message);
-	}
-
-	/**
-	 * Publish an uninstall message to uninstall the application
-	 */
-	public void uninstall() {
-		String message = DeviceMessage.unInstallMessage("playlist");
-		mqttWorker.publish("/system", message);
-	}
 
 	public boolean isConnectedToBroker() {
 		return mqttWorker.isConnected();
@@ -276,14 +176,13 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	
 	/**
 	 * Callback from Mqttworker thath handles all action-messages
-	 * and perform the corresponding 
+	 * and perform the corresponding action. 
 	 */
 	public void onMessage(String topic, String payload) {
 		JSONObject json;
 		try {
 			json = new JSONObject(payload);
 			String action = json.optString("action");
-			String type = json.optString("type");
 			String data = json.optString("data");
 			boolean success = data.equals("success");
 			switch (Action.valueOf(action)) {
@@ -355,6 +254,37 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		Track newTrack = new Track(name, artist, spotifyUri, length);
 		spotifyController.addTrackToPlaylist(newTrack);
 	}
+
+    public void createAndPublishSystemActions(Action action){
+        if (isConnectedToBroker()) {
+            String data = "playlist";
+            if(action.equals(Action.install)){
+                StreamToBase64String streamToBase64String = StreamToBase64String.getInstance(context);
+                data = streamToBase64String.getBase64StringFromAssets("Playlist.zip");
+            }
+            JSONObject json = new JSONObject();
+            try {
+                json.put("action", action.toString());
+                json.put("data", data);
+            } catch (JSONException e) {
+               e.printStackTrace();
+            }
+            mqttWorker.publish("/system", json.toString());
+        }
+    }
+
+    public void createAndPublishPlayerActions(Action action){
+        if (isConnectedToBroker()) {
+            JSONObject json = new JSONObject();
+            try {
+                json.put("action", action.toString());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            mqttWorker.publish("/playlist", json.toString());
+        }
+    }
+
 	
 	/**
 	 * When the application is connected to the broker this callback is called
@@ -365,7 +295,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		callbacks.onConnectedMQTT(true);
 		mqttWorker.subscribe("/playlist");
 		mqttWorker.subscribe("/playlist/1");
-		exist();
+		createAndPublishSystemActions(Action.exist);
 	}
 
 }

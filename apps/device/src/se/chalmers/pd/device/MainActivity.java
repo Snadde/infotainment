@@ -173,7 +173,9 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onStartedApplication(final String status) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				loadingDialog.dismiss();
+				if(loadingDialog!=null){
+                    loadingDialog.dismiss();
+                }
 				String message = "";
 				if (status.equals("start")) {
 					uninstall.setEnabled(false);
@@ -192,7 +194,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		});
 
 	}
-	public void onPendingAction(String message){
+	private void loadDialog(String message){
 		loadingDialog = LoadingDialogFragment.newInstance(message);
 		loadingDialog.show(getFragmentManager(), "loadingDialog");
 	}
@@ -248,10 +250,11 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.install:
-			controller.install();
+            loadDialog("Loading application");
+			controller.createAndPublishSystemActions(Action.install);
 			return true;
 		case R.id.uninstall:
-			controller.uninstall();
+            controller.createAndPublishSystemActions(Action.uninstall);
 			return true;
 		case R.id.connect:
 			controller.connect("tcp://192.168.43.147:1883"); // Backup button for connection with broker if NFC is unavailable
@@ -272,28 +275,31 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		switch (v.getId()) {
 		case R.id.start:
 			if (controller.isConnectedToBroker()) {
-				if (start.isChecked()) {
+				Action action;
+                if (start.isChecked()) {
 					start.setChecked(false);
-					controller.start();
-				} else {
-					controller.stop();
+					action = Action.start;
+                    loadDialog("Starting application");
+                } else {
+					action = Action.stop;
 				}
+                controller.createAndPublishSystemActions(action);
 			} else {
 				start.setChecked(false);
 				alert("Not connected to broker! ");
 			}
 			break;
 		case R.id.play:
-			controller.play();
+			controller.createAndPublishPlayerActions(Action.play);
 			break;
 		case R.id.next:
-			controller.next();
+            controller.createAndPublishPlayerActions(Action.next);
 			break;
 		case R.id.pause:
-			controller.pause();
+            controller.createAndPublishPlayerActions(Action.pause);
 			break;
 		case R.id.prev:
-			controller.previous();
+            controller.createAndPublishPlayerActions(Action.prev);
 			break;
 		}
 		setCurrentTrack();
