@@ -95,7 +95,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				sectionsPagerAdapter.updateAction(action);
+				sectionsPagerAdapter.performAction(action);
 			}
 		});
 	}

@@ -75,7 +75,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 		playlistFragment.addToPlaylist(track);
 	}
 
-	public void updateAction(Action action) {
+	public void performAction(Action action) {
 		switch (action) {
 		case next:
 		case prev:
@@ -97,8 +97,9 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	public void updatePlayer(Track track) {
 		if (firstTrack == null) {
 			firstTrack = track;
-		} else if (playerFragment != null) {
-			playerFragment.updateTrack(track);
+		} 
+		if (playerFragment != null && firstTrack != null) {
+			playerFragment.updateTrack(firstTrack);
 		}
 	}
 

@@ -56,6 +56,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 		mqttWorker.start();
 	}
 	
+	
 	@Override
 	public void onConnected(boolean connected) {
 		if(connected) {
