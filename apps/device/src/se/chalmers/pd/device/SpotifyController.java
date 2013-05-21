@@ -179,7 +179,9 @@ public class SpotifyController {
 	}
 
 	public void clearPlaylist() {
-		playlist.clear();		
+		playlist.clear();
+        currentTrackIndex = 0;
+        emptyList = true;
 	}
 
 }

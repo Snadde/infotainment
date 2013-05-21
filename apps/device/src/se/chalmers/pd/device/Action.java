@@ -13,5 +13,6 @@ public enum Action {
 	uninstall,
 	exist,
 	add_all,
+    get_all,
 	NONE
 }

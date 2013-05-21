@@ -8,6 +8,9 @@ import se.chalmers.pd.device.MqttWorker.MQTTCallback;
 import se.chalmers.pd.device.SpotifyController.PlaylistCallback;
 import android.content.Context;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * 
  * @author Patrik Thituson
@@ -55,29 +58,17 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * testing purposes
 	 */
 	private void sendPlayList() {
-		JSONObject payload = new JSONObject();
-		JSONArray playlistArray = new JSONArray();
-		
+		List<Track> newPlaylist = new ArrayList<Track>();
 		String[] artists = { "Foo Fighters", "Nirvana", "Avicii" };
 		String[] tracks = { "The Pretender", "Rape me", "X You" };
 		String[] uris = { "spotify:track:3ZsjgLDSvusBgxGWrTAVto", "spotify:track:47KVHb6cOVBZbmXQweE5p7",
 				"spotify:track:330r0K82tIDVr6f1GezAd8" };
-		String[] lengths = { "270", "170", "200" };
-		try {
-			payload.put("action", "add_all");
-			for (int i = 0; i < 3; i++) {
-				JSONObject jsonTrack = new JSONObject();
-				jsonTrack.put("track", tracks[i]);
-				jsonTrack.put("artist", artists[i]);
-				jsonTrack.put("uri", uris[i]);
-				jsonTrack.put("tracklength", lengths[i]);
-				playlistArray.put(jsonTrack);
-			}
-			payload.put("data", playlistArray);
-			mqttWorker.publish("/playlist", payload.toString());
-		} catch (JSONException e) {
-			e.printStackTrace();
+		int[] lengths = { 270, 170, 200};
+		for (int i = 0; i < 3; i++) {
+			Track track = new Track(tracks[i], artists[i], uris[i], lengths[i]);
+			newPlaylist.add(track);
 		}
+        sendAllTracks("/playlist", newPlaylist);
 	}
 
 	/**
@@ -154,11 +145,19 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		callbacks.onConnectedMQTT(false);
 	}
 
-
+    /**
+     *
+     * @return
+     */
 	public boolean isConnectedToBroker() {
 		return mqttWorker.isConnected();
 	}
 
+    /**
+     * Returns the current track selected in the playlist if
+     * existing, the string "No tracks available" otherwise
+     * @return
+     */
 	public String getCurrentTrack() {
 		Track track = spotifyController.getCurrentTrack();
 		if (track != null) {
@@ -171,6 +170,11 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		spotifyController.seek(position);
 	}
 
+    /**
+     * Callback from spotifycontroller that allows us to simulate
+     * timer.
+     * @param position
+     */
 	public void onPositionChanged(float position) {
 		callbacks.onUpdateSeekbar(position);
 	}
@@ -226,6 +230,9 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 			case exist:
 				callbacks.onInstalledApplication(success);
 				break;
+                case get_all:
+                    sendAllTracks(data, spotifyController.getPlaylist());
+                    break;
 			case add_all:
 				spotifyController.clearPlaylist();
 				JSONArray playlistArray = new JSONArray(data);
@@ -256,6 +263,12 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		spotifyController.addTrackToPlaylist(newTrack);
 	}
 
+    /**
+     * Creates a system action message and publish it on the private topic
+     * with the application name in the data field except for 'install' where
+     * the web application as a base64 string will be stored instead.
+     * @param action
+     */
     public void createAndPublishSystemActions(Action action){
         if (isConnectedToBroker()) {
             String data = "playlist";
@@ -274,6 +287,10 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
         }
     }
 
+    /**
+     * Creates a player action message and publish it on the private channel
+     * @param action
+     */
     public void createAndPublishPlayerActions(Action action){
         if (isConnectedToBroker()) {
             JSONObject json = new JSONObject();
@@ -283,6 +300,33 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
                 e.printStackTrace();
             }
             mqttWorker.publish("/playlist", json.toString());
+        }
+    }
+
+    /**
+     * Publish All tracks present in the Playlist of the spotifycontroller to the specified topic.
+     * Gets the playlist and convert the tracks to Json objects and put them in a Json array.
+     * @param topic
+     *              the topic to which the message should be published
+     */
+    public void sendAllTracks(String topic, List<Track> tracks){
+        JSONObject payload = new JSONObject();
+        JSONArray playlistArray = new JSONArray();
+        try {
+            payload.put("action", "add_all");
+            for(Track track: tracks){
+                JSONObject jsonTrack = new JSONObject();
+                jsonTrack.put("track", track.getName());
+                jsonTrack.put("artist", track.getArtist());
+                jsonTrack.put("uri", track.getUri());
+                jsonTrack.put("tracklength", track.getLength());
+                playlistArray.put(jsonTrack);
+            }
+            payload.put("data", playlistArray);
+            payload.put("index",spotifyController.getIndexOfCurrentTrack());
+            mqttWorker.publish(topic, payload.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 
