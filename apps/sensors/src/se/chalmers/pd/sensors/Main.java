@@ -1,12 +1,11 @@
 package se.chalmers.pd.sensors;
 
-import java.awt.GridLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.JButton;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
 
 /**
  * This is the main class of the sensor application. It has three buttons to
@@ -22,13 +21,12 @@ public class Main implements ActionListener {
 	private static final String SENSOR_NEXT = "Next sensor";
 	private static final String SENSOR_PAUSE = "Pause sensor";
 
-	private static final String ACTION_PLAY = "play";
-	private static final String ACTION_NEXT = "next";
-	private static final String ACTION_PAUSE = "pause";
+	private static final int PANEL_WIDTH = 800;
+	private static final int PANEL_HEIGHT = 500;
 
-	private JButton sensor1;
-	private JButton sensor2;
-	private JButton sensor3;
+	private SensorButton sensor1;
+	private SensorButton sensor2;
+	private SensorButton sensor3;
 	private JFrame jframe;
 	private Controller controller;
 
@@ -41,6 +39,7 @@ public class Main implements ActionListener {
 		addComponents();
 		addListeners();
 		controller = new Controller();
+		jframe.pack();
 		jframe.setVisible(true);
 	}
 
@@ -49,26 +48,27 @@ public class Main implements ActionListener {
 	 */
 	private void createComponents() {
 		jframe = new JFrame("Sensors");
-		jframe.setSize(600, 400);
-		sensor1 = new JButton(SENSOR_PLAY);
-		sensor1.setActionCommand(ACTION_PLAY);
-		sensor2 = new JButton(SENSOR_NEXT);
-		sensor2.setActionCommand(ACTION_NEXT);
-		sensor3 = new JButton(SENSOR_PAUSE);
-		sensor3.setActionCommand(ACTION_PAUSE);
+		jframe.setSize(PANEL_WIDTH, PANEL_HEIGHT);
+		sensor1 = new SensorButton(SENSOR_PLAY);
+		sensor1.setLocation(500, 225);
+		sensor1.setActionCommand(Action.play.toString());
+		sensor2 = new SensorButton(SENSOR_NEXT);
+		sensor2.setActionCommand(Action.next.toString());
+		sensor2.setLocation(500, 275);
+		sensor3 = new SensorButton(SENSOR_PAUSE);
+		sensor3.setActionCommand(Action.pause.toString());
+		sensor3.setLocation(500, 325);
 	}
 
 	/**
 	 * Adds the components to a panel and jframe
 	 */
 	private void addComponents() {
-		JPanel panel = new JPanel();
-		GridLayout grid = new GridLayout(3, 2);
-		panel.setLayout(grid);
+		Image image = new ImageIcon("wheel.jpg").getImage();
+		ImagePanel panel = new ImagePanel(image);
 		panel.add(sensor1);
 		panel.add(sensor2);
 		panel.add(sensor3);
-
 		jframe.getContentPane().add(panel);
 		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
@@ -88,13 +88,17 @@ public class Main implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		String command = e.getActionCommand();
-		if (command.equals(ACTION_PLAY)) {
+		Action action = Action.valueOf(e.getActionCommand());
+		switch (action) {
+		case play:
 			controller.play();
-		} else if (command.equals(ACTION_NEXT)) {
+			break;
+		case next:
 			controller.next();
-		} else if (command.equals(ACTION_PAUSE)) {
+			break;
+		case pause:
 			controller.pause();
+			break;
 		}
 	}
 

@@ -12,10 +12,6 @@ import org.json.JSONObject;
 public class Controller {
 
 	private static final String TOPIC = "/sensor/infotainment";
-	private static final String ACTION = "action";
-	private static final String ACTION_NEXT = "next";
-	private static final String ACTION_PLAY = "play";
-	private static final String ACTION_PAUSE = "pause";
 
 	private MqttWorker mqttWorker;
 
@@ -32,7 +28,7 @@ public class Controller {
 	 * a play message.
 	 */
 	public void play() {
-		mqttWorker.publish(TOPIC, getJsonMessage(ACTION_PLAY));
+		mqttWorker.publish(TOPIC, getJsonMessage(Action.play));
 	}
 
 	/**
@@ -40,7 +36,7 @@ public class Controller {
 	 * a pause message.
 	 */
 	public void pause() {
-		mqttWorker.publish(TOPIC, getJsonMessage(ACTION_PAUSE));
+		mqttWorker.publish(TOPIC, getJsonMessage(Action.pause));
 	}
 
 	/**
@@ -48,7 +44,7 @@ public class Controller {
 	 * a next message.
 	 */
 	public void next() {
-		mqttWorker.publish(TOPIC, getJsonMessage(ACTION_NEXT));
+		mqttWorker.publish(TOPIC, getJsonMessage(Action.next));
 	}
 
 	/**
@@ -60,10 +56,10 @@ public class Controller {
 	 * @return a stringified json object containing the action that is passed
 	 *         in.
 	 */
-	private String getJsonMessage(String action) {
+	private String getJsonMessage(Action action) {
 		JSONObject message = new JSONObject();
 		try {
-			message.put(ACTION, action);
+			message.put(Action.action.toString(), action.toString());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
