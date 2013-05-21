@@ -190,6 +190,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 					alert("No application installed !");
 				}
 				changeStatus(message);
+                setCurrentTrack();
 			}
 		});
 
@@ -306,7 +307,11 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	}
 
 	private void setCurrentTrack() {
-		setText(controller.getCurrentTrack());
+        runOnUiThread(new Runnable() {
+            public void run() {
+                setText(controller.getCurrentTrack());
+            }
+        });
 	}
 
 	private void alert(String message) {
@@ -328,7 +333,12 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		seekbar.setProgress((int) (position * seekbar.getMax()));
 	}
 
-	public void onNFCResult(String url) {
+    public void onUpdatedPlaylist() {
+        setCurrentTrack();
+        //this was implemented so this device could have a view of the playlist
+    }
+
+    public void onNFCResult(String url) {
 		controller.connect(url);		
 	}
 	

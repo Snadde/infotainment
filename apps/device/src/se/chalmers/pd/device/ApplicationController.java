@@ -39,6 +39,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 
 		void onUpdateSeekbar(float position);
 
+        void onUpdatedPlaylist();
+
 	}
 
 	private Context context;
@@ -58,7 +60,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * testing purposes
 	 */
 	private void sendPlayList() {
-		List<Track> newPlaylist = new ArrayList<Track>();
+        List<Track> newPlaylist = new ArrayList<Track>();
 		String[] artists = { "Foo Fighters", "Nirvana", "Avicii" };
 		String[] tracks = { "The Pretender", "Rape me", "X You" };
 		String[] uris = { "spotify:track:3ZsjgLDSvusBgxGWrTAVto", "spotify:track:47KVHb6cOVBZbmXQweE5p7",
@@ -206,6 +208,10 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 				spotifyController.playNext();
 				callbacks.onPlayerNext();
 				break;
+            case prev:
+                spotifyController.playPrevious();
+                callbacks.onPlayerNext();
+                break;
 			case install:
 				if (data.equals("success")) {
 					callbacks.onInstalledApplication(true);	
@@ -222,6 +228,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 				} 
 				break;
 			case stop:
+                spotifyController.pause();
+                spotifyController.clearPlaylist();
 				callbacks.onStartedApplication(action);
 				break;
 			case uninstall:
@@ -234,7 +242,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
                     sendAllTracks(data, spotifyController.getPlaylist());
                     break;
 			case add_all:
-				spotifyController.clearPlaylist();
 				JSONArray playlistArray = new JSONArray(data);
 				JSONObject jsonTrack;
 				for (int i = 0; i < playlistArray.length(); i++){
@@ -261,6 +268,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		int length = jsonTrack.optInt("tracklength");
 		Track newTrack = new Track(name, artist, spotifyUri, length);
 		spotifyController.addTrackToPlaylist(newTrack);
+        callbacks.onUpdatedPlaylist();
 	}
 
     /**

@@ -78,7 +78,11 @@ public class SpotifyController {
 	
 	public void addTrackToPlaylist(Track newTrack){
 		playlist.add(newTrack);
-		emptyList = false;
+        if (emptyList)
+        {
+		    emptyList = false;
+            currentTrack = newTrack;
+        }
 	}
 	
 	/**
@@ -111,18 +115,32 @@ public class SpotifyController {
 	/**
 	 * Tries to play the next track of the playlist. If it is at the end 
 	 * it starts over.
-	 * uses the callback to notify back to the application controller.
 	 */
 	public void playNext() {
-		currentTrackIndex++;
-		if (playlist.size() <= currentTrackIndex) {
-			currentTrackIndex = 0;
-		}
+		if (!emptyList){
+            currentTrackIndex++;
+		    if (playlist.size() <= currentTrackIndex) {
+			    currentTrackIndex = 0;
+		    }
+		    currentTrack = playlist.get(currentTrackIndex);
+		    LibSpotifyWrapper.playNext(currentTrack.getUri());
+	    }
+    }
+    /**
+     * Tries to play the previous track of the playlist. If it is at the
+     * beginning of hte palylist it starts at the end.
+     */
+    public void playPrevious() {
+        if (!emptyList){
+            currentTrackIndex--;
+            if (currentTrackIndex < 0) {
+                currentTrackIndex = playlist.size() - 1;
+            }
+            currentTrack = playlist.get(currentTrackIndex);
+            LibSpotifyWrapper.playNext(currentTrack.getUri());
+        }
+    }
 
-		currentTrack = playlist.get(currentTrackIndex);
-		LibSpotifyWrapper.playNext(currentTrack.getUri());
-
-	}
 	/**
 	 * Reads the user name and password for spotify in a file called userdetails.txt.
 	 * Then tries to log in by calling the Lobsspotifywrapper.
@@ -181,6 +199,7 @@ public class SpotifyController {
 	public void clearPlaylist() {
 		playlist.clear();
         currentTrackIndex = 0;
+        currentTrack = null;
         emptyList = true;
 	}
 
