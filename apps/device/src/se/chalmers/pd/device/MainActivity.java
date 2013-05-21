@@ -250,7 +250,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.install:
-            loadDialog("Loading application");
+            loadDialog("Installing application");
 			controller.createAndPublishSystemActions(Action.install);
 			return true;
 		case R.id.uninstall:

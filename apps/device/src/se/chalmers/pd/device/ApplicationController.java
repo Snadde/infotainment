@@ -44,7 +44,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	private Callbacks callbacks;
 
 	public ApplicationController(Context context) {
-		this.mqttWorker = new MqttWorker(this);
+
 		this.context = context;
 		this.callbacks = (Callbacks) context;
 		spotifyController = new SpotifyController(this, context);
@@ -140,7 +140,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * Connects to the mqtt broker
 	 */
 	public void connect(String url) {
-		mqttWorker.setBrokerURL(url);
+        mqttWorker = new MqttWorker(this);
+        mqttWorker.setBrokerURL(url);
 		mqttWorker.start();
 	}
 
@@ -149,7 +150,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 */
 	public void disconnect() {
 		mqttWorker.disconnect();
-        mqttWorker.destroy();
+        mqttWorker.interrupt();
 		callbacks.onConnectedMQTT(false);
 	}
 
