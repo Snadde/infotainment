@@ -27,8 +27,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 		setupButtons(rootView);
 		
 		Bundle arguments = getArguments();
-		if(arguments != null) {
-			updateTrack((Track) arguments.getParcelable("track"));
+		Track track = (Track) arguments.getParcelable("track");
+		if(track != null) {
+			updateTrack(track);
 		}
 		return rootView;
 	}

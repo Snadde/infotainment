@@ -76,8 +76,18 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	}
 
 	public void updateAction(Action action) {
-		playlistFragment.updateAction(action);
-		playerFragment.updateAction(action);
+		switch (action) {
+		case next:
+		case prev:
+			playlistFragment.updateAction(action);
+			break;
+		case play:
+		case pause:
+			playerFragment.updateAction(action);
+			break;
+		default:
+			break;
+		}
 	}
 
 	public void resetPlaylist() {

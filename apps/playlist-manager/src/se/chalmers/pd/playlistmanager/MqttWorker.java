@@ -23,8 +23,8 @@ public class MqttWorker extends Thread {
 
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
 	private static final String WORKER_NAME = "MqttWorker";
-	private static final String BROKER = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "playlistmanager";
+	private static String BROKER_URL = "tcp://192.168.43.147:1883";
 
 	private MqttClient mqttClient;
 	private Callback callback;
@@ -45,7 +45,7 @@ public class MqttWorker extends Thread {
 			// Sets up the client and subscribes to topics
 			String tmpDir = Environment.getExternalStorageDirectory() + STORAGE_DIRECTORY;
 			MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
-			mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
+			mqttClient = new MqttClient(BROKER_URL, CLIENT_NAME, dataStore);
 			mqttClient.setCallback(new CustomMqttCallback());
 			if(!connect()) {
 				callback.onConnected(false);
@@ -145,6 +145,20 @@ public class MqttWorker extends Thread {
 		@Override
 		public void connectionLost(Throwable cause) {
 			Log.d(WORKER_NAME, "connectionLost " + "cause:" + cause.toString());
+		}
+	}
+
+	public void setUrl(String url) {
+		BROKER_URL = url;
+	}
+
+	public void disconnect() {
+		try {
+			if(mqttClient != null) {
+				mqttClient.disconnect();
+			}
+		} catch (MqttException e) {
+			Log.d(WORKER_NAME, "disconnect " + "exception:" + e.toString());
 		}
 	}
 }
