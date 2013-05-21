@@ -12,6 +12,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 	private View pause;
 	private View play;
 	private TextView trackInfo;
+	private Track currentTrack;
 
 	public PlayerFragment() {
 	};
@@ -19,19 +20,17 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		Bundle arguments = getArguments();
+		currentTrack = (Track) arguments.getParcelable("track");
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.fragment_player, null);
 		setupButtons(rootView);
-		
-		Bundle arguments = getArguments();
-		Track track = (Track) arguments.getParcelable("track");
-		if(track != null) {
-			updateTrack(track);
-		}
+		updateTrack(currentTrack);
 		return rootView;
+		
 	}
 
 	/**
@@ -92,6 +91,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 	}
 
 	public void updateTrack(Track track) {
-		trackInfo.setText(track.getArtist() + " - " + track.getName());
+		currentTrack = track;
+		trackInfo.setText(currentTrack.getArtist() + " - " + currentTrack.getName());
 	}
 }

@@ -19,7 +19,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	private TrackListFragment searchFragment;
 	private Context context;
 	private PlayerFragment playerFragment;
-	private Track firstTrack;
+	private Track currentTrack;
 
 	public SectionsPagerAdapter(FragmentManager fm, Context context) {
 		super(fm);
@@ -42,7 +42,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 			return playlistFragment;
 		case THIRD_PAGE:
 			playerFragment = new PlayerFragment();
-			args.putParcelable("track", firstTrack);
+			args.putParcelable("track", currentTrack);
 			playerFragment.setArguments(args);
 			return playerFragment;
 		}
@@ -95,11 +95,9 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 	}
 
 	public void updatePlayer(Track track) {
-		if (firstTrack == null) {
-			firstTrack = track;
-		} 
-		if (playerFragment != null && firstTrack != null) {
-			playerFragment.updateTrack(firstTrack);
+		currentTrack = track;
+		if(playerFragment != null) {
+			playerFragment.updateTrack(currentTrack);
 		}
 	}
 

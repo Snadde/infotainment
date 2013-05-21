@@ -10,6 +10,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NFCCallback {
 
@@ -106,6 +107,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 	
 	public void onNFCResult(String url) {
 		controller.connect(url);		
+		Toast.makeText(this, "Got url from NFC, connecting to: " + url, Toast.LENGTH_LONG).show();
 	}
 
 	@Override
