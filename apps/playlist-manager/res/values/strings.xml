@@ -16,5 +16,7 @@
     <string name="cant_add_tracks_connect_to_broker">You are not connected to the broker and will not be able to add tracks!</string>
     <string name="connect_message">Enter the broker url and click connect.</string>
     <string name="broker_url_pattern">tcp://ip:port</string>
+    <string name="connecting_to">Connecting to broker at</string>
+    <string name="connected_to">Connected to:</string>
 
 </resources>

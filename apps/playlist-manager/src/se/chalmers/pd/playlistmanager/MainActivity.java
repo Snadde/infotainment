@@ -56,7 +56,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 	
 	@Override
 	public void onSearchBegin() {
-		loadingDialog = DialogFactory.buildLoadingDialog();
+		loadingDialog = DialogFactory.buildLoadingDialog(this);
 		loadingDialog.show(getFragmentManager(), "loadingDialog");
 	}
 
@@ -118,9 +118,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 	}
 	
 	public void onNFCResult(String url) {
-		controller.connect(url);		
-		Toast.makeText(this, "Got url from NFC, connecting to: " + url, Toast.LENGTH_LONG).show();
-        //FIXME add proper dialog
+		controller.connect(url);
 	}
 
 	@Override

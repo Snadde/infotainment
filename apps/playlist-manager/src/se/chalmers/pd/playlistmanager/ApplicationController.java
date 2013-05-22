@@ -2,6 +2,7 @@ package se.chalmers.pd.playlistmanager;
 
 import java.util.ArrayList;
 
+import android.support.v4.app.FragmentActivity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,7 +16,6 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 
 
     public interface Callback {
-		public void onSearchResult(ArrayList<Track> tracks);
 		public void resetPlaylist();
 		public void onUpdatePlaylist(Track track);
 		public void onMessageAction(Action action);
@@ -35,6 +35,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
     private MqttWorker mqttWorker;
 	private Context context;
 	private Callback callback;
+    private LoadingDialogFragment connectingDialog;
 
 
 	public ApplicationController(Context context, Callback callback) {
@@ -44,6 +45,8 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	}
 	
 	public synchronized void connect(String url) {
+        connectingDialog = DialogFactory.buildConnectingDialog(context, url);
+        connectingDialog.show(((FragmentActivity) context).getFragmentManager(), "connectingDialog");
         brokerUrl = url;
 		mqttWorker.disconnect();
 		mqttWorker.interrupt();
@@ -58,6 +61,8 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 			mqttWorker.subscribe(TOPIC_PLAYLIST);
 			mqttWorker.subscribe(TOPIC_PRIVATE);
 			mqttWorker.publish(TOPIC_PLAYLIST, getAllJsonMessage());
+            connectingDialog.dismiss();
+            Toast.makeText(context, context.getString(R.string.connected_to) + brokerUrl, Toast.LENGTH_LONG).show();
 			Log.d(TAG, "Now subscribing to " + TOPIC_PLAYLIST + ", " + TOPIC_PRIVATE);
 		} else { 
 			((MainActivity) context).runOnUiThread(new Runnable() {

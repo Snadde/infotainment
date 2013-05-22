@@ -34,7 +34,11 @@ public class DialogFactory {
 		return alertDialogBuilder.create();
 	}
 	
-	public static LoadingDialogFragment buildLoadingDialog() {
-		return LoadingDialogFragment.newInstance();
+	public static LoadingDialogFragment buildLoadingDialog(Context context) {
+		return LoadingDialogFragment.newInstance(context.getString(R.string.loading_message));
 	}
+
+    public static LoadingDialogFragment buildConnectingDialog(Context context, String url) {
+        return LoadingDialogFragment.newInstance(context.getString(R.string.connecting_to) + " " + url);
+    }
 }

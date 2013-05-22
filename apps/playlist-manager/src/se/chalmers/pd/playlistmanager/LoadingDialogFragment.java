@@ -7,16 +7,21 @@ import android.os.Bundle;
 
 public class LoadingDialogFragment extends DialogFragment {
 
-	public static LoadingDialogFragment newInstance() {
-		LoadingDialogFragment fragment = new LoadingDialogFragment();
+    private final String message;
+
+    private LoadingDialogFragment(String message) {
+        this.message = message;
+    }
+
+	public static LoadingDialogFragment newInstance(String message) {
+		LoadingDialogFragment fragment = new LoadingDialogFragment(message);
 		return fragment;
 	}
 
 	@Override
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
-
 		final ProgressDialog dialog = new ProgressDialog(getActivity());
-		dialog.setMessage(getString(R.string.loading_message));
+		dialog.setMessage(message);
 		dialog.setIndeterminate(true);
 		dialog.setCancelable(true);
 		return dialog;

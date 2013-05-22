@@ -14,6 +14,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 	private TextView trackInfo;
 	private Track currentTrack;
 
+
+    // TODO enable scrubber animation
+
 	public PlayerFragment() {
 	};
 
