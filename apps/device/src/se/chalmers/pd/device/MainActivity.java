@@ -1,9 +1,11 @@
 package se.chalmers.pd.device;
 
 import se.chalmers.pd.device.ApplicationController.Callbacks;
+import se.chalmers.pd.device.NfcReader.NFCCallback;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,7 +23,7 @@ import android.widget.ToggleButton;
  * @author Patrik Thituson
  * 
  */
-public class MainActivity extends Activity implements Callbacks, View.OnClickListener {
+public class MainActivity extends Activity implements Callbacks, View.OnClickListener, NFCCallback {
 
 	private ApplicationController controller;
 	private TextView currentTrack, status;
@@ -29,6 +31,8 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	private ToggleButton start;
 	private MenuItem connect, disconnect, install, uninstall;
 	private SeekBar seekbar;
+	private NfcReader nfcReader;
+	private LoadingDialogFragment loadingDialog;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -41,6 +45,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		setupButtons();
 		// log in to spotify
 		controller.login();
+		nfcReader = new NfcReader(this);
 	}
 
 	/**
@@ -168,6 +173,9 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onStartedApplication(final String status) {
 		runOnUiThread(new Runnable() {
 			public void run() {
+				if(loadingDialog!=null){
+                    loadingDialog.dismiss();
+                }
 				String message = "";
 				if (status.equals("start")) {
 					uninstall.setEnabled(false);
@@ -182,9 +190,14 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 					alert("No application installed !");
 				}
 				changeStatus(message);
+                setCurrentTrack();
 			}
 		});
 
+	}
+	private void loadDialog(String message){
+		loadingDialog = LoadingDialogFragment.newInstance(message);
+		loadingDialog.show(getFragmentManager(), "loadingDialog");
 	}
 
 	/**
@@ -194,10 +207,15 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onInstalledApplication(final boolean show) {
 		runOnUiThread(new Runnable() {
 			public void run() {
+				if(loadingDialog!=null){
+					loadingDialog.dismiss();
+				}
 				if (show) {
 					uninstall.setEnabled(true);
+					install.setEnabled(false);
 					changeStatus("Installed application found");
 				} else {
+					uninstall.setEnabled(false);
 					install.setEnabled(true);
 					changeStatus("No installed application");
 				}
@@ -218,6 +236,8 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 				} else {
 					connect.setEnabled(true);
 					disconnect.setEnabled(false);
+					install.setEnabled(false);
+					uninstall.setEnabled(false);
 					changeStatus("Disconnected from broker");
 				}
 
@@ -231,13 +251,14 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.install:
-			controller.install();
+            loadDialog("Installing application");
+			controller.createAndPublishSystemActions(Action.install);
 			return true;
 		case R.id.uninstall:
-			controller.uninstall();
+            controller.createAndPublishSystemActions(Action.uninstall);
 			return true;
 		case R.id.connect:
-			controller.connect();
+			controller.connect("tcp://192.168.43.147:1883"); // Backup button for connection with broker if NFC is unavailable
 			return true;
 		case R.id.disconnect:
 			controller.disconnect();
@@ -255,35 +276,42 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		switch (v.getId()) {
 		case R.id.start:
 			if (controller.isConnectedToBroker()) {
-				if (start.isChecked()) {
+				Action action;
+                if (start.isChecked()) {
 					start.setChecked(false);
-					controller.start();
-				} else {
-					controller.stop();
+					action = Action.start;
+                    loadDialog("Starting application");
+                } else {
+					action = Action.stop;
 				}
+                controller.createAndPublishSystemActions(action);
 			} else {
 				start.setChecked(false);
 				alert("Not connected to broker! ");
 			}
 			break;
 		case R.id.play:
-			controller.play();
+			controller.createAndPublishPlayerActions(Action.play);
 			break;
 		case R.id.next:
-			controller.next();
+            controller.createAndPublishPlayerActions(Action.next);
 			break;
 		case R.id.pause:
-			controller.pause();
+            controller.createAndPublishPlayerActions(Action.pause);
 			break;
 		case R.id.prev:
-			controller.previous();
+            controller.createAndPublishPlayerActions(Action.prev);
 			break;
 		}
 		setCurrentTrack();
 	}
 
 	private void setCurrentTrack() {
-		setText(controller.getCurrentTrack());
+        runOnUiThread(new Runnable() {
+            public void run() {
+                setText(controller.getCurrentTrack());
+            }
+        });
 	}
 
 	private void alert(String message) {
@@ -303,5 +331,30 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 
 	public void onUpdateSeekbar(float position) {
 		seekbar.setProgress((int) (position * seekbar.getMax()));
+	}
+
+    public void onUpdatedPlaylist() {
+        setCurrentTrack();
+        //this was implemented so this device could have a view of the playlist
+    }
+
+    public void onNFCResult(String url) {
+		controller.connect(url);		
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		nfcReader.onPause();
+	}		
+	@Override	
+	protected void onResume() {
+		super.onResume();
+		nfcReader.onResume();
+	}
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		nfcReader.onNewIntent(intent);
 	}
 }
