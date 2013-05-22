@@ -1,7 +1,5 @@
 package se.chalmers.pd.playlistmanager;
 
-import java.util.ArrayList;
-
 import android.support.v4.app.FragmentActivity;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -62,13 +60,12 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 			mqttWorker.subscribe(TOPIC_PRIVATE);
 			mqttWorker.publish(TOPIC_PLAYLIST, getAllJsonMessage());
             connectingDialog.dismiss();
-            Toast.makeText(context, context.getString(R.string.connected_to) + brokerUrl, Toast.LENGTH_LONG).show();
 			Log.d(TAG, "Now subscribing to " + TOPIC_PLAYLIST + ", " + TOPIC_PRIVATE);
 		} else { 
 			((MainActivity) context).runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					DialogFactory.buildConnectDialog(context, ApplicationController.this, brokerUrl, R.string.reconnect_dialog_message).show();
+					DialogFactory.buildConnectToUrlDialog(context, ApplicationController.this, brokerUrl, R.string.reconnect_dialog_message).show();
 				}
 			});
 		}
@@ -89,7 +86,11 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	public void onConnectDialogAnswer(boolean result, String newBrokerUrl) {
 		if(result) {
 			connect(newBrokerUrl);
-		}
+		} else {
+            if(connectingDialog != null && connectingDialog.isVisible()) {
+                connectingDialog.dismiss();
+            }
+        }
 	}
 
 	@Override

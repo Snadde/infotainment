@@ -11,7 +11,6 @@ import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.SearchView;
-import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NFCCallback {
 
@@ -47,7 +46,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.connect:
-                DialogFactory.buildConnectDialog(this, controller, controller.getBrokerUrl(), R.string.connect_message).show();
+                DialogFactory.buildConnectToUrlDialog(this, controller, controller.getBrokerUrl(), R.string.connect_message).show();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

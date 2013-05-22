@@ -11,7 +11,7 @@ public class DialogFactory {
 		public void onConnectDialogAnswer(boolean result, String newBrokerUrl);
 	}
 
-	public static AlertDialog buildConnectDialog(Context context, final Callback callback, String url, int messageStringId) {
+	public static AlertDialog buildConnectToUrlDialog(Context context, final Callback callback, String url, int messageStringId) {
         final EditText input = new EditText(context);
         input.setHint(context.getString(R.string.broker_url_pattern));
         input.setText(url);
