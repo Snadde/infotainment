@@ -68,14 +68,16 @@ public class AndroidSpotifyMetadata {
 			@Override
 			protected void onPostExecute(Response response) {
 				super.onPostExecute(response);
-				if (response.getInfo().getType() == RequestType.track) {
-					for (com.mixtape.spotify.api.Track t : response.getTracks()) {
-						Artist a = (Artist) t.getArtists().toArray()[0];
-						Track track = new Track(t.getName(), a.getName(), t.getHref(), t.getLength());
-						tracks.add(track);
-					}
-				}
-				callback.onSearchResult(tracks);
+                if(response != null) {
+                    if (response.getInfo().getType() == RequestType.track) {
+                        for (com.mixtape.spotify.api.Track t : response.getTracks()) {
+                            Artist a = (Artist) t.getArtists().toArray()[0];
+                            Track track = new Track(t.getName(), a.getName(), t.getHref(), t.getLength());
+                            tracks.add(track);
+                        }
+                    }
+                }
+                callback.onSearchResult(tracks);
 			}
 		};
 		worker.execute(searchUrl);

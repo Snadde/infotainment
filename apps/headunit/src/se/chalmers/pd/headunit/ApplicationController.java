@@ -23,8 +23,9 @@ import android.widget.Toast;
  */
 public class ApplicationController implements Decompresser.Callback, MqttWorker.Callback, DialogFactory.Callback {
 
-	private static final String HTTP_LOCALHOST = "http://localhost:8080/";
-	private final String DEFAULT_URL = "file:///android_asset/index.html";
+    private static final String HTTP_LOCALHOST = "http://localhost:8080/";
+    public static final String TAG = "ApplicationController";
+    private final String DEFAULT_URL = "file:///android_asset/index.html";
 	private final String BASEDIR = Environment.getExternalStorageDirectory() + "/www/";
 
 	private WebView webView;
@@ -38,7 +39,7 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	 * 
 	 * @param webView
 	 * @param context
-	 * @param mainActivity
+	 * @param context
 	 */
 	public ApplicationController(WebView webView, Context context) {
 		this.mqttWorker = new MqttWorker(this, context);
@@ -82,10 +83,10 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	public boolean applicationExists(String appName) {
 		File directory = new File(BASEDIR + appName);
 		if (directory.exists() && directory.isDirectory()) {
-			log("ApplicationController", "init " + appName + " exists");
+			log(TAG, "init " + appName + " exists");
 			return true;
 		}
-		log("ApplicationController", "init " + appName + " doesn't exist or is not a directory");
+		log(TAG, "init " + appName + " doesn't exist or is not a directory");
 		return false;
 	}
 
@@ -113,7 +114,7 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	public boolean start(String appName) {
 		final String url = HTTP_LOCALHOST + appName + "/index.html";
 		updateWebView(url);
-		log("ApplicationController", "start " + url);
+		log(TAG, "start " + url);
 		return true;
 	}
 
@@ -143,17 +144,17 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 
 	/**
 	 * Uninstalls the application with the given app name. Note that the app
-	 * name needs to be identical to the foldername of the install.
+	 * name needs to be identical to the folder name of the install.
 	 * 
 	 * @param appName
 	 */
 	public void uninstall(String appName) {
-		log("ApplicationController", "uninstall " + appName);
+		log(TAG, "uninstall " + appName);
 		File directory = new File(BASEDIR + appName);
 		if (directory.exists() && directory.isDirectory()) {
 			deleteRecursive(directory);
 		}
-		log("ApplicationController", "uninstall complete" + appName);
+		log(TAG, "uninstall complete" + appName);
 		// TODO Confirm uninstall complete
 	}
 
@@ -168,13 +169,13 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 				deleteRecursive(child);
 			}
 		}
-		log("ApplicationController", "deleteRecursive " + appDir.getAbsolutePath());
+		log(TAG, "deleteRecursive " + appDir.getAbsolutePath());
 		appDir.delete();
 	}
 
 	@Override
 	public void onMessage(String topic, String payload) {
-		log("ApplicationController", "onMessageReceived " + "topic: " + topic + " payload: " + payload);
+		log(TAG, "onMessageReceived " + "topic: " + topic + " payload: " + payload);
 		if (topic.equals(MqttWorker.TOPIC_SYSTEM)) {
 			handleSystemMessage(payload);
 		} else {
@@ -193,47 +194,55 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 		try {
 			JSONObject responsePayload = new JSONObject();
 			JSONObject json = new JSONObject(payload);
-			String action = json.getString(MqttWorker.ACTION);
+			Action action = Action.valueOf(json.getString(MqttWorker.ACTION));
 			String data = json.getString(MqttWorker.ACTION_DATA);
 			// TODO Add checking to make sure that action is one of a well
 			// defined enum or array
-			responsePayload.put(MqttWorker.ACTION, action);
+			responsePayload.put(Action.action.toString(), action.toString());
 
-			if (action.equals(MqttWorker.ACTION_EXIST)) {
-				privateTopic = "/" + data + "/1";
-				if (applicationExists(data)) {
-					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
-				} else {
-					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_ERROR);
-					responsePayload.put(MqttWorker.ACTION_ERROR,
-							context.getString(R.string.application_does_not_exist_payload_was) + payload);
-				}
-			} else if (action.equals(MqttWorker.ACTION_INSTALL)) {
-				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_PENDING);
-				data = mqttWorker.getApplicationRawData();
-				install(getInputStream(data), privateTopic);
-				// Waiting for decompressComplete before answering
-			} else if (action.equals(MqttWorker.ACTION_START)) {
-				if (start(data)) {
-					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_PENDING);
-					// Waiting for onLoadComplete before answering
-				} else {
-					responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_ERROR);
-					responsePayload.put(MqttWorker.ACTION_ERROR,
-					context.getString(R.string.could_not_start_the_application_payload_was) + payload);
-				}
-			} else if (action.equals(MqttWorker.ACTION_STOP)) {
-				loadStartScreen();
-				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
-			} else if (action.equals(MqttWorker.ACTION_UNINSTALL)) {
-				loadStartScreen();
-				uninstall(data);
-				responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
-			}
+            switch (action) {
+                case exist:
+                    privateTopic = "/" + data + "/1";
+                    if (applicationExists(data)) {
+                        responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
+                    } else {
+                        responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_ERROR);
+                        responsePayload.put(MqttWorker.ACTION_ERROR,
+                                context.getString(R.string.application_does_not_exist_payload_was) + payload);
+                    }
+                    break;
+                case install:
+                    responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_PENDING);
+                    data = mqttWorker.getApplicationRawData();
+                    install(getInputStream(data), privateTopic);
+                    // Waiting for decompressComplete before answering
+                    break;
+                case uninstall:
+                    loadStartScreen();
+                    uninstall(data);
+                    responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
+                    break;
+                case start:
+                    if (start(data)) {
+                        responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_PENDING);
+                        // Waiting for onLoadComplete before answering
+                    } else {
+                        responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_ERROR);
+                        responsePayload.put(MqttWorker.ACTION_ERROR,
+                                context.getString(R.string.could_not_start_the_application_payload_was) + payload);
+                    }
+                    break;
+                case stop:
+                    loadStartScreen();
+                    responsePayload.put(MqttWorker.ACTION_DATA, MqttWorker.ACTION_SUCCESS);
+                    break;
+                default:
+                    break;
+            }
 
 			sendResponse(privateTopic, responsePayload);
 		} catch (JSONException e) {
-			Log.d("ApplicationController", "Not a properly formatted system message, " + e.getMessage());
+			Log.d(TAG, "Not a properly formatted system message, " + e.getMessage());
 		}
 	}
 
@@ -283,7 +292,7 @@ public class ApplicationController implements Decompresser.Callback, MqttWorker.
 	 *            of message (should be stringified JSON)
 	 */
 	public void publish(String topic, String payload) {
-		log("ApplicationController", "publish " + "topic: " + topic + " payload: " + payload);
+		log(TAG, "publish " + "topic: " + topic + " payload: " + payload);
 		mqttWorker.publish(topic, payload);
 	}
 

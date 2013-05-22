@@ -18,5 +18,6 @@
     <string name="broker_url_pattern">tcp://ip:port</string>
     <string name="connecting_to">Connecting to broker at</string>
     <string name="connected_to">Connected to:</string>
+    <string name="no_tracks_found">Could not find any tracks!</string>
 
 </resources>

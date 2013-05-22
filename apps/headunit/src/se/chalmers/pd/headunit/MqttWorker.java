@@ -1,5 +1,6 @@
 package se.chalmers.pd.headunit;
 
+import android.widget.Toast;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttDefaultFilePersistence;
@@ -100,15 +101,24 @@ public class MqttWorker extends Thread {
 	 *            should be stringified JSON
 	 */
 	public void publish(String topic, String message) {
-		Log.d("MqttController", "publishing topic " + topic + " with message " + message);
-		try {
-			MqttMessage payload = new MqttMessage(message.getBytes());
-			mqttClient.getTopic(topic).publish(payload);
-		} catch (MqttPersistenceException e) {
-			e.printStackTrace();
-		} catch (MqttException e) {
-			e.printStackTrace();
-		}
+        if(mqttClient != null) {
+            Log.d(WORKER_NAME, "Publishing topic " + topic + " with message " + message);
+            try {
+                MqttMessage payload = new MqttMessage(message.getBytes());
+                if(topic != null) {
+                    MqttTopic mqttTopic = mqttClient.getTopic(topic);
+                    mqttTopic.publish(payload);
+                } else {
+                    Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Topic not initiated, call exists to set up first!");
+                }
+            } catch (MqttPersistenceException e) {
+                Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Error: " + e.getMessage());
+            } catch (MqttException e) {
+                Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Error: " + e.getMessage());
+            }
+        } else {
+            Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Is the client initiated?");
+        }
 	}
 
 	/**

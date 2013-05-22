@@ -11,13 +11,14 @@ import android.support.v4.view.ViewPager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NFCCallback {
 
     private SectionsPagerAdapter sectionsPagerAdapter;
 	private ViewPager viewPager;
 	private ApplicationController controller;
-	private LoadingDialogFragment loadingDialog;
+	private LoadingDialogFragment searchingDialog;
 	private NfcReader nfcReader;
 
 	@Override
@@ -46,6 +47,8 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.connect:
+                // Build connect dialog with user input when user selects connect from the menu and pass in
+                // controller as the receiver of the positive or negative action.
                 DialogFactory.buildConnectToUrlDialog(this, controller, controller.getBrokerUrl(), R.string.connect_message).show();
                 return true;
             default:
@@ -55,15 +58,24 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 	
 	@Override
 	public void onSearchBegin() {
-		loadingDialog = DialogFactory.buildLoadingDialog(this);
-		loadingDialog.show(getFragmentManager(), "loadingDialog");
+		searchingDialog = DialogFactory.buildLoadingDialog(this);
+		searchingDialog.show(getFragmentManager(), "searchingDialog");
 	}
 
 	@Override
 	public void onSearchResult(ArrayList<Track> tracks) {
-		loadingDialog.dismiss();
-		viewPager.setCurrentItem(SectionsPagerAdapter.FIRST_PAGE, true);
-		sectionsPagerAdapter.updateResults(tracks);
+		searchingDialog.dismiss();
+        if(!tracks.isEmpty()) {
+            viewPager.setCurrentItem(SectionsPagerAdapter.FIRST_PAGE, true);
+            sectionsPagerAdapter.updateResults(tracks);
+        } else {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, getString(R.string.no_tracks_found), Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
 	}
 	
 	public void onTrackSelected(Track track) {
