@@ -1,5 +1,6 @@
 package se.chalmers.pd.device;
 
+import android.content.Context;
 import se.chalmers.pd.device.ApplicationController.Callbacks;
 import se.chalmers.pd.device.NfcReader.NFCCallback;
 import android.app.Activity;
@@ -23,7 +24,7 @@ import android.widget.ToggleButton;
  * @author Patrik Thituson
  * 
  */
-public class MainActivity extends Activity implements Callbacks, View.OnClickListener, NFCCallback {
+public class MainActivity extends Activity implements Callbacks, View.OnClickListener, NFCCallback, DialogFactory.Callback {
 
 	private ApplicationController controller;
 	private TextView currentTrack, status;
@@ -33,6 +34,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	private SeekBar seekbar;
 	private NfcReader nfcReader;
 	private LoadingDialogFragment loadingDialog;
+    private String brokerUrl = "tcp://192.168.43.147:1883";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -234,17 +236,42 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 					disconnect.setEnabled(true);
 					changeStatus("Connected to broker");
 				} else {
-					connect.setEnabled(true);
-					disconnect.setEnabled(false);
-					install.setEnabled(false);
-					uninstall.setEnabled(false);
-					changeStatus("Disconnected from broker");
+                    DialogFactory.buildConnectToUrlDialog(MainActivity.this, MainActivity.this, brokerUrl, R.string.reconnect_dialog_message).show();
+					changeStatus("Could not connect to the broker");
 				}
 
 			}
 
 		});
 	}
+
+    /**
+     * Callback that is called when the application has disconnected with the broker
+     * on purpose.
+     */
+    public void onDisconnectedMQTT(final boolean success) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                if (success) {
+                    connect.setEnabled(true);
+                    disconnect.setEnabled(false);
+                    install.setEnabled(false);
+                    uninstall.setEnabled(false);
+                    changeStatus("Disconnected from broker");
+                } else {
+                    changeStatus("Could not disconnected from broker");
+                }
+
+            }
+
+        });
+    }
+
+    public void onConnectDialogAnswer(boolean result, String newBrokerUrl){
+        if(result) {
+            controller.connect(newBrokerUrl);
+        }
+    }
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -258,7 +285,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
             controller.createAndPublishSystemActions(Action.uninstall);
 			return true;
 		case R.id.connect:
-			controller.connect("tcp://192.168.43.147:1883"); // Backup button for connection with broker if NFC is unavailable
+            DialogFactory.buildConnectToUrlDialog(this, this, brokerUrl, R.string.connect_message).show();
 			return true;
 		case R.id.disconnect:
 			controller.disconnect();

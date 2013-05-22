@@ -37,6 +37,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 
 		void onConnectedMQTT(boolean connected);
 
+        void onDisconnectedMQTT(boolean success);
+
 		void onUpdateSeekbar(float position);
 
         void onUpdatedPlaylist();
@@ -144,7 +146,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	public void disconnect() {
 		mqttWorker.disconnect();
         mqttWorker.interrupt();
-		callbacks.onConnectedMQTT(false);
 	}
 
     /**
@@ -152,7 +153,12 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
      * @return
      */
 	public boolean isConnectedToBroker() {
-		return mqttWorker.isConnected();
+		if(mqttWorker!=null){
+            return mqttWorker.isConnected();
+        }
+        else {
+            return false;
+        }
 	}
 
     /**
@@ -345,10 +351,22 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * installed.
 	 */
 	public void onConnected(boolean connected) {
-		callbacks.onConnectedMQTT(true);
-		mqttWorker.subscribe("/playlist");
-		mqttWorker.subscribe("/playlist/1");
-		createAndPublishSystemActions(Action.exist);
+		callbacks.onConnectedMQTT(connected);
+		if(connected){
+            mqttWorker.subscribe("/playlist");
+            mqttWorker.subscribe("/playlist/1");
+            createAndPublishSystemActions(Action.exist);
+        }
 	}
+
+    /**
+     * When a disconnect from the broker has been tried this callback method is
+     * called with the result and notifies the view (activity).
+     * @param success
+     */
+    @Override
+    public void onDisconnected(boolean success) {
+        callbacks.onDisconnectedMQTT(success);
+    }
 
 }

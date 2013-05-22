@@ -55,7 +55,7 @@ public class NfcReader {
 	}
 	
 	/**
-	 * Call this method in the activity«s onResume to enable the foreground dispatch
+	 * Call this method in the activity onResume to enable the foreground dispatch
 	 */
 	public void onResume() {
 		
