@@ -1,6 +1,7 @@
 var COMMAND_ADD = "add";
 var COMMAND_ADD_ALL = "add_all";
 var COMMAND_NEXT = "next";
+var COMMAND_PREV = "prev";
 var COMMAND_PLAY = "play";
 var COMMAND_PAUSE = "pause";
 var PRIVATE_CHANNEL = "/playlist";
@@ -90,9 +91,18 @@ function handleMessagePayload(payload) {
             $(this).parent('ul').append($(this)).find('li:last').fadeIn();
             updatePlayingInfo();
         });
-        currentTime = 0;
-        totalTime = playlist[currentTrack].tracklength;
-        meter.css('width', '0%');
+        resetPlayingInfo();
+    } else if(payload.action == COMMAND_PREV) {
+        currentTrack = --currentTrack % playlist.length;
+        var elem = $('#options-list li:last');
+        while(elem.is(':animated')) {
+            elem = elem.prev('li');
+        }
+        elem.fadeOut(function() {
+            $(this).parent('ul').prepend($(this)).find('li:first').slideDown();
+            updatePlayingInfo();
+        });
+        resetPlayingInfo();
     } else if (payload.action == COMMAND_PLAY) {
         playing = true;
         updatePlayingInfo();
@@ -104,6 +114,12 @@ function handleMessagePayload(payload) {
         toggleButtons();
         meter.timer('stop');
     }
+}
+
+function resetPlayingInfo() {
+    currentTime = 0;
+    totalTime = playlist[currentTrack].tracklength;
+    meter.css('width', '0%');
 }
 
 function updatePlayingInfo() {    
