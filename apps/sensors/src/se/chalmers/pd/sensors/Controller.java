@@ -23,29 +23,13 @@ public class Controller {
 		mqttWorker.start();
 	}
 
-	/**
-	 * Tells the worker to publish a message on this specific sensor topic with
-	 * a play message.
-	 */
-	public void play() {
-		mqttWorker.publish(TOPIC, getJsonMessage(Action.play));
-	}
-
-	/**
-	 * Tells the worker to publish a message on this specific sensor topic with
-	 * a pause message.
-	 */
-	public void pause() {
-		mqttWorker.publish(TOPIC, getJsonMessage(Action.pause));
-	}
-
-	/**
-	 * Tells the worker to publish a message on this specific sensor topic with
-	 * a next message.
-	 */
-	public void next() {
-		mqttWorker.publish(TOPIC, getJsonMessage(Action.next));
-	}
+    /**
+     * Tells the worker to publish a message on this specific sensor topic with
+     * the action message.
+     */
+    public void performAction(Action action) {
+        mqttWorker.publish(TOPIC, getJsonMessage(action));
+    }
 
 	/**
 	 * Helper method to create a json object that can be stringified and sent to

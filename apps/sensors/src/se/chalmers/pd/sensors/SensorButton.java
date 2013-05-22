@@ -5,8 +5,8 @@ import javax.swing.JButton;
 public class SensorButton extends JButton {
 
 	private static final long serialVersionUID = -3807718038347771145L;
-	private static final int BUTTON_WIDTH = 100;
-	private static final int BUTTON_HEIGHT = 50;
+	private static final int BUTTON_WIDTH = 75;
+	private static final int BUTTON_HEIGHT = 30;
 	
 	public SensorButton(String text) {
 		super(text);
