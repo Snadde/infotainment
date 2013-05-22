@@ -83,13 +83,11 @@ public class NfcReader {
 		if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(intent.getAction())) {
 			NdefMessage[] messages = null;
 			Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-			if (rawMsgs != null) {
+			if (rawMsgs != null && rawMsgs.length > 0) {
 				messages = new NdefMessage[rawMsgs.length];
 				for (int i = 0; i < rawMsgs.length; i++) {
 					messages[i] = (NdefMessage) rawMsgs[i];
 				}
-			}
-			if(messages[0] != null) {
 				String result="";
 				byte[] payload = messages[0].getRecords()[0].getPayload();
 				// this ignores the first characters "en" 
