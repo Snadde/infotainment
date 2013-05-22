@@ -91,7 +91,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 	}
 
 	public void updateTrack(Track track) {
-		currentTrack = track;
-		trackInfo.setText(currentTrack.getArtist() + " - " + currentTrack.getName());
+        if(track != null) {
+            currentTrack = track;
+            trackInfo.setText(currentTrack.getArtist() + " - " + currentTrack.getName());
+        }
 	}
 }

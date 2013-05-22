@@ -13,7 +13,8 @@ import android.widget.Toast;
 public class ApplicationController implements MqttWorker.Callback, DialogFactory.Callback {
 
 
-	public interface Callback {
+
+    public interface Callback {
 		public void onSearchResult(ArrayList<Track> tracks);
 		public void resetPlaylist();
 		public void onUpdatePlaylist(Track track);
@@ -29,10 +30,12 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	private static final String TRACK_NAME = "track";
 	private static final String TRACK_ARTIST = "artist";
 	private static final String TRACK_LENGTH = "tracklength";
-	
-	private MqttWorker mqttWorker;
+
+    private String brokerUrl = "";
+    private MqttWorker mqttWorker;
 	private Context context;
 	private Callback callback;
+
 
 	public ApplicationController(Context context, Callback callback) {
 		this.context = context;
@@ -41,21 +44,13 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	}
 	
 	public synchronized void connect(String url) {
+        brokerUrl = url;
 		mqttWorker.disconnect();
 		mqttWorker.interrupt();
 		mqttWorker = new MqttWorker(this);
 		mqttWorker.setUrl(url);
 		mqttWorker.start();
 	}
-
-	
-	public synchronized void reconnect() {
-		mqttWorker.disconnect();
-		mqttWorker.interrupt();
-		mqttWorker = new MqttWorker(this);
-		mqttWorker.start();
-	}
-	
 	
 	@Override
 	public void onConnected(boolean connected) {
@@ -68,7 +63,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 			((MainActivity) context).runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					DialogFactory.buildConnectDialog(context, ApplicationController.this).show();
+					DialogFactory.buildConnectDialog(context, ApplicationController.this, brokerUrl, R.string.reconnect_dialog_message).show();
 				}
 			});
 		}
@@ -86,9 +81,9 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	}
 	
 	@Override
-	public void onConnectDialogAnswer(boolean result) {
+	public void onConnectDialogAnswer(boolean result, String newBrokerUrl) {
 		if(result) {
-			reconnect();
+			connect(newBrokerUrl);
 		}
 	}
 
@@ -167,5 +162,9 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 		}
 		return json.toString();
 	}
+
+    public String getBrokerUrl() {
+        return brokerUrl;
+    }
 
 }

@@ -9,10 +9,12 @@
     <string name="search_title">Search and select a song to add</string>
     <string name="playlist_title">Playlist manager deluxe</string>
     <string name="loading_message">Searching for tracks...</string>
-    <string name="connect_error_title">Connection error</string>
-    <string name="connect_dialog_message">There was a problem connecting to the broker, what do you want to do?</string>
-    <string name="reconnect">Reconnect</string>
+    <string name="connect_title">Connect to broker</string>
+    <string name="reconnect_dialog_message">There was a problem connecting to the broker, what do you want to do?</string>
+    <string name="connect">Connect</string>
     <string name="cancel">Cancel</string>
     <string name="cant_add_tracks_connect_to_broker">You are not connected to the broker and will not be able to add tracks!</string>
+    <string name="connect_message">Enter the broker url and click connect.</string>
+    <string name="broker_url_pattern">tcp://ip:port</string>
 
 </resources>

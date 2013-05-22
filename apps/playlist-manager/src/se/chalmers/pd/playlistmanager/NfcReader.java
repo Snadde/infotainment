@@ -55,13 +55,12 @@ public class NfcReader {
 	}
 
 	/**
-	 * Call this method in the activity«s onResume to enable the foreground dispatch
+	 * Call this method in the activitys onResume to enable the foreground dispatch
 	 */
 	public void onResume() {
-
 		if(nfcAdapter != null) {
 			if (!nfcAdapter.isEnabled()){
-				Log.d("nfcAdapter", "disabled");    
+				Log.d("nfcAdapter", "disableed");
 			} else {
 				Log.d("nfcAdapter", "enabled");
 				nfcAdapter.enableForegroundDispatch((Activity) context, pendingIntent,
@@ -73,7 +72,7 @@ public class NfcReader {
 	}
 
 	/**
-	 * Call this method in the Activitys onPause to disable the foreground dispatcher.
+	 * Call this method in the Activity's onPause to disable the foreground dispatcher.
 	 */
 	public void onPause() {
 		if(nfcAdapter != null) nfcAdapter.disableForegroundDispatch((Activity) context);

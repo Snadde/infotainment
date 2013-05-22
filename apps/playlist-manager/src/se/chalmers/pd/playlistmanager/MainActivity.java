@@ -9,12 +9,13 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.SearchView;
 import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NFCCallback {
 
-	private SectionsPagerAdapter sectionsPagerAdapter;
+    private SectionsPagerAdapter sectionsPagerAdapter;
 	private ViewPager viewPager;
 	private ApplicationController controller;
 	private LoadingDialogFragment loadingDialog;
@@ -41,6 +42,17 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 		searchView.setOnQueryTextListener(new QueryTextListener(this));
 		return super.onCreateOptionsMenu(menu);
 	}
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.connect:
+                DialogFactory.buildConnectDialog(this, controller, controller.getBrokerUrl(), R.string.connect_message).show();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 	
 	@Override
 	public void onSearchBegin() {
@@ -61,7 +73,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 			controller.addTrack(track);
 			break;
 		case SectionsPagerAdapter.SECOND_PAGE:
-			//onPlayerAction(Action.play); need to send uri data to be able to play selected track
+			//onPlayerAction(Action.play); //TODO need to send uri data to be able to play selected track
 			break;
 		}
 	}
@@ -108,6 +120,7 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 	public void onNFCResult(String url) {
 		controller.connect(url);		
 		Toast.makeText(this, "Got url from NFC, connecting to: " + url, Toast.LENGTH_LONG).show();
+        //FIXME add proper dialog
 	}
 
 	@Override
