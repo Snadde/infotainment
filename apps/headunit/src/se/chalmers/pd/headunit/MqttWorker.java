@@ -1,6 +1,5 @@
 package se.chalmers.pd.headunit;
 
-import android.widget.Toast;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttDefaultFilePersistence;
@@ -41,7 +40,7 @@ public class MqttWorker extends Thread {
 
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
 	private static final String WORKER_NAME = "MqttWorker";
-	private static final String BROKER = "tcp://192.168.43.147:1883";
+	private static final String BROKER_URL = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "headunit";
 
 	private MqttClient mqttClient;
@@ -64,7 +63,7 @@ public class MqttWorker extends Thread {
 			// Sets up the client and subscribes to topics
 			String tmpDir = Environment.getExternalStorageDirectory() + STORAGE_DIRECTORY;
 			MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
-			mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
+			mqttClient = new MqttClient(BROKER_URL, CLIENT_NAME, dataStore);
 			mqttClient.setCallback(new CustomMqttCallback());
 			if(!connect()) {
 				callback.onConnected(false);
