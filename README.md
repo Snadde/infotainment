@@ -27,7 +27,7 @@ the link above for more detailed information about the use case.
 We use MQTT as the base communication protocol to get the different devices to talk to each other through a server (broker). During the project we experimented with using the “mqttjs” plugin for Node.JS for broker but we 
 had some issues with it which we were not able to sort out. We recommend Mosquitto, it should work out of the box.
 
-The project consists of five different applications.
+The project consists of five different applications. You can find out more in each application specific README.
 
 ### Primary device
 
