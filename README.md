@@ -5,7 +5,7 @@
 * you need an mqtt broker running (preferably Mosquitto)
 * you need to change broker ip’s in the apps before installing (at least on the head unit app since it doesn’t have an input field for ip in the application)
 * you need a spotify premium account to play music
-* if you need more information about an app, check out that applications README
+* if you need more information about an app, check out the application specific README
 * there are diagrams and analysis in [the report](INSERT LINK)
 
 ## Background
