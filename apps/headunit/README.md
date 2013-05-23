@@ -5,7 +5,7 @@ You need a web server running on the android device that is running this applica
 ### Setup
 
 * Download (kWS)[https://play.google.com/store/apps/details?id=org.xeustechnologies.android.kws&hl=en]
-* Launch kWS and set web root to `sdcard/www/`
+* Launch kWS and set web root to `/sdcard/www/`
 * Clone the project if you haven’t already
 * Import into your IDE
 * Change the BROKER_URL in MqttWorker to your broker
