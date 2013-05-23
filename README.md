@@ -29,26 +29,26 @@ had some issues with it which we were not able to sort out. We recommend Mosquit
 
 The project consists of five different applications. You can find out more in each application specific README.
 
-### Primary device
+### [Primary device](https://github.com/Snadde/infotainment/tree/development/apps/device)
 
-This Android application is the device which hosts the web application that will be pushed into the head unit. It also controls the playback of a Spotify playlist. Note that you need a Spotify Premium account to be able to 
+This Android application (project name [device](https://github.com/Snadde/infotainment/tree/development/apps/device)) is the device which hosts the web application that will be pushed into the head unit. It also controls the playback of a Spotify playlist. Note that you need a Spotify Premium account to be able to 
 log in and play back tracks.
 
-### Secondary device
+### [Secondary device](https://github.com/Snadde/infotainment/tree/development/apps/playlist-manager)
 
-This Android  application can retrieve the current playlist from the primary device and display it to the user. The application also allows the user to search the Spotify Metadata API for tracks that can then be added to the 
+This Android application (project name [playlist-manager](https://github.com/Snadde/infotainment/tree/development/apps/playlist-manager)) can retrieve the current playlist from the primary device and display it to the user. The application also allows the user to search the Spotify Metadata API for tracks that can then be added to the 
 shared playlist. This application can also control playback of the tracks on the primary device.
 
-### Head unit
+### [Head unit](https://github.com/Snadde/infotainment/tree/development/apps/headunit)
 
-The head unit application is also an Android application which has a WebView in which it displays and hosts the web application that is received from the primary device.
+The head unit application (project name [headunit](https://github.com/Snadde/infotainment/tree/development/apps/headunit))  is also an Android application which has a WebView in which it displays and hosts the web application that is received from the primary device.
 
-### Web application
+### [Web application](https://github.com/Snadde/infotainment/tree/development/apps/webapp/Playlist)
 
-The web application is a simple HTML5 app which receives information about which tracks are in the playlist and which track is being played. The app shows this information on a simple HTML page which is hosted by the WebView 
+The web application (project name [Playlist](https://github.com/Snadde/infotainment/tree/development/apps/webapp/Playlist))  is a simple HTML5 app which receives information about which tracks are in the playlist and which track is being played. The app shows this information on a simple HTML page which is hosted by the WebView 
 in the head unit. This application can also control playback on the primary device.
 
-### Sensor gateway
+### [Sensor gateway](https://github.com/Snadde/infotainment/tree/development/apps/sensors)
 
-The sensor application is a simple Java application which will simulate a “sensor gateway”. It allows the user to control playback when clicking some buttons (like on a steering wheel on a car).
+The sensor application (project name [sensors](https://github.com/Snadde/infotainment/tree/development/apps/sensors)) is a simple Java application which will simulate a “sensor gateway”. It allows the user to control playback when clicking some buttons (like on a steering wheel on a car).
 
