@@ -34,6 +34,8 @@ public class MqttWorker extends Thread {
 		public void onMessage(String topic, String payload);
 
 		public void onConnected(boolean connected);
+
+        public void onDisconnected(boolean success);
 	}
 
 	public MqttWorker(MQTTCallback callback) {
@@ -134,6 +136,7 @@ public class MqttWorker extends Thread {
 		} catch (MqttException e) {
 			e.printStackTrace();
 		}
+        callback.onDisconnected(!isConnected());
 	}
 
 	/**

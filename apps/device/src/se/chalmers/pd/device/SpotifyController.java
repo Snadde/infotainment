@@ -75,7 +75,12 @@ public class SpotifyController {
 		playlist.add(newTrack);
 		emptyList = false;
 	}
-	
+
+    /**
+     * Adds a track to the playlist and if there is an empty list -> set
+     * the track to current track
+     * @param newTrack
+     */
 	public void addTrackToPlaylist(Track newTrack){
 		playlist.add(newTrack);
         if (emptyList)
@@ -193,9 +198,15 @@ public class SpotifyController {
 	 * @param position
 	 */
 	public void seek(float position) {
-		LibSpotifyWrapper.seek(position);
+		if(isPlaying){
+            LibSpotifyWrapper.seek(position);
+        }
 	}
 
+    /**
+     * Clears the playlist and resets the different
+     * variables.
+     */
 	public void clearPlaylist() {
 		playlist.clear();
         currentTrackIndex = 0;
