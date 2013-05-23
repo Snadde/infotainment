@@ -5,14 +5,17 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-public class PlayerFragment extends Fragment implements View.OnClickListener {
+public class PlayerFragment extends Fragment implements View.OnClickListener, OnSeekBarChangeListener {
 
 	private View pause;
 	private View play;
 	private TextView trackInfo;
 	private Track currentTrack;
+	private SeekBar seekbar;
 
 
     // TODO enable scrubber animation
@@ -43,6 +46,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 		View previous = rootView.findViewById(R.id.prev);
 		View next = rootView.findViewById(R.id.next);
 		
+		seekbar = (SeekBar) rootView.findViewById(R.id.seekbar);
 		play = rootView.findViewById(R.id.play);
 		pause = rootView.findViewById(R.id.pause);
 		previous.setOnClickListener(this);
@@ -51,6 +55,8 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
 		pause.setOnClickListener(this);
 		
 		trackInfo = (TextView) rootView.findViewById(R.id.track_info);
+		
+		seekbar.setOnSeekBarChangeListener(this);
 		
 	}
 
@@ -98,5 +104,23 @@ public class PlayerFragment extends Fragment implements View.OnClickListener {
             currentTrack = track;
             trackInfo.setText(currentTrack.getArtist() + " - " + currentTrack.getName());
         }
+	}
+	
+	public void updateSeekbar(float position) {
+		seekbar.setProgress((int) (position * seekbar.getMax()));
+	}
+
+	@Override
+	public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+	}
+
+	@Override
+	public void onStartTrackingTouch(SeekBar seekBar) {
+	}
+
+	@Override
+	public void onStopTrackingTouch(SeekBar seekBar) {
+		float position = (float) seekBar.getProgress() / seekBar.getMax();
+		((MainActivity) getActivity()).onSeek(position);
 	}
 }

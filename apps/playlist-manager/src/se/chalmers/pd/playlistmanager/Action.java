@@ -9,5 +9,6 @@ public enum Action {
 	next,
 	pause,
 	prev,
+	seek,
 	NONE
 }

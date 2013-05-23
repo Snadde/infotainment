@@ -147,4 +147,14 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
 		super.onNewIntent(intent);
 		nfcReader.onNewIntent(intent);
 	}
+	
+	public void onSeek(float position){
+		controller.seek(position);
+	}
+
+
+	@Override
+	public void onActionSeek(float position) {
+		sectionsPagerAdapter.seek(position);
+	}
 }

@@ -1,11 +1,11 @@
 package se.chalmers.pd.playlistmanager;
 
-import android.support.v4.app.FragmentActivity;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.content.Context;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -17,6 +17,7 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 		public void resetPlaylist();
 		public void onUpdatePlaylist(Track track);
 		public void onMessageAction(Action action);
+		public void onActionSeek(float position);
 	}
 
 	private static final String TYPE_INDEX = "index";
@@ -107,6 +108,9 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 				JSONArray trackArray = json.getJSONArray(TYPE_DATA);
 				int currentIndex = json.getInt(TYPE_INDEX);
 				addAll(trackArray, currentIndex);
+			} else if (Action.seek == newAction) {
+				float position = Float.parseFloat(json.getString(TYPE_DATA));
+				callback.onActionSeek(position);
 			} else {
 				callback.onMessageAction(newAction);
 			}
@@ -171,6 +175,17 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 
     public String getBrokerUrl() {
         return brokerUrl;
+    }
+    
+    public void seek(float position){
+    	JSONObject json = new JSONObject();
+    	try {
+			json.put(Action.action.toString(), Action.seek);
+			json.put(TYPE_DATA, String.valueOf(position));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+    	mqttWorker.publish(TOPIC_PLAYLIST, json.toString());
     }
 
 }
