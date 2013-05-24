@@ -1,4 +1,20 @@
-## Quick info
+## Background
+
+Through the use of open source technology and free software this project has investigated ways of communicating between services on the internet, mobile devices and some central entity in a motor vehicle which is simulated using Android. We have created a set of sample applications that allow a user to push web applications from a primary device, into the simulated head unit. This web application and the primary device application can then be controlled by the vehicle sensors (simulated in simple Java app) and a secondary device (also using Android). 
+
+The concept will allow for further research and expansion, which will allow drivers and passengers in a car to bring applications with them into a new environment where the car is seen as an i/o interface for mobile devices and their services. Feel free to use any content or information you find here.
+
+We’ve also written a report on the project which can be [found here](INSERT LINK).
+
+## Applications and requirements
+
+We’ve come up with an imagined [use case scenario](https://github.com/Snadde/infotainment/wiki/use-cases) where two people share control of a Spotify playlist in a car. The playlist is also displayed in the head unit. Check the link above for more detailed information about the use case.
+
+We use MQTT as the base communication protocol to get the different devices to talk to each other through a server (broker). During the project we experimented with using the “mqttjs” plugin for Node.JS for broker but we had some issues with it which we were not able to sort out. We recommend Mosquitto, it should work out of the box.
+
+The project consists of five different applications. You can find out more in each application specific README.
+
+## Quick start
 
 * there are three android apps so you need three devices (secondary device is not required to get it up and running)
 * apps are found in the apps folder 
@@ -8,26 +24,7 @@
 * if you need more information about an app, check out the application specific README
 * there are diagrams and analysis in [the report](INSERT LINK)
 
-## Background
-
-Through the use of open source technology and free software this project has investigated ways of communicating between services on the internet, mobile devices and some central entity in a motor vehicle which is simulated using 
-Android. We have created a set of sample applications that allow a user to push web applications from a primary device, into the simulated head unit. This web application and the primary device application can then be controlled 
-by the vehicle sensors (simulated in simple Java app) and a secondary device (also using Android). 
-
-The concept will allow for further research and expansion, which will allow drivers and passengers in a car to bring applications with them into a new environment where the car is seen as an i/o interface for mobile devices and 
-their services. Feel free to use any content or information you find here.
-
-We’ve also written a report on the project which can be [found here](INSERT LINK).
-
-## Applications and requirements
-
-We’ve come up with an imagined [use case scenario](https://github.com/Snadde/infotainment/wiki/use-cases) where two people share control of a Spotify playlist in a car. The playlist is also displayed in the head unit. Check 
-the link above for more detailed information about the use case.
-
-We use MQTT as the base communication protocol to get the different devices to talk to each other through a server (broker). During the project we experimented with using the “mqttjs” plugin for Node.JS for broker but we 
-had some issues with it which we were not able to sort out. We recommend Mosquitto, it should work out of the box.
-
-The project consists of five different applications. You can find out more in each application specific README.
+## Application overview
 
 ### Primary device
 
