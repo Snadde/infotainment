@@ -4,6 +4,7 @@ var COMMAND_NEXT = "next";
 var COMMAND_PREV = "prev";
 var COMMAND_PLAY = "play";
 var COMMAND_PAUSE = "pause";
+var COMMAND_SEEK = "seek";
 var PRIVATE_CHANNEL = "/playlist";
 var SENSOR_CHANNEL = "/sensor/infotainment"
 var debug = true;
@@ -39,11 +40,7 @@ $(document).ready(function () {
     
     meter.timer({
         callback: function() { 
-            currentTime++;
-            var percent = (currentTime / totalTime) * 100;
-            if(percent <= 100) {
-                meter.css('width', percent + '%');
-            }
+            setMeter(++currentTime / totalTime);
         },
         delay: 1000,
         repeat: true,
@@ -53,6 +50,13 @@ $(document).ready(function () {
     subscribe(PRIVATE_CHANNEL);
     subscribe(SENSOR_CHANNEL);
 });
+
+function setMeter(fraction) {
+    var percent = fraction * 100;
+    if(percent <= 100) {
+        meter.css('width', percent + '%');
+    }
+}
 
 function subscribe(topic) {
     WebApp.subscribe(topic);
@@ -113,7 +117,11 @@ function handleMessagePayload(payload) {
         playing = false;
         toggleButtons();
         meter.timer('stop');
+    } else if (payload.action == COMMAND_SEEK) {
+        var fraction = payload.data;
+        currentTime = fraction * totalTime;
     }
+    
 }
 
 function resetPlayingInfo() {

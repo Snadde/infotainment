@@ -100,5 +100,11 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 			playerFragment.updateTrack(currentTrack);
 		}
 	}
+	
+	public void seek(float position){
+		if(playerFragment != null) {
+			playerFragment.updateSeekbar(position);
+		}
+	}
 
 }
