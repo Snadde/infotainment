@@ -14,5 +14,6 @@ public enum Action {
 	exist,
 	add_all,
     get_all,
+    seek,
 	NONE
 }

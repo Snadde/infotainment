@@ -174,8 +174,13 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 			return "No tracks available";
 	}
 
+    /**
+     * Publish a seek message to the 'playlist' topic
+     * @param position
+     */
 	public void seek(float position) {
-		spotifyController.seek(position);
+		JSONObject json = createJson(Action.seek, String.valueOf(position));
+        mqttWorker.publish("/playlist", json.toString());
 	}
 
     /**
@@ -244,9 +249,9 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 			case exist:
 				callbacks.onInstalledApplication(success);
 				break;
-                case get_all:
+            case get_all:
                     sendAllTracks(data, spotifyController.getPlaylist());
-                    break;
+                break;
 			case add_all:
 				JSONArray playlistArray = new JSONArray(data);
 				JSONObject jsonTrack;
@@ -255,6 +260,9 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 					addJsonTrackToPlaylist(jsonTrack);
 				}
 				break;
+            case seek:
+                spotifyController.seek(Float.parseFloat(data));
+                 break;
 			}
 			
 		} catch (JSONException e) {
@@ -290,15 +298,21 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
                 StreamToBase64String streamToBase64String = StreamToBase64String.getInstance(context);
                 data = streamToBase64String.getBase64StringFromAssets("Playlist.zip");
             }
-            JSONObject json = new JSONObject();
-            try {
-                json.put("action", action.toString());
-                json.put("data", data);
-            } catch (JSONException e) {
-               e.printStackTrace();
-            }
+            JSONObject json = createJson(action, data);
             mqttWorker.publish("/system", json.toString());
         }
+    }
+
+    public JSONObject createJson(Action action, String data)
+    {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("action", action.toString());
+            json.put("data", data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return json;
     }
 
     /**
@@ -307,12 +321,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
      */
     public void createAndPublishPlayerActions(Action action){
         if (isConnectedToBroker()) {
-            JSONObject json = new JSONObject();
-            try {
-                json.put("action", action.toString());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            JSONObject json = createJson(action, "");
             mqttWorker.publish("/playlist", json.toString());
         }
     }
