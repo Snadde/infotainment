@@ -149,19 +149,6 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	}
 
     /**
-     * Checks if the mqttWWorker is connected to the broker
-     * @return
-     */
-	public boolean isConnectedToBroker() {
-		if(mqttWorker!=null){
-            return mqttWorker.isConnected();
-        }
-        else {
-            return false;
-        }
-	}
-
-    /**
      * Returns the current track selected in the playlist if
      * existing, the string "No tracks available" otherwise
      * @return
@@ -179,7 +166,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
      * @param position
      */
 	public void seek(float position) {
-		JSONObject json = createJson(Action.seek, String.valueOf(position));
+        JSONObject json = createJson(Action.seek, String.valueOf(position));
         mqttWorker.publish("/playlist", json.toString());
 	}
 
@@ -212,11 +199,11 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 				break;
 			case play:
 				spotifyController.play();
-				callbacks.onPlayerPlay();
+				//callbacks.onPlayerPlay();
 				break;
 			case pause:
 				spotifyController.pause();
-				callbacks.onPlayerPause();
+				//callbacks.onPlayerPause();
 				break;
 			case next:
 				spotifyController.playNext();
@@ -236,15 +223,13 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 			case start:
 				if (data.equals("success")) {
 					sendPlayList();
-					callbacks.onStartedApplication("start");
-				} else if (data.equals("error")) {
-					callbacks.onStartedApplication("error");
-				} 
+                }
+                callbacks.onStartedApplication(data);
 				break;
 			case stop:
                 spotifyController.pause();
                 spotifyController.clearPlaylist();
-				callbacks.onStartedApplication(action);
+                callbacks.onStartedApplication(action);
 				break;
 			case uninstall:
 				callbacks.onInstalledApplication(!success);
@@ -295,15 +280,13 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
      * @param action
      */
     public void createAndPublishSystemActions(Action action){
-        if (isConnectedToBroker()) {
-            String data = "playlist";
-            if(action.equals(Action.install)){
-                StreamToBase64String streamToBase64String = StreamToBase64String.getInstance(context);
-                data = streamToBase64String.getBase64StringFromAssets("Playlist.zip");
-            }
-            JSONObject json = createJson(action, data);
-            mqttWorker.publish("/system", json.toString());
+        String data = "playlist";
+        if(action.equals(Action.install)){
+            StreamToBase64String streamToBase64String = StreamToBase64String.getInstance(context);
+            data = streamToBase64String.getBase64StringFromAssets("Playlist.zip");
         }
+        JSONObject json = createJson(action, data);
+        mqttWorker.publish("/system", json.toString());
     }
 
     /**
@@ -329,10 +312,8 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
      * @param action
      */
     public void createAndPublishPlayerActions(Action action){
-        if (isConnectedToBroker()) {
-            JSONObject json = createJson(action, "");
-            mqttWorker.publish("/playlist", json.toString());
-        }
+        JSONObject json = createJson(action, "");
+        mqttWorker.publish("/playlist", json.toString());
     }
 
     /**

@@ -185,7 +185,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
                     loadingDialog.dismiss();
                 }
 				String message = "";
-				if (status.equals("start")) {
+				if (status.equals("success")) {
 					uninstall.setEnabled(false);
 					start.setChecked(true);
 					message = "Started application";
@@ -196,7 +196,10 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 				} else if (status.equals("error")) {
 					start.setChecked(false);
 					alert("No application installed !");
-				}
+				} else if (status.equals("pending")) {
+                    loadDialog("Starting application");
+                }
+
 				changeStatus(message);
                 setCurrentTrack();
 			}
@@ -326,20 +329,14 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.start:
-			if (controller.isConnectedToBroker()) {
-				Action action;
-                if (start.isChecked()) {
-					start.setChecked(false);
-					action = Action.start;
-                    loadDialog("Starting application");
-                } else {
-					action = Action.stop;
-				}
-                controller.createAndPublishSystemActions(action);
-			} else {
-				start.setChecked(false);
-				alert("Not connected to broker! ");
-			}
+            Action action;
+            if (start.isChecked()) {
+                start.setChecked(false);
+                action = Action.start;
+            } else {
+                action = Action.stop;
+            }
+            controller.createAndPublishSystemActions(action);
 			break;
 		case R.id.play:
 			controller.createAndPublishPlayerActions(Action.play);
