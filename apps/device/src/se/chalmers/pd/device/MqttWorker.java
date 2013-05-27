@@ -131,7 +131,7 @@ public class MqttWorker extends Thread {
 	}
 	
 	private boolean isConnected(){
-		return mqttClient.isConnected();
+		return mqttClient == null ? false : mqttClient.isConnected();
 	}
 	
 	public void disconnect(){
