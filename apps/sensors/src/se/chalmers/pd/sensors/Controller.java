@@ -16,7 +16,7 @@ public class Controller {
 	private MqttWorker mqttWorker;
 
 	/**
-	 * Creates a an mqtt worker and tells it to start
+	 * Creates a an mqtt client and tells it to connect
 	 */
 	public Controller() {
 		mqttWorker = new MqttWorker();
@@ -24,7 +24,7 @@ public class Controller {
 	}
 
     /**
-     * Tells the worker to publish a message on this specific sensor topic with
+     * Tells the mqtt client to publish a message on this specific sensor topic with
      * the action message.
      */
     public void performAction(Action action) {
