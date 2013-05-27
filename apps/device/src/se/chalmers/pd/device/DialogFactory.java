@@ -11,6 +11,15 @@ public class DialogFactory {
         public void onConnectDialogAnswer(boolean result, String newBrokerUrl);
     }
 
+    /**
+     * Creates a Dialog with a specified message and allows the user to connect
+     * to the broker by inputting the URL. Uses callback to notify the main activity.
+     * @param context
+     * @param callback
+     * @param url the url to show as pre filled
+     * @param messageStringId the message to show
+     * @return
+     */
     public static AlertDialog buildConnectToUrlDialog(Context context, final Callback callback, String url, int messageStringId) {
         final EditText input = new EditText(context);
         input.setHint(context.getString(R.string.broker_url_pattern));
@@ -34,11 +43,4 @@ public class DialogFactory {
         return alertDialogBuilder.create();
     }
 
-    public static LoadingDialogFragment buildLoadingDialog(Context context) {
-        return LoadingDialogFragment.newInstance(context.getString(R.string.loading));
-    }
-
-    public static LoadingDialogFragment buildConnectingDialog(Context context, String url) {
-        return LoadingDialogFragment.newInstance(context.getString(R.string.connecting_to) + " " + url);
-    }
 }

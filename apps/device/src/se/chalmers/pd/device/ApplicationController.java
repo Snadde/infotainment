@@ -149,7 +149,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	}
 
     /**
-     *
+     * Checks if the mqttWWorker is connected to the broker
      * @return
      */
 	public boolean isConnectedToBroker() {
@@ -193,7 +193,10 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	}
 	
 	/**
-	 * Callback from Mqttworker thath handles all action-messages
+	 * Callback from Mqttworker thath handles all action-messages and performs
+     * the corresponding actions. Uses callbacks to notify the main activity that
+     * the state of the application has changed and an update of the UI could be
+     * required.
 	 * and perform the corresponding action. 
 	 */
 	public void onMessage(String topic, String payload) {
@@ -303,6 +306,12 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
         }
     }
 
+    /**
+     * Creates a JSONObject based on the action and the data
+     * @param action
+     * @param data
+     * @return
+     */
     public JSONObject createJson(Action action, String data)
     {
         JSONObject json = new JSONObject();
@@ -364,6 +373,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		if(connected){
             mqttWorker.subscribe("/playlist");
             mqttWorker.subscribe("/playlist/1");
+            mqttWorker.subscribe("/sensor/infotainment");
             createAndPublishSystemActions(Action.exist);
         }
 	}

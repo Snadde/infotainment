@@ -70,6 +70,11 @@ public class Track implements Parcelable {
 		this.spotifyUri = spotifyUri;
 	}
 
+    /**
+     * Compare this object with another to see if they are equals.
+     * @param object
+     * @return
+     */
 	@Override
 	public boolean equals(Object object) {
 		if (object instanceof Track) {
