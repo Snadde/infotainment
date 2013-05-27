@@ -13,35 +13,39 @@ import android.view.MenuItem;
 import android.widget.SearchView;
 import android.widget.Toast;
 
-public class MainActivity extends FragmentActivity implements ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NFCCallback {
+public class MainActivity extends FragmentActivity implements FragmentCallback, ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NfcCallback {
 
     private SectionsPagerAdapter sectionsPagerAdapter;
-	private ViewPager viewPager;
-	private ApplicationController controller;
-	private LoadingDialogFragment searchingDialog;
-	private NfcReader nfcReader;
+    private ViewPager viewPager;
+    private ApplicationController controller;
+    private LoadingDialogFragment searchingDialog;
+    private NfcReader nfcReader;
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), this);
-		viewPager = (ViewPager) findViewById(R.id.pager);
-		viewPager.setAdapter(sectionsPagerAdapter);
-		controller = new ApplicationController(this, this);
-		nfcReader = new NfcReader(this);
-	}
-	
-	
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.search_menu, menu);
-		SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-		SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
-		searchView.setSearchableInfo(searchManager.getSearchableInfo(this.getComponentName()));
-		searchView.setOnQueryTextListener(new QueryTextListener(this));
-		return super.onCreateOptionsMenu(menu);
-	}
+    /**
+     * System callback implementations
+     */
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), this);
+        viewPager = (ViewPager) findViewById(R.id.pager);
+        viewPager.setAdapter(sectionsPagerAdapter);
+        controller = new ApplicationController(this, this);
+        nfcReader = new NfcReader(this);
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search_menu, menu);
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.menu_search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(this.getComponentName()));
+        searchView.setOnQueryTextListener(new QueryTextListener(this));
+        return super.onCreateOptionsMenu(menu);
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -55,19 +59,51 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
                 return super.onOptionsItemSelected(item);
         }
     }
-	
-	@Override
-	public void onSearchBegin() {
-		searchingDialog = DialogFactory.buildLoadingDialog(this);
-		searchingDialog.show(getFragmentManager(), "searchingDialog");
-	}
 
-	@Override
-	public void onSearchResult(ArrayList<Track> tracks) {
-		searchingDialog.dismiss();
-        if(!tracks.isEmpty()) {
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        nfcReader.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        nfcReader.onResume();
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        nfcReader.onNewIntent(intent);
+    }
+
+    /**
+     * NfcReader callback
+     */
+
+    @Override
+    public void onNfcResult(String url) {
+        controller.connect(url);
+    }
+
+    /**
+     * Search callbacks
+     */
+
+    @Override
+    public void onSearchBegin() {
+        searchingDialog = DialogFactory.buildLoadingDialog(this);
+        searchingDialog.show(getFragmentManager(), "searchingDialog");
+    }
+
+    @Override
+    public void onSearchResult(ArrayList<Track> tracks) {
+        searchingDialog.dismiss();
+        if (!tracks.isEmpty()) {
             viewPager.setCurrentItem(SectionsPagerAdapter.FIRST_PAGE, true);
-            sectionsPagerAdapter.updateResults(tracks);
+            sectionsPagerAdapter.updateSearchResults(tracks);
         } else {
             runOnUiThread(new Runnable() {
                 @Override
@@ -76,85 +112,79 @@ public class MainActivity extends FragmentActivity implements ApplicationControl
                 }
             });
         }
-	}
-	
-	public void onTrackSelected(Track track) {
-		switch (viewPager.getCurrentItem()) {
-		case SectionsPagerAdapter.FIRST_PAGE:
-			controller.addTrack(track);
-			break;
-		case SectionsPagerAdapter.SECOND_PAGE:
-			//onPlayerAction(Action.play); //TODO need to send uri data to be able to play selected track
-			break;
-		}
-	}
-	
-	@Override
-	public void resetPlaylist() {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				sectionsPagerAdapter.resetPlaylist();
-			}
-		});
-	}
-	
-	@Override
-	public void onUpdatePlaylist(final Track track) {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				sectionsPagerAdapter.addToPlaylist(track);
-			}
-		});
-	}
+    }
 
-	public void onPlayerAction(Action action) {
-		controller.performAction(action);
-	}
-	
-	
-	@Override
-	public void onMessageAction(final Action action) {
-		runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				sectionsPagerAdapter.performAction(action);
-			}
-		});
-	}
+    /**
+     * ApplicationController callbacks
+     */
 
-	public void updatePlayer(Track track) {
-		sectionsPagerAdapter.updatePlayer(track);
-	}
-	
-	public void onNFCResult(String url) {
-		controller.connect(url);
-	}
+    @Override
+    public void onMessageAction(final Action action) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                sectionsPagerAdapter.performAction(action);
+            }
+        });
+    }
 
-	@Override
-	protected void onPause() {
-		super.onPause();
-		nfcReader.onPause();
-	}		
-	@Override	
-	protected void onResume() {
-		super.onResume();
-		nfcReader.onResume();
-	}
-	@Override
-	protected void onNewIntent(Intent intent) {
-		super.onNewIntent(intent);
-		nfcReader.onNewIntent(intent);
-	}
-	
-	public void onSeek(float position){
-		controller.seek(position);
-	}
+    @Override
+    public void onMessageAction(final float position) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                sectionsPagerAdapter.seek(position);
+            }
+        });
+    }
 
+    @Override
+    public void onMessageAction(final Action action, final Track track) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                sectionsPagerAdapter.performAction(action, track);
+            }
+        });
+    }
 
-	@Override
-	public void onActionSeek(float position) {
-		sectionsPagerAdapter.seek(position);
-	}
+    @Override
+    public void onMessageAction(final Action action, final ArrayList<Track> playlist) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                sectionsPagerAdapter.resetPlaylist();
+                for (Track track : playlist) {
+                    sectionsPagerAdapter.performAction(Action.add, track);
+                }
+            }
+        });
+    }
+
+    /**
+     * FragmentCallback implementations
+     */
+
+    @Override
+    public void onPlayerAction(Action action) {
+        controller.performAction(action);
+    }
+
+    @Override
+    public void onPlayerAction(float position) {
+        controller.seek(position);
+    }
+
+    @Override
+    public void onTrackSelected(Track track) {
+        switch (viewPager.getCurrentItem()) {
+            case SectionsPagerAdapter.FIRST_PAGE:
+                controller.addTrack(track);
+                break;
+            case SectionsPagerAdapter.SECOND_PAGE:
+                // TODO need to send uri data to be able to play selected track
+                //onPlayerAction(Action.play);
+                break;
+        }
+    }
 }

@@ -16,8 +16,8 @@ public class NfcReader {
 	 * Interface for the activity. This must be implemented by the calling activity
 	 * to be able to get the result.
 	 */
-	interface NFCCallback {
-		void onNFCResult(String url);
+	interface NfcCallback {
+		void onNfcResult(String url);
 	}
 
 	private Context context;
@@ -25,7 +25,7 @@ public class NfcReader {
 	private NfcAdapter nfcAdapter;
 	private IntentFilter[] ndefFilter;
 	private PendingIntent pendingIntent;
-	private NFCCallback callback;
+	private NfcCallback callback;
 
 	/**
 	 * Constructor of the class, Note that you need your activity to implement
@@ -34,7 +34,7 @@ public class NfcReader {
 	 */
 	public NfcReader(Context context) {
 		this.context = context;
-		this.callback = (NFCCallback) context;
+		this.callback = (NfcCallback) context;
 		init();
 	}
 
@@ -94,7 +94,7 @@ public class NfcReader {
                 for (int b = 3; b<payload.length; b++) {
                     result += (char) payload[b];
                 }
-                callback.onNFCResult(result);
+                callback.onNfcResult(result);
 			}
 		}
 	}
