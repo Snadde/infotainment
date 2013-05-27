@@ -19,6 +19,7 @@
         android:theme="@android:style/Theme.Holo" >
         <activity
             android:name="se.chalmers.pd.device.MainActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_main" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -39,15 +40,6 @@
 
                 <data android:mimeType="text/plain" />
             </intent-filter>
-        </activity>
-
-        <service android:name="se.chalmers.pd.device.SpotifyService" />
-
-        <activity
-            android:name="se.chalmers.pd.device.PlayerActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_player"
-            android:theme="@style/FullscreenTheme" >
         </activity>
     </application>
 

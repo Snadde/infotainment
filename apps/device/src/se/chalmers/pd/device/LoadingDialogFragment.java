@@ -8,6 +8,11 @@ public class LoadingDialogFragment extends DialogFragment {
 
 	private static String dialogmessage;
 
+    /**
+     * Creates a loading dialog with the specified message
+     * @param message the message to show
+     * @return
+     */
 	public static LoadingDialogFragment newInstance(String message) {
 		dialogmessage = message;
 		LoadingDialogFragment fragment = new LoadingDialogFragment();

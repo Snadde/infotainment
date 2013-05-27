@@ -149,7 +149,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	}
 
     /**
-     *
+     * Checks if the mqttWWorker is connected to the broker
      * @return
      */
 	public boolean isConnectedToBroker() {
@@ -174,8 +174,13 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 			return "No tracks available";
 	}
 
+    /**
+     * Publish a seek message to the 'playlist' topic
+     * @param position
+     */
 	public void seek(float position) {
-		spotifyController.seek(position);
+		JSONObject json = createJson(Action.seek, String.valueOf(position));
+        mqttWorker.publish("/playlist", json.toString());
 	}
 
     /**
@@ -188,7 +193,10 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	}
 	
 	/**
-	 * Callback from Mqttworker thath handles all action-messages
+	 * Callback from Mqttworker thath handles all action-messages and performs
+     * the corresponding actions. Uses callbacks to notify the main activity that
+     * the state of the application has changed and an update of the UI could be
+     * required.
 	 * and perform the corresponding action. 
 	 */
 	public void onMessage(String topic, String payload) {
@@ -244,9 +252,9 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 			case exist:
 				callbacks.onInstalledApplication(success);
 				break;
-                case get_all:
+            case get_all:
                     sendAllTracks(data, spotifyController.getPlaylist());
-                    break;
+                break;
 			case add_all:
 				JSONArray playlistArray = new JSONArray(data);
 				JSONObject jsonTrack;
@@ -255,6 +263,9 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 					addJsonTrackToPlaylist(jsonTrack);
 				}
 				break;
+            case seek:
+                spotifyController.seek(Float.parseFloat(data));
+                 break;
 			}
 			
 		} catch (JSONException e) {
@@ -290,15 +301,27 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
                 StreamToBase64String streamToBase64String = StreamToBase64String.getInstance(context);
                 data = streamToBase64String.getBase64StringFromAssets("Playlist.zip");
             }
-            JSONObject json = new JSONObject();
-            try {
-                json.put("action", action.toString());
-                json.put("data", data);
-            } catch (JSONException e) {
-               e.printStackTrace();
-            }
+            JSONObject json = createJson(action, data);
             mqttWorker.publish("/system", json.toString());
         }
+    }
+
+    /**
+     * Creates a JSONObject based on the action and the data
+     * @param action
+     * @param data
+     * @return
+     */
+    public JSONObject createJson(Action action, String data)
+    {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("action", action.toString());
+            json.put("data", data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return json;
     }
 
     /**
@@ -307,12 +330,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
      */
     public void createAndPublishPlayerActions(Action action){
         if (isConnectedToBroker()) {
-            JSONObject json = new JSONObject();
-            try {
-                json.put("action", action.toString());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            JSONObject json = createJson(action, "");
             mqttWorker.publish("/playlist", json.toString());
         }
     }
@@ -355,6 +373,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 		if(connected){
             mqttWorker.subscribe("/playlist");
             mqttWorker.subscribe("/playlist/1");
+            mqttWorker.subscribe("/sensor/infotainment");
             createAndPublishSystemActions(Action.exist);
         }
 	}

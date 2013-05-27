@@ -20,6 +20,7 @@ import android.widget.ToggleButton;
 /**
  * This Class is separated from all logic and consist only of the view part of
  * the application. It sets up all the buttons and adds onclicklisteners.
+ * Implements Callbacks to update the view and forward different actions.
  * 
  * @author Patrik Thituson
  * 
@@ -80,6 +81,11 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		});
 	}
 
+    /**
+     * Sets up the items in the menu
+     * @param menu
+     * @return
+     */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu, menu);
@@ -105,7 +111,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	}
 
 	/**
-	 * Sets the text of stats view
+	 * Sets the text of currentTrack view
 	 * 
 	 * @param text
 	 */
@@ -197,6 +203,11 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		});
 
 	}
+
+    /**
+     * Launches a loading dialog with the specified message.
+     * @param message
+     */
 	private void loadDialog(String message){
 		loadingDialog = LoadingDialogFragment.newInstance(message);
 		loadingDialog.show(getFragmentManager(), "loadingDialog");
@@ -204,7 +215,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 
 	/**
 	 * Callback that is called when we want to change the visibility of the
-	 * buttons start, uninstall and install.
+	 * buttons uninstall and install. Updates the status field for user feedback.
 	 */
 	public void onInstalledApplication(final boolean show) {
 		runOnUiThread(new Runnable() {
@@ -226,7 +237,9 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	}
 
 	/**
-	 * Callback that is called when the application is connected with the broker
+	 * Callback that is called when the application has tried connecting with the broker.
+     * launches a reconnect dialog if the connection was unsuccessful ß
+     * @param connected true or false pending on the success of the connection
 	 */
 	public void onConnectedMQTT(final boolean connected) {
 		runOnUiThread(new Runnable() {
@@ -267,12 +280,23 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
         });
     }
 
+    /**
+     * Callback from the connect/reconnect dialog that calls the controller with
+     * the new broker url if the result is true
+     * @param result
+     * @param newBrokerUrl
+     */
     public void onConnectDialogAnswer(boolean result, String newBrokerUrl){
         if(result) {
             controller.connect(newBrokerUrl);
         }
     }
 
+    /**
+     * Handles the menu items when they are selected to perform the correct action.
+     * @param item
+     * @return
+     */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
@@ -333,6 +357,9 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		setCurrentTrack();
 	}
 
+    /**
+     * Updates the current track in the currentTrack view
+     */
 	private void setCurrentTrack() {
         runOnUiThread(new Runnable() {
             public void run() {
@@ -341,6 +368,10 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
         });
 	}
 
+    /**
+     * Alerts the user when trying to perform an unavailable action
+     * @param message
+     */
 	private void alert(String message) {
 		AlertDialog alert = new AlertDialog.Builder(this).setTitle("Warning").setMessage(message)
 				.setNeutralButton("ok", new DialogInterface.OnClickListener() {
@@ -352,24 +383,40 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		alert.show();
 	}
 
+    /**
+     * Updates the status view
+     * @param message the message to show in the status view
+     */
 	private void changeStatus(String message) {
 		status.setText(message);
 	}
 
+    /**
+     * Updates the seekbar
+     * @param position
+     */
 	public void onUpdateSeekbar(float position) {
 		seekbar.setProgress((int) (position * seekbar.getMax()));
 	}
 
+    /**
+     * Sets the current track
+     */
     public void onUpdatedPlaylist() {
         setCurrentTrack();
         //this was implemented so this device could have a view of the playlist
     }
 
+    /**
+     * Callback from NFC that contains the url to the broker, forwards this url to
+     * the controller.
+     * @param url
+     */
     public void onNFCResult(String url) {
 		controller.connect(url);		
 	}
-	
-	@Override
+
+    @Override
 	protected void onPause() {
 		super.onPause();
 		nfcReader.onPause();

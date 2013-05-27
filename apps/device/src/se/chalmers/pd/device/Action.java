@@ -1,5 +1,8 @@
 package se.chalmers.pd.device;
 
+/**
+ * Defines all actions used in this project
+ */
 public enum Action {
 	action,
 	add,
@@ -14,5 +17,6 @@ public enum Action {
 	exist,
 	add_all,
     get_all,
+    seek,
 	NONE
 }
