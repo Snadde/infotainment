@@ -36,14 +36,12 @@ public class SpotifyController {
 	private static final int PASSWORD = 1;
 
 	private boolean isPlaying = false;
-	private int currentTrackIndex = 0;
-	private boolean emptyList = true;
+    private boolean initiated = false;
 	private ArrayList<Track> playlist;
 	private PlaylistCallback playlistCallback;
-	private Track currentTrack;
 	private Context context;
 
-	public SpotifyController(PlaylistCallback playlistCallback, Context context) {
+    public SpotifyController(PlaylistCallback playlistCallback, Context context) {
 		this.playlistCallback = playlistCallback;
 		this.context = context;
 		init();
@@ -73,7 +71,6 @@ public class SpotifyController {
 	public void addTrackToPlaylist(String name, String artist, String spotifyUri, int length) {
 		Track newTrack = new Track(name, artist, spotifyUri, length);
 		playlist.add(newTrack);
-		emptyList = false;
 	}
 
     /**
@@ -82,12 +79,7 @@ public class SpotifyController {
      * @param newTrack
      */
 	public void addTrackToPlaylist(Track newTrack){
-		playlist.add(newTrack);
-        if (emptyList)
-        {
-		    emptyList = false;
-            currentTrack = newTrack;
-        }
+        playlist.add(newTrack);
 	}
 	
 	/**
@@ -95,10 +87,12 @@ public class SpotifyController {
 	 * uses the callback to notify back to the application controller.
 	 */
 	public void play() {
-		if (!isPlaying && !emptyList) {
-			currentTrack = playlist.get(currentTrackIndex);
-			LibSpotifyWrapper.togglePlay(currentTrack.getUri());
+		if (!isPlaying && !isEmptyPlaylist()) {
+			LibSpotifyWrapper.togglePlay(getCurrentTrack().getUri());
 			isPlaying = true;
+            if(!initiated){
+                initiated = true;
+            }
 		} else {
 			playlistCallback.onPlay(false);
 		}
@@ -110,7 +104,7 @@ public class SpotifyController {
 	 */
 	public void pause() {
 		if (isPlaying) {
-			LibSpotifyWrapper.togglePlay(currentTrack.getUri());
+			LibSpotifyWrapper.togglePlay(getCurrentTrack().getUri());
 			isPlaying = false;
 		} else {
 			playlistCallback.onPause(false);
@@ -122,13 +116,11 @@ public class SpotifyController {
 	 * it starts over.
 	 */
 	public void playNext() {
-		if (!emptyList){
-            currentTrackIndex++;
-		    if (playlist.size() <= currentTrackIndex) {
-			    currentTrackIndex = 0;
-		    }
-		    currentTrack = playlist.get(currentTrackIndex);
-		    LibSpotifyWrapper.playNext(currentTrack.getUri());
+		if (!isEmptyPlaylist()){
+            Track originalTrack = playlist.get(0);
+            playlist.remove(originalTrack);
+            playlist.add(originalTrack);
+		    LibSpotifyWrapper.playNext(getCurrentTrack().getUri());
 	    }
     }
     /**
@@ -136,13 +128,11 @@ public class SpotifyController {
      * beginning of hte palylist it starts at the end.
      */
     public void playPrevious() {
-        if (!emptyList){
-            currentTrackIndex--;
-            if (currentTrackIndex < 0) {
-                currentTrackIndex = playlist.size() - 1;
-            }
-            currentTrack = playlist.get(currentTrackIndex);
-            LibSpotifyWrapper.playNext(currentTrack.getUri());
+        if (!isEmptyPlaylist()){
+            Track originalTrack = playlist.get(playlist.size() - 1);
+            playlist.remove(originalTrack);
+            playlist.add(0, originalTrack);
+            LibSpotifyWrapper.playNext(originalTrack.getUri());
         }
     }
 
@@ -176,14 +166,6 @@ public class SpotifyController {
 	public List<Track> getPlaylist() {
 		return playlist;
 	}
-	/**
-	 * 
-	 * @return currentTrackIndex
-	 * 				the index of the current track
-	 */
-	public int getIndexOfCurrentTrack() {
-		return currentTrackIndex;
-	}
 
 	/**
 	 * 
@@ -191,14 +173,14 @@ public class SpotifyController {
 	 * 				the current track
 	 */
 	public Track getCurrentTrack() {
-		return currentTrack;
-	}
+        return playlist.isEmpty() ? null : playlist.get(0);
+    }
 	/**
 	 * Method for updating the tracks position
 	 * @param position
 	 */
 	public void seek(float position) {
-		if(isPlaying){
+		if(initiated){
             LibSpotifyWrapper.seek(position);
         }
 	}
@@ -208,10 +190,13 @@ public class SpotifyController {
      * variables.
      */
 	public void clearPlaylist() {
-		playlist.clear();
-        currentTrackIndex = 0;
-        currentTrack = null;
-        emptyList = true;
+		seek(0);
+        initiated = false;
+        playlist.clear();
 	}
+
+    private boolean isEmptyPlaylist(){
+        return playlist.isEmpty();
+    }
 
 }
