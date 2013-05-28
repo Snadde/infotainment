@@ -36,7 +36,6 @@ public class SpotifyController {
 	private static final int PASSWORD = 1;
 
 	private boolean isPlaying = false;
-	private int currentTrackIndex = 0;
     private boolean initiated = false;
 	private ArrayList<Track> playlist;
 	private PlaylistCallback playlistCallback;
@@ -118,10 +117,9 @@ public class SpotifyController {
 	 */
 	public void playNext() {
 		if (!isEmptyPlaylist()){
-            currentTrackIndex++;
-		    if (playlist.size() <= currentTrackIndex) {
-			    currentTrackIndex = 0;
-		    }
+            Track originalTrack = playlist.get(0);
+            playlist.remove(originalTrack);
+            playlist.add(originalTrack);
 		    LibSpotifyWrapper.playNext(getCurrentTrack().getUri());
 	    }
     }
@@ -131,11 +129,10 @@ public class SpotifyController {
      */
     public void playPrevious() {
         if (!isEmptyPlaylist()){
-            currentTrackIndex--;
-            if (currentTrackIndex < 0) {
-                currentTrackIndex = playlist.size() - 1;
-            }
-            LibSpotifyWrapper.playNext(getCurrentTrack().getUri());
+            Track originalTrack = playlist.get(playlist.size() - 1);
+            playlist.remove(originalTrack);
+            playlist.add(0, originalTrack);
+            LibSpotifyWrapper.playNext(originalTrack.getUri());
         }
     }
 
@@ -169,14 +166,6 @@ public class SpotifyController {
 	public List<Track> getPlaylist() {
 		return playlist;
 	}
-	/**
-	 * 
-	 * @return currentTrackIndex
-	 * 				the index of the current track
-	 */
-	public int getIndexOfCurrentTrack() {
-		return currentTrackIndex;
-	}
 
 	/**
 	 * 
@@ -184,7 +173,7 @@ public class SpotifyController {
 	 * 				the current track
 	 */
 	public Track getCurrentTrack() {
-        return playlist.isEmpty() ? null : playlist.get(currentTrackIndex);
+        return playlist.isEmpty() ? null : playlist.get(0);
     }
 	/**
 	 * Method for updating the tracks position
@@ -204,7 +193,6 @@ public class SpotifyController {
 		seek(0);
         initiated = false;
         playlist.clear();
-        currentTrackIndex = 0;
 	}
 
     private boolean isEmptyPlaylist(){

@@ -15,5 +15,20 @@
     <string name="connecting_to">Connecting to broker at</string>
     <string name="connected_to">Connected to:</string>
     <string name="loading">Loading..</string>
+    <string name="started_application">Started application</string>
+    <string name="stopped_application">Stopped application</string>
+    <string name="no_application_installed">No application installed !</string>
+    <string name="starting_application">Starting application</string>
+    <string name="loading_dialog">loadingDialog</string>
+    <string name="installed_application_found">Installed application found</string>
+    <string name="no_installed_application">No installed application</string>
+    <string name="connected_to_broker">Connected to broker</string>
+    <string name="could_not_connect_broker">Could not connect to the broker</string>
+    <string name="disconnected_from_broker">Disconnected from broker</string>
+    <string name="could_not_disconenct_broker">Could not disconnected from broker</string>
+    <string name="installing_application">Installing application</string>
+    <string name="warning">Warning</string>
+    <string name="ok">ok</string>
+    <string name="no_tracks_available">No tracks available</string>
 
 </resources>
