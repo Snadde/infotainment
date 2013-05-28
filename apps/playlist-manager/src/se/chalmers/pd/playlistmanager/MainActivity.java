@@ -60,7 +60,6 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
         }
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
@@ -129,34 +128,11 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
     }
 
     @Override
-    public void onMessageAction(final float position) {
+    public <T extends Object> void onMessageAction(final Action action, final T t) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                sectionsPagerAdapter.seek(position);
-            }
-        });
-    }
-
-    @Override
-    public void onMessageAction(final Action action, final Track track) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                sectionsPagerAdapter.performAction(action, track);
-            }
-        });
-    }
-
-    @Override
-    public void onMessageAction(final Action action, final ArrayList<Track> playlist) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                sectionsPagerAdapter.resetPlaylist();
-                for (Track track : playlist) {
-                    sectionsPagerAdapter.performAction(Action.add, track);
-                }
+                sectionsPagerAdapter.performAction(action, t);
             }
         });
     }

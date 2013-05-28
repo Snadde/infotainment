@@ -94,19 +94,21 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
         callback.onPlayerAction(action);
     }
 
-    public void updateAction(Action action) {
+    public <T extends Object> void updateAction(Action action, T t) {
         switch (action) {
             case pause:
             case play:
                 togglePlayPause();
                 break;
             case next:
-                //currentIndex = ++currentIndex % tracks.size();
                 updateTrack(tracks.get(0));
                 break;
             case prev:
-                //currentIndex = --currentIndex % tracks.size();
                 updateTrack(tracks.get(0));
+                break;
+            case seek:
+                float position = (Float) t;
+                updateSeekbar(position);
                 break;
         }
     }
@@ -122,12 +124,12 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
     }
 
     private void updateTrack(Track track) {
-        if (track != null) {
+        if (track != null && trackInfo != null) {
             trackInfo.setText(track.getArtist() + " - " + track.getName());
         }
     }
 
-    public void updateSeekbar(float position) {
+    private void updateSeekbar(float position) {
         seekbar.setProgress((int) (position * seekbar.getMax()));
     }
 

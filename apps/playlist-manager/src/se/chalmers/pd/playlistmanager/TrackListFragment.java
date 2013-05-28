@@ -61,24 +61,31 @@ public class TrackListFragment extends ListFragment {
         setListAdapter(adapter);
     }
 
-
-    public void resetPlaylist() {
-        adapter.clear();
-    }
-
-    public void updateAction(Action action, Track track) {
+    public <T extends Object> void updateAction(Action action, T t) {
         switch (action) {
             case add:
-                adapter.add(track);
+                addTrack((Track) t);
+                break;
+            case add_all:
+                addAllTracks((ArrayList<Track>) t);
                 break;
             case next:
                 shiftNext();
-                //updatePlayer();
                 break;
             case prev:
                 shiftPrev();
-                //updatePlayer();
                 break;
+        }
+    }
+
+    private void addTrack(Track track) {
+        adapter.add(track);
+    }
+
+    private void addAllTracks(ArrayList<Track> list) {
+        adapter.clear();
+        for(Track track : list) {
+            addTrack(track);
         }
     }
 

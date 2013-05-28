@@ -77,22 +77,12 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         performAction(action, null);
     }
 
-    public void performAction(Action action, Track track) {
+    public <T extends Object> void performAction(Action action, T t) {
         if (playlistFragment != null) {
-            playlistFragment.updateAction(action, track);
+            playlistFragment.updateAction(action, t);
         }
         if (playerFragment != null) {
-            playerFragment.updateAction(action);
-        }
-    }
-
-    public void resetPlaylist() {
-        playlistFragment.resetPlaylist();
-    }
-
-    public void seek(float position) {
-        if (playerFragment != null) {
-            playerFragment.updateSeekbar(position);
+            playerFragment.updateAction(action, t);
         }
     }
 
