@@ -97,7 +97,10 @@ function handleMessagePayload(payload) {
         });
         resetPlayingInfo();
     } else if(payload.action == COMMAND_PREV) {
-        currentTrack = --currentTrack % playlist.length;
+        currentTrack = --currentTrack;
+        if(currentTrack < 0){
+            currentTrack = playlist.length - 1;
+        }
         var elem = $('#options-list li:last');
         while(elem.is(':animated')) {
             elem = elem.prev('li');
@@ -150,7 +153,7 @@ function toggleButtons() {
 function updateList(payload) {
     $('#options-list').append(
         $('<li/>', {
-        html: '<span class="artist">' + payload.artist + '</span>' + "<br/>" + '<span class="track">' + payload.track + '</span>' + '<span class="tracklength"> &ndash; ' + payload.tracklength + ' s.</span>'
+        html: '<span class="artist">' + payload.artist + '</span>' + "<br/>" + '<span class="track">' + payload.track + '</span>' + '<span class="tracklength"> &ndash; <span>' + payload.tracklength + '</span> s.</span>'
     }).hide().fadeIn());
 }
 
