@@ -9,15 +9,17 @@ import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class ApplicationController implements MqttWorker.Callback, DialogFactory.Callback {
 
-
-
     public interface Callback {
-		public void resetPlaylist();
-		public void onUpdatePlaylist(Track track);
+		//public void onPlaylistReset();
+		//public void onUpdatePlaylist(Track track);
 		public void onMessageAction(Action action);
-		public void onActionSeek(float position);
+        public void onMessageAction(Action action, Track track);
+        public void onMessageAction(Action action, ArrayList<Track> playlist);
+		public void onMessageAction(float position);
 	}
 
 	private static final String TYPE_INDEX = "index";
@@ -98,34 +100,40 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 	public void onMessage(String topic, String payload) {
 		try {
 			JSONObject json = new JSONObject(payload);
-			String action = json.getString(Action.action.toString());
-			Action newAction = Action.valueOf(action);
-			if(Action.add == newAction) {
-				Track track = jsonToTrack(json);
-				callback.onUpdatePlaylist(track);
-			} else if(Action.add_all == newAction) {
-				callback.resetPlaylist();
-				JSONArray trackArray = json.getJSONArray(TYPE_DATA);
-				int currentIndex = json.getInt(TYPE_INDEX);
-				addAll(trackArray, currentIndex);
-			} else if (Action.seek == newAction) {
-				float position = Float.parseFloat(json.getString(TYPE_DATA));
-				callback.onActionSeek(position);
-			} else {
-				callback.onMessageAction(newAction);
+			String actionString = json.getString(Action.action.toString());
+			Action action = Action.valueOf(actionString);
+            switch (action) {
+                case add:
+                    Track track = jsonToTrack(json);
+                    callback.onMessageAction(action, track);
+                    break;
+                case add_all:
+                    int currentIndex = json.getInt(TYPE_INDEX);
+                    JSONArray trackArray = json.getJSONArray(TYPE_DATA);
+                    callback.onMessageAction(action, jsonArrayToTrackList(trackArray, currentIndex));
+                    break;
+                case seek:
+                    float position = Float.parseFloat(json.getString(TYPE_DATA));
+                    callback.onMessageAction(position);
+                    break;
+                default:
+                    callback.onMessageAction(action);
+                    break;
 			}
 		} catch (JSONException e) {
 			Log.e(TAG, "Could not create json object from payload " + payload + " with error: " + e.getMessage());
 		}
 	}
 	
-	private void addAll(JSONArray trackArray, int currentIndex) throws JSONException {
-		int length = trackArray.length();
+	private ArrayList<Track> jsonArrayToTrackList(JSONArray trackArray, int currentIndex) throws JSONException {
+		ArrayList<Track> playlist = new ArrayList<Track>();
+        int length = trackArray.length();
 		for(int i = currentIndex; i < length + currentIndex; i++) {
 			JSONObject jsonTrack = trackArray.getJSONObject(i % length);
-			Track track = jsonToTrack(jsonTrack);
-			callback.onUpdatePlaylist(track);
+			final Track track = jsonToTrack(jsonTrack);
+			playlist.add(track);
 		}
+        return playlist;
 	}
 
 	private Track jsonToTrack(JSONObject jsonTrack) throws JSONException {
