@@ -2,6 +2,7 @@ package se.chalmers.pd.playlistmanager;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,27 +11,24 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Queue;
+
 
 public class PlayerFragment extends Fragment implements View.OnClickListener, OnSeekBarChangeListener {
 
-    private int currentIndex = 0;
+    private static final int MILLIS_IN_SECOND = 1000;
+    private static final int DELAY_MILLIS = 1000;
     private View pause;
     private View play;
     private TextView trackInfo;
     private SeekBar seekbar;
     private FragmentCallback callback;
     private ArrayList<Track> tracks;
+    private Handler handler = new Handler();
+    private boolean playing = false;
 
+    public PlayerFragment() { }
 
-    // TODO enable scrubber animation
-
-    public PlayerFragment() {
-    }
-
-    ;
 
     @Override
     public void onAttach(Activity activity) throws ClassCastException {
@@ -45,6 +43,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRetainInstance(true);
         Bundle arguments = getArguments();
         tracks = arguments.getParcelableArrayList("playlist");
     }
@@ -76,29 +75,39 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
 
     @Override
     public void onClick(View v) {
-        Action action = Action.NONE;
-        switch (v.getId()) {
-            case R.id.play:
-                action = Action.play;
-                break;
-            case R.id.next:
-                action = Action.next;
-                break;
-            case R.id.pause:
-                action = Action.pause;
-                break;
-            case R.id.prev:
-                action = Action.prev;
-                break;
+        if(!tracks.isEmpty()) {
+            Action action = Action.NONE;
+            switch (v.getId()) {
+                case R.id.play:
+                    action = Action.play;
+                    break;
+                case R.id.next:
+                    action = Action.next;
+                    break;
+                case R.id.pause:
+                    action = Action.pause;
+                    break;
+                case R.id.prev:
+                    action = Action.prev;
+                    break;
+            }
+            callback.onPlayerAction(action);
         }
-        callback.onPlayerAction(action);
     }
 
     public <T extends Object> void updateAction(Action action, T t) {
         switch (action) {
             case pause:
+                stopProgress();
+                pause.setVisibility(View.GONE);
+                play.setVisibility(View.VISIBLE);
+                playing = false;
+                break;
             case play:
-                togglePlayPause();
+                pause.setVisibility(View.VISIBLE);
+                play.setVisibility(View.GONE);
+                startProgress();
+                playing = true;
                 break;
             case next:
                 updateTrack(tracks.get(0));
@@ -108,29 +117,51 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
                 break;
             case seek:
                 float position = (Float) t;
-                updateSeekbar(position);
+                setProgress(((int) (position * seekbar.getMax())));
+                if(playing) {
+                    startProgress();
+                }
                 break;
-        }
-    }
-
-    private void togglePlayPause() {
-        if (play.getVisibility() == View.VISIBLE) {
-            pause.setVisibility(View.VISIBLE);
-            play.setVisibility(View.GONE);
-        } else {
-            pause.setVisibility(View.GONE);
-            play.setVisibility(View.VISIBLE);
         }
     }
 
     private void updateTrack(Track track) {
         if (track != null && trackInfo != null) {
             trackInfo.setText(track.getArtist() + " - " + track.getName());
+            seekbar.setMax(track.getLength());
+            resetProgress();
         }
     }
 
-    private void updateSeekbar(float position) {
-        seekbar.setProgress((int) (position * seekbar.getMax()));
+    private Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            seekbar.incrementProgressBy((DELAY_MILLIS / MILLIS_IN_SECOND));
+            handler.postDelayed(this, DELAY_MILLIS);
+        }
+    };
+
+    private void stopProgress() {
+        handler.removeCallbacks(runnable);
+    }
+
+    private void startProgress() {
+        handler.postDelayed(runnable, DELAY_MILLIS);
+    }
+
+    private void setProgress(int progress) {
+        seekbar.setProgress(progress);
+    }
+
+    private void resetProgress() {
+        setProgress(0);
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+        if(playing) {
+            stopProgress();
+        }
     }
 
     @Override
@@ -141,11 +172,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        // Not used
-    }
-
-    @Override
-    public void onStartTrackingTouch(SeekBar seekBar) {
         // Not used
     }
 }
