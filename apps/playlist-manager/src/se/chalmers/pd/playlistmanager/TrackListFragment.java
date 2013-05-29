@@ -11,15 +11,28 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
+/**
+ * This fragment is used to show list of tracks. Both the playlist and the search
+ * result list make use of this fragment.
+ */
 public class TrackListFragment extends ListFragment {
 
     private String title;
     private TrackAdapter adapter;
     private FragmentCallback callback;
 
+    /**
+     * Empty constructor used by the system
+     */
     public TrackListFragment() {
     }
 
+    /**
+     * Saves the activity as a callback
+     *
+     * @param activity
+     * @throws ClassCastException if the activity doesn't implement the FragmentCallback
+     */
     @Override
     public void onAttach(Activity activity) throws ClassCastException {
         super.onAttach(activity);
@@ -30,6 +43,11 @@ public class TrackListFragment extends ListFragment {
         }
     }
 
+    /**
+     * Gets the tracks from the passed in arguments and sets the list to the adapter.
+     *
+     * @param savedInstanceState
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +56,14 @@ public class TrackListFragment extends ListFragment {
         setupAdapter(tracks);
     }
 
+    /**
+     * Sets the title of the fragment and returns the root view
+     *
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return the root view
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_tracklist, null);
@@ -46,21 +72,46 @@ public class TrackListFragment extends ListFragment {
         return view;
     }
 
+    /**
+     * When a list item has been clicked the track is passed on to the callback
+     *
+     * @param l        listview
+     * @param v        view
+     * @param position position in list
+     * @param id
+     */
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
         Track track = (Track) getListAdapter().getItem(position);
         callback.onTrackSelected(track);
     }
 
-    public void updateResults(ArrayList<Track> tracks) {
+    /**
+     * Updates the tracks in the list
+     *
+     * @param tracks the tracks to use
+     */
+    public void updateTracks(ArrayList<Track> tracks) {
         setupAdapter(tracks);
     }
 
+    /**
+     * Sets up the adapter with the tracks and the system provided layout.
+     *
+     * @param tracks the tracks to add to the list
+     */
     private void setupAdapter(final ArrayList<Track> tracks) {
         adapter = new TrackAdapter(getActivity(), android.R.layout.simple_list_item_2, tracks);
         setListAdapter(adapter);
     }
 
+    /**
+     * Called when a message has been received or an action needs to be performed to
+     * update the UI.
+     *
+     * @param action the action to perform
+     * @param t      the data to use with the action (null if none)
+     */
     public <T extends Object> void updateAction(Action action, T t) {
         switch (action) {
             case add:
@@ -78,17 +129,28 @@ public class TrackListFragment extends ListFragment {
         }
     }
 
+    /**
+     * Adds a single track to the list
+     * @param track the track to add
+     */
     private void addTrack(Track track) {
         adapter.add(track);
     }
 
+    /**
+     * Clears the adapter and adds all tracks to it
+     * @param list
+     */
     private void addAllTracks(ArrayList<Track> list) {
         adapter.clear();
-        for(Track track : list) {
+        for (Track track : list) {
             addTrack(track);
         }
     }
 
+    /**
+     * Shifts the list forward taking the first element and putting it last.
+     */
     private void shiftNext() {
         Track originalTrack = adapter.getItem(0);
         adapter.remove(originalTrack);
@@ -96,6 +158,9 @@ public class TrackListFragment extends ListFragment {
         adapter.notifyDataSetChanged();
     }
 
+    /**
+     * Shifts the list backward, taking the last element and placing it first.
+     */
     private void shiftPrev() {
         Track originalTrack = adapter.getItem(adapter.getCount() - 1);
         adapter.remove(originalTrack);
