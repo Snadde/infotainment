@@ -58,7 +58,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
                          DATA = "data",
                          ARTIST = "artist",
                          TRACK = "track",
-                         TRACK_LENGTH = "",
+                         TRACK_LENGTH = "tracklength",
                          URI = "uri";
 
 	public ApplicationController(Context context) {
