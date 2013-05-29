@@ -50,8 +50,8 @@
 
             <ImageView
                 android:id="@+id/prev"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginLeft="12dp"
                 android:layout_marginRight="12dp"
                 android:src="@drawable/previous"
@@ -59,8 +59,8 @@
 
             <ImageView
                 android:id="@+id/play"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginLeft="12dp"
                 android:layout_marginRight="12dp"
                 android:src="@drawable/play"
@@ -68,8 +68,8 @@
 
             <ImageView
                 android:id="@+id/pause"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginLeft="12dp"
                 android:layout_marginRight="12dp"
                 android:src="@drawable/pause"
@@ -77,8 +77,8 @@
 
             <ImageView
                 android:id="@+id/next"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:layout_marginLeft="12dp"
                 android:layout_marginRight="12dp"
                 android:src="@drawable/next"

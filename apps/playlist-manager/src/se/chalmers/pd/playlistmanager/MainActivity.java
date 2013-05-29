@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements FragmentCallback, ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NfcCallback {
 
+    private static final int NUMBER_OF_PAGES = 3;
     private SectionsPagerAdapter sectionsPagerAdapter;
     private ViewPager viewPager;
     private ApplicationController controller;
@@ -31,6 +32,7 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
         setContentView(R.layout.activity_main);
         sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), this);
         viewPager = (ViewPager) findViewById(R.id.pager);
+        viewPager.setOffscreenPageLimit(NUMBER_OF_PAGES);
         viewPager.setAdapter(sectionsPagerAdapter);
         controller = new ApplicationController(this, this);
         nfcReader = new NfcReader(this);

@@ -82,8 +82,11 @@ public class MqttWorker extends Thread {
 	public void publish(String topic, String message) {
 		Log.d(WORKER_NAME, "publishing topic " + topic + " with message " + message);
 		try {
-			MqttMessage payload = new MqttMessage(message.getBytes());
-			mqttClient.getTopic(topic).publish(payload);
+            MqttTopic mqttTopic = mqttClient.getTopic(topic);
+            if(mqttTopic != null) {
+                MqttMessage payload = new MqttMessage(message.getBytes());
+                mqttTopic.publish(payload);
+            }
 		} catch (MqttPersistenceException e) {
 			e.printStackTrace();
 		} catch (MqttException e) {
