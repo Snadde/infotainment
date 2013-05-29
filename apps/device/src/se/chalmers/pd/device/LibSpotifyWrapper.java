@@ -46,9 +46,7 @@ public class LibSpotifyWrapper {
 			public void run() {
 				if (success) {
 					callback.onLoginSuccess();
-					System.out.println("onLogin success");
 				} else {
-					System.out.println("onLogin fail");
 					callback.onLoginFailed(message);
 
 				}
@@ -103,7 +101,6 @@ public class LibSpotifyWrapper {
 
 			public void run() {
 				callback.onPlay(true);
-				System.out.println("onPlayerPlay");
 			}
 		});
 	}

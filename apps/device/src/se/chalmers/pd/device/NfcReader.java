@@ -61,7 +61,7 @@ public class NfcReader {
 		
 		if(nfcAdapter != null) {
 			if (!nfcAdapter.isEnabled()){
-				Log.d("nfcAdapter", "disabled");    
+				Log.d("nfcAdapter", "disabled");
 			} else {
 				Log.d("nfcAdapter", "enabled");
 				nfcAdapter.enableForegroundDispatch((Activity) context, pendingIntent,

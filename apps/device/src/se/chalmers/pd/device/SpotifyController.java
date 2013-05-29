@@ -34,6 +34,10 @@ public class SpotifyController {
 
 	private static final int USER_NAME = 0;
 	private static final int PASSWORD = 1;
+    private static final String SPOTIFY = "spotify";
+    private static final String SPOTIFY_WRAPPER = "spotifywrapper";
+    private static final String USER_DETAILS = "userdetails.txt";
+    private static final String PATH = "/Android/data/se.chalmers.pd.device";
 
 	private boolean isPlaying = false;
     private boolean initiated = false;
@@ -52,10 +56,10 @@ public class SpotifyController {
 	 */
 	private void init() {
 		playlist = new ArrayList<Track>();
-		System.loadLibrary("spotify");
-		System.loadLibrary("spotifywrapper");
+		System.loadLibrary(SPOTIFY);
+		System.loadLibrary(SPOTIFY_WRAPPER);
 		LibSpotifyWrapper.init(LibSpotifyWrapper.class.getClassLoader(), Environment.getExternalStorageDirectory()
-				.getAbsolutePath() + "/Android/data/se.chalmers.pd.device");
+				.getAbsolutePath() + PATH);
 	}
 
 	/**
@@ -142,7 +146,7 @@ public class SpotifyController {
 	 */
 	public void login() {
 		try {
-			InputStreamReader reader = new InputStreamReader(context.getAssets().open("userdetails.txt"));
+			InputStreamReader reader = new InputStreamReader(context.getAssets().open(USER_DETAILS));
 			char[] buf = new char[100];
 			int length = reader.read(buf);
 			String userDetails = new String(buf, 0, length);
