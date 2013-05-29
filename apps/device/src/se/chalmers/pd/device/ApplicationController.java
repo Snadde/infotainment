@@ -54,7 +54,12 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
                          TOPIC_INFOTAINMENT = "/sensor/infotainment",
                          TOPIC_SYSTEM = "/system",
                          PLAYLIST_ZIP = "Playlist.zip",
-                         PLAYLIST_NAME = "playlist";
+                         PLAYLIST_NAME = "playlist",
+                         DATA = "data",
+                         ARTIST = "artist",
+                         TRACK = "track",
+                         TRACK_LENGTH = "tracklength",
+                         URI = "uri";
 
 	public ApplicationController(Context context) {
 
@@ -254,7 +259,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 				}
 				break;
             case seek:
-                spotifyController.seek(Float.parseFloat(data));
+                 spotifyController.seek(Float.parseFloat(data));
                  break;
 			}
 			
@@ -269,10 +274,10 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 	 * @param jsonTrack
 	 */
 	private void addJsonTrackToPlaylist(JSONObject jsonTrack){
-		String name = jsonTrack.optString("track");
-		String artist = jsonTrack.optString("artist");
-		String spotifyUri = jsonTrack.optString("uri");
-		int length = jsonTrack.optInt("tracklength");
+		String name = jsonTrack.optString(TRACK);
+		String artist = jsonTrack.optString(ARTIST);
+		String spotifyUri = jsonTrack.optString(URI);
+		int length = jsonTrack.optInt(TRACK_LENGTH);
 		Track newTrack = new Track(name, artist, spotifyUri, length);
 		spotifyController.addTrackToPlaylist(newTrack);
         callbacks.onUpdatedPlaylist();
@@ -331,17 +336,16 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
         JSONObject payload = new JSONObject();
         JSONArray playlistArray = new JSONArray();
         try {
-            //payload.put(Action.action.toString(), Action.add_all.toString());
-            payload.put("action", "add_all");
+            payload.put(Action.action.toString(), Action.add_all.toString());
             for(Track track: tracks){
                 JSONObject jsonTrack = new JSONObject();
-                jsonTrack.put("track", track.getName());
-                jsonTrack.put("artist", track.getArtist());
-                jsonTrack.put("uri", track.getUri());
-                jsonTrack.put("tracklength", track.getLength());
+                jsonTrack.put(TRACK, track.getName());
+                jsonTrack.put(ARTIST, track.getArtist());
+                jsonTrack.put(URI, track.getUri());
+                jsonTrack.put(TRACK_LENGTH, track.getLength());
                 playlistArray.put(jsonTrack);
             }
-            payload.put("data", playlistArray);
+            payload.put(DATA, playlistArray);
             mqttWorker.publish(topic, payload.toString());
         } catch (JSONException e) {
             e.printStackTrace();
