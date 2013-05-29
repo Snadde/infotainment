@@ -14,18 +14,14 @@ import java.util.ArrayList;
 public class ApplicationController implements MqttWorker.Callback, DialogFactory.Callback {
 
     public interface Callback {
-		//public void onPlaylistReset();
-		//public void onUpdatePlaylist(Track track);
 		public void onMessageAction(Action action);
-        public void onMessageAction(Action action, Track track);
-        public void onMessageAction(Action action, ArrayList<Track> playlist);
-		public void onMessageAction(float position);
+        public <T extends Object> void onMessageAction(Action action, T t);
 	}
 
-	private static final String TYPE_INDEX = "index";
 	private static final String TYPE_DATA = "data";
 	private static final String TOPIC_PLAYLIST = "/playlist";
 	private static final String TOPIC_PRIVATE = "/playlist/playlistmanager";
+    private static final String TOPIC_SENSOR = "/sensor/infotainment";
 	private static final String TAG = "ApplicationController";
 	private static final String TRACK_URI = "uri";
 	private static final String TRACK_NAME = "track";
@@ -61,9 +57,10 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 		if(connected) {
 			mqttWorker.subscribe(TOPIC_PLAYLIST);
 			mqttWorker.subscribe(TOPIC_PRIVATE);
+            mqttWorker.subscribe(TOPIC_SENSOR);
 			mqttWorker.publish(TOPIC_PLAYLIST, getAllJsonMessage());
             connectingDialog.dismiss();
-			Log.d(TAG, "Now subscribing to " + TOPIC_PLAYLIST + ", " + TOPIC_PRIVATE);
+			Log.d(TAG, "Now subscribing to " + TOPIC_PLAYLIST + ", " + TOPIC_PRIVATE + ", " + TOPIC_SENSOR);
 		} else { 
 			((MainActivity) context).runOnUiThread(new Runnable() {
 				@Override
@@ -108,13 +105,12 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
                     callback.onMessageAction(action, track);
                     break;
                 case add_all:
-                    int currentIndex = json.getInt(TYPE_INDEX);
                     JSONArray trackArray = json.getJSONArray(TYPE_DATA);
-                    callback.onMessageAction(action, jsonArrayToTrackList(trackArray, currentIndex));
+                    callback.onMessageAction(action, jsonArrayToTrackList(trackArray));
                     break;
                 case seek:
                     float position = Float.parseFloat(json.getString(TYPE_DATA));
-                    callback.onMessageAction(position);
+                    callback.onMessageAction(action, position);
                     break;
                 default:
                     callback.onMessageAction(action);
@@ -124,13 +120,12 @@ public class ApplicationController implements MqttWorker.Callback, DialogFactory
 			Log.e(TAG, "Could not create json object from payload " + payload + " with error: " + e.getMessage());
 		}
 	}
-	
-	private ArrayList<Track> jsonArrayToTrackList(JSONArray trackArray, int currentIndex) throws JSONException {
+
+    private ArrayList<Track> jsonArrayToTrackList(JSONArray trackArray) throws JSONException {
 		ArrayList<Track> playlist = new ArrayList<Track>();
-        int length = trackArray.length();
-		for(int i = currentIndex; i < length + currentIndex; i++) {
-			JSONObject jsonTrack = trackArray.getJSONObject(i % length);
-			final Track track = jsonToTrack(jsonTrack);
+		for(int i = 0; i < trackArray.length(); i++) {
+			JSONObject jsonTrack = trackArray.getJSONObject(i);
+			Track track = jsonToTrack(jsonTrack);
 			playlist.add(track);
 		}
         return playlist;

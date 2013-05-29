@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 public class MainActivity extends FragmentActivity implements FragmentCallback, ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NfcCallback {
 
+    private static final int NUMBER_OF_PAGES = 3;
     private SectionsPagerAdapter sectionsPagerAdapter;
     private ViewPager viewPager;
     private ApplicationController controller;
@@ -31,6 +32,7 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
         setContentView(R.layout.activity_main);
         sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), this);
         viewPager = (ViewPager) findViewById(R.id.pager);
+        viewPager.setOffscreenPageLimit(NUMBER_OF_PAGES);
         viewPager.setAdapter(sectionsPagerAdapter);
         controller = new ApplicationController(this, this);
         nfcReader = new NfcReader(this);
@@ -59,7 +61,6 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
                 return super.onOptionsItemSelected(item);
         }
     }
-
 
     @Override
     protected void onPause() {
@@ -129,34 +130,11 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
     }
 
     @Override
-    public void onMessageAction(final float position) {
+    public <T extends Object> void onMessageAction(final Action action, final T t) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                sectionsPagerAdapter.seek(position);
-            }
-        });
-    }
-
-    @Override
-    public void onMessageAction(final Action action, final Track track) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                sectionsPagerAdapter.performAction(action, track);
-            }
-        });
-    }
-
-    @Override
-    public void onMessageAction(final Action action, final ArrayList<Track> playlist) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                sectionsPagerAdapter.resetPlaylist();
-                for (Track track : playlist) {
-                    sectionsPagerAdapter.performAction(Action.add, track);
-                }
+                sectionsPagerAdapter.performAction(action, t);
             }
         });
     }
