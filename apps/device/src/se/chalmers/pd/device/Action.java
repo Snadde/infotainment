@@ -18,5 +18,5 @@ public enum Action {
 	add_all,
     get_all,
     seek,
-	NONE
+	NONE;
 }

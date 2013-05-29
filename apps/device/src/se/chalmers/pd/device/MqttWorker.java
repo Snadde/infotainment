@@ -83,15 +83,17 @@ public class MqttWorker extends Thread {
 	 *            should be stringified JSON
 	 */
 	public void publish(String topic, String message) {
-		Log.d("MqttController", "publishing topic " + topic + " with message " + message);
-		try {
-			MqttMessage payload = new MqttMessage(message.getBytes());
-			mqttClient.getTopic(topic).publish(payload.getPayload(), 0, false);
-		} catch (MqttPersistenceException e) {
-			e.printStackTrace();
-		} catch (MqttException e) {
-			e.printStackTrace();
-		}
+		if(isConnected()){
+            Log.d("MqttController", "publishing topic " + topic + " with message " + message);
+            try {
+                MqttMessage payload = new MqttMessage(message.getBytes());
+                mqttClient.getTopic(topic).publish(payload.getPayload(), 0, false);
+            } catch (MqttPersistenceException e) {
+                e.printStackTrace();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
 	}
 
 	/**
@@ -100,13 +102,15 @@ public class MqttWorker extends Thread {
 	 * @param topic
 	 */
 	public void subscribe(String topic) {
-		try {
-			mqttClient.subscribe(topic, 2);
-		} catch (MqttSecurityException e) {
-			e.printStackTrace();
-		} catch (MqttException e) {
-			e.printStackTrace();
-		}
+        if(isConnected()){
+            try {
+                mqttClient.subscribe(topic, 2);
+            } catch (MqttSecurityException e) {
+                e.printStackTrace();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }
 	}
 
 	/**
@@ -126,8 +130,8 @@ public class MqttWorker extends Thread {
 		callback.onConnected(true);
 	}
 	
-	public boolean isConnected(){
-		return mqttClient.isConnected();
+	private boolean isConnected(){
+		return mqttClient == null ? false : mqttClient.isConnected();
 	}
 	
 	public void disconnect(){

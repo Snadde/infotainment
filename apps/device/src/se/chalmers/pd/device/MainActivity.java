@@ -1,6 +1,5 @@
 package se.chalmers.pd.device;
 
-import android.content.Context;
 import se.chalmers.pd.device.ApplicationController.Callbacks;
 import se.chalmers.pd.device.NfcReader.NFCCallback;
 import android.app.Activity;
@@ -35,7 +34,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	private SeekBar seekbar;
 	private NfcReader nfcReader;
 	private LoadingDialogFragment loadingDialog;
-    private String brokerUrl = "tcp://192.168.43.147:1883";
+    private final String BROKER_URL = "tcp://192.168.43.147:1883";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -181,24 +180,31 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onStartedApplication(final String status) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				if(loadingDialog!=null){
-                    loadingDialog.dismiss();
-                }
-				String message = "";
-				if (status.equals("start")) {
-					uninstall.setEnabled(false);
-					start.setChecked(true);
-					message = "Started application";
-				} else if (status.equals("stop")) {
-					uninstall.setEnabled(true);
-					start.setChecked(false);
-					message = "Stopped application";
-				} else if (status.equals("error")) {
-					start.setChecked(false);
-					alert("No application installed !");
-				}
-				changeStatus(message);
-                setCurrentTrack();
+            if(loadingDialog!=null){
+                loadingDialog.dismiss();
+            }
+            String message = "";
+            switch (ActionResponse.valueOf(status)){
+                case success:
+                    uninstall.setEnabled(false);
+                    start.setChecked(true);
+                    message = getString(R.string.started_application);
+                    break;
+                case error:
+                    start.setChecked(false);
+                    alert(getString(R.string.no_application_installed));
+                    break;
+                case pending:
+                    loadDialog(getString(R.string.starting_application));
+                    break;
+                default:
+                    uninstall.setEnabled(true);
+                    start.setChecked(false);
+                    message = getString(R.string.stopped_application);
+                    break;
+            }
+            changeStatus(message);
+            setCurrentTrack();
 			}
 		});
 
@@ -210,7 +216,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
      */
 	private void loadDialog(String message){
 		loadingDialog = LoadingDialogFragment.newInstance(message);
-		loadingDialog.show(getFragmentManager(), "loadingDialog");
+		loadingDialog.show(getFragmentManager(), getString(R.string.loading_dialog));
 	}
 
 	/**
@@ -226,11 +232,11 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 				if (show) {
 					uninstall.setEnabled(true);
 					install.setEnabled(false);
-					changeStatus("Installed application found");
+					changeStatus(getString(R.string.installed_application_found));
 				} else {
 					uninstall.setEnabled(false);
 					install.setEnabled(true);
-					changeStatus("No installed application");
+					changeStatus(getString(R.string.no_installed_application));
 				}
 			}
 		});
@@ -247,10 +253,10 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 				if (connected) {
 					connect.setEnabled(false);
 					disconnect.setEnabled(true);
-					changeStatus("Connected to broker");
+					changeStatus(getString(R.string.connected_to_broker));
 				} else {
-                    DialogFactory.buildConnectToUrlDialog(MainActivity.this, MainActivity.this, brokerUrl, R.string.reconnect_dialog_message).show();
-					changeStatus("Could not connect to the broker");
+                    DialogFactory.buildConnectToUrlDialog(MainActivity.this, MainActivity.this, BROKER_URL, R.string.reconnect_dialog_message).show();
+					changeStatus(getString(R.string.could_not_connect_broker));
 				}
 
 			}
@@ -270,9 +276,9 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
                     disconnect.setEnabled(false);
                     install.setEnabled(false);
                     uninstall.setEnabled(false);
-                    changeStatus("Disconnected from broker");
+                    changeStatus(getString(R.string.disconnected_from_broker));
                 } else {
-                    changeStatus("Could not disconnected from broker");
+                    changeStatus(getString(R.string.could_not_disconenct_broker));
                 }
 
             }
@@ -302,14 +308,14 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.install:
-            loadDialog("Installing application");
+            loadDialog(getString(R.string.installing_application));
 			controller.createAndPublishSystemActions(Action.install);
 			return true;
 		case R.id.uninstall:
             controller.createAndPublishSystemActions(Action.uninstall);
 			return true;
 		case R.id.connect:
-            DialogFactory.buildConnectToUrlDialog(this, this, brokerUrl, R.string.connect_message).show();
+            DialogFactory.buildConnectToUrlDialog(this, this, BROKER_URL, R.string.connect_message).show();
 			return true;
 		case R.id.disconnect:
 			controller.disconnect();
@@ -326,20 +332,14 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.start:
-			if (controller.isConnectedToBroker()) {
-				Action action;
-                if (start.isChecked()) {
-					start.setChecked(false);
-					action = Action.start;
-                    loadDialog("Starting application");
-                } else {
-					action = Action.stop;
-				}
-                controller.createAndPublishSystemActions(action);
-			} else {
-				start.setChecked(false);
-				alert("Not connected to broker! ");
-			}
+            Action action;
+            if (start.isChecked()) {
+                start.setChecked(false);
+                action = Action.start;
+            } else {
+                action = Action.stop;
+            }
+            controller.createAndPublishSystemActions(action);
 			break;
 		case R.id.play:
 			controller.createAndPublishPlayerActions(Action.play);
@@ -373,8 +373,8 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
      * @param message
      */
 	private void alert(String message) {
-		AlertDialog alert = new AlertDialog.Builder(this).setTitle("Warning").setMessage(message)
-				.setNeutralButton("ok", new DialogInterface.OnClickListener() {
+		AlertDialog alert = new AlertDialog.Builder(this).setTitle(getString(R.string.warning)).setMessage(message)
+				.setNeutralButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
 						// TODO maybe implement ? controller.connect();
 						dialog.cancel();
