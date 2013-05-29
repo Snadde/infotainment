@@ -116,9 +116,9 @@ public class MqttWorker extends Thread {
                     Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Topic not initiated, call exists to set up first!");
                 }
             } catch (MqttPersistenceException e) {
-                Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Error: " + e.getMessage());
+                Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Error: " + e.getStackTrace().toString());
             } catch (MqttException e) {
-                Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Error: " + e.getMessage());
+                Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Error: " + e.getStackTrace().toString());
             }
         } else {
             Log.e(WORKER_NAME, "Could not publish to topic " + topic + " with message " + message + ". Is the client initiated?");
