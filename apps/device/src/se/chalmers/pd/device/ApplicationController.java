@@ -254,7 +254,7 @@ public class ApplicationController implements MQTTCallback, PlaylistCallback {
 				}
 				break;
             case seek:
-                spotifyController.seek(Float.parseFloat(data));
+                 spotifyController.seek(Float.parseFloat(data));
                  break;
 			}
 			
