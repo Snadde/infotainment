@@ -14,51 +14,21 @@ var currentTrack = 0;
 var currentTime = 0;
 var totalTime = 0;
 var meter;
-var scrubber;
 
 
 $(document).ready(function () {
-    meter = $('#meter span#bar');
-    scrubber = $('#meter span#ring');
-    scrubber.bind('touchstart', function(e){
-        var x = e.pageX;
-        var offset = $(this).parent().offset().left;
-        var maxX = $('#meter').width() - $(this).width();
-        scrubber.bind('touchmove', function(e){
-            e.preventDefault();
-            var event = window.event;     
-            var pageX = event.touches[0].pageX;
-            var newX = Math.min(maxX, Math.max(0, pageX - offset));
-            $('#meter span#ring').css('left', newX);
-            var percent = ((newX + 16) / meter.parent().width()) * 100;
-            meter.css('width', percent + '%');
-        });
-        
-        
-    });
-    scrubber.bind('touchend', function (e) {
-        $(document).unbind('touchstart');
-        var fraction = ($('#meter span#ring').position().left + 16) / $('#meter').width();
-        currentTime = fraction * totalTime;
-        var message = {
-            action : 'seek',
-            data : fraction
-        };
-        publish(PRIVATE_CHANNEL, JSON.stringify(message));
-    });
 
-    $('#search-form').submit(function () {
-        $.spotifyTrackSearch($('#search-input').val(), function (data) {
-            var html = '';
-            var result = $.filterTracksByCountryCode(data.tracks, "SE", 1);
-            log(result);
-            var data = {
-                artist: result[0].artists[0].name,
-                track: result[0].name
-            };
-            updateList(data);
-        });
-        return false;
+    meter = $('#meter');
+    meter.scrubber({
+        callback : function (fraction){
+                        currentTime = fraction * totalTime;
+                        var message = {
+                            action : 'seek',
+                            data : fraction
+                        };
+                        publish(PRIVATE_CHANNEL, JSON.stringify(message));               
+                    },
+                    type : 'android'       
     });
 
     $('.music-control').click(function () {
@@ -84,8 +54,7 @@ $(document).ready(function () {
 function setMeter(fraction) {
     var percent = fraction * 100;
     if(percent <= 100) {
-        meter.css('width', percent + '%');
-        scrubber.css('left', meter.width() - 16);
+        meter.setProgress(percent);
     }
 }
 
@@ -154,6 +123,7 @@ function handleMessagePayload(payload) {
     } else if (payload.action == COMMAND_SEEK) {
         var fraction = payload.data;
         currentTime = fraction * totalTime;
+        setMeter(fraction);
     }
     
 }
@@ -161,8 +131,7 @@ function handleMessagePayload(payload) {
 function resetPlayingInfo() {
     currentTime = 0;
     totalTime = playlist[currentTrack].tracklength;
-    meter.css('width', '0%');
-    scrubber.css('left', '-16px');
+    setMeter(0);
 }
 
 function updatePlayingInfo() {    
