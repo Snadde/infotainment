@@ -4,6 +4,12 @@
     var parent;
     var options;
     
+    /**
+     ** The inital methods that sets the options and calls init
+     ** There are currently 2 types supported, 'android' and 'web'
+     ** 'web' is used for the Web browsers on your computer and
+     ** 'android' is used for Androids WebView
+    **/
     $.fn.scrubber = function(option) {
         var defaults = {
                         type: 'web',
@@ -13,7 +19,14 @@
          parent = $(this);
          init(option.callback);
     };
-   
+    
+    /**
+     ** The init function that build up the scrubber by appending 2 additional elements,
+     ** Uses The css in jquery.scrubber.css file, pending on what type is set touch or mouse
+     ** events will be bound.
+     ** Uses the callback method to return the fraction of how much the scrubber moved when
+     ** releasing touch our mouse click.
+    **/
     function init(callback){
         var meterDown = 'touchstart';
         var meterMove = 'touchmove';
@@ -23,6 +36,8 @@
             meterMove = 'mousemove'
             meterUp = 'mouseup'
         }
+        /* Known issue: parseInt does not work with android webView, please change the value manually if
+         * you have updated the css border radius */
         var BORDER_RADIUS = 16 ;//parseInt($("#meter span#ring").css('border-radius'));
         
         parent.append('<span id=\'ring\'></span>');
@@ -60,7 +75,10 @@
             });
         });
     }
-
+    /**
+     ** Sets the progress of the scrubber in percent.
+     **
+    **/
     $.fn.setProgress = function(percent){
         meter.css('width', percent + '%');
         scrubber.css('left', meter.width() - 16);
