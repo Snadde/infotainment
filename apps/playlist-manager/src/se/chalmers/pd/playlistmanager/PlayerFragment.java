@@ -1,8 +1,8 @@
 package se.chalmers.pd.playlistmanager;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +18,6 @@ import java.util.ArrayList;
  */
 public class PlayerFragment extends Fragment implements View.OnClickListener, OnSeekBarChangeListener {
 
-    private static final int MILLIS_IN_SECOND = 1000;
     private static final int DELAY_MILLIS = 1000;
     private View pause;
     private View play;
@@ -26,7 +25,7 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
     private SeekBar seekbar;
     private FragmentCallback callback;
     private ArrayList<Track> tracks;
-    private Handler handler = new Handler();
+    private ValueAnimator seekbarAnimator;
     private boolean playing = false;
 
     public PlayerFragment() {
@@ -75,6 +74,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_player, null);
         setupButtons(rootView);
+        seekbar.setOnSeekBarChangeListener(this);
+        trackInfo = (TextView) rootView.findViewById(R.id.track_info);
+        updateTrackInformation();
         return rootView;
 
     }
@@ -92,8 +94,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
         next.setOnClickListener(this);
         play.setOnClickListener(this);
         pause.setOnClickListener(this);
-        seekbar.setOnSeekBarChangeListener(this);
-        trackInfo = (TextView) rootView.findViewById(R.id.track_info);
     }
 
     /**
@@ -144,17 +144,24 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
             case play:
                 pause.setVisibility(View.VISIBLE);
                 play.setVisibility(View.GONE);
+                updateTrackInformation();
+                setSeekbarMax();
                 startProgress();
                 playing = true;
                 break;
             case next:
-                updateTrack(tracks.get(0));
-                break;
             case prev:
-                updateTrack(tracks.get(0));
+                updateTrackInformation();
+                stopProgress();
+                resetProgress();
+                setSeekbarMax();
+                if (playing) {
+                    startProgress();
+                }
                 break;
             case seek:
                 float position = (Float) t;
+                stopProgress();
                 setProgress(((int) (position * seekbar.getMax())));
                 if (playing) {
                     startProgress();
@@ -164,41 +171,50 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
     }
 
     /**
-     * Updates the track information in the text view
-     *
-     * @param track the track content
+     * Sets a new max on the seekbar from the first track in the
+     * current list of tracks.
      */
-    private void updateTrack(Track track) {
-        if (track != null && trackInfo != null) {
-            trackInfo.setText(track.getArtist() + " - " + track.getName());
-            seekbar.setMax(track.getLength());
-            resetProgress();
+    private void setSeekbarMax() {
+        if(tracks.size() > 0) {
+            Track track = tracks.get(0);
+            if (track != null && seekbar != null) {
+                seekbar.setMax(track.getLength());
+            }
         }
     }
 
-    /**
-     * Timer that updates the seek bar
-     */
-    private Runnable runnable = new Runnable() {
-        @Override
-        public void run() {
-            seekbar.incrementProgressBy((DELAY_MILLIS / MILLIS_IN_SECOND));
-            handler.postDelayed(this, DELAY_MILLIS);
+            /**
+             * Updates the track information in the text view with
+             * the first track in the playlist.
+             */
+    private void updateTrackInformation() {
+        if(tracks.size() > 0) {
+            Track track = tracks.get(0);
+            if (track != null && trackInfo != null) {
+                trackInfo.setText(track.getArtist() + " - " + track.getName());
+            }
         }
-    };
+    }
 
     /**
      * Stops the seek bar animation
      */
     private void stopProgress() {
-        handler.removeCallbacks(runnable);
+        if(seekbarAnimator != null) {
+            seekbarAnimator.cancel();
+            seekbarAnimator.removeAllUpdateListeners();
+        }
     }
 
     /**
      * Starts the seek bar animation
      */
     private void startProgress() {
-        handler.postDelayed(runnable, DELAY_MILLIS);
+        seekbarAnimator = ValueAnimator.ofInt(seekbar.getProgress(), seekbar.getMax());
+        seekbarAnimator.setDuration(DELAY_MILLIS * seekbar.getMax());
+        seekbarAnimator.setInterpolator(null);
+        seekbarAnimator.addUpdateListener(new SeekbarAnimatorUpdateListener());
+        seekbarAnimator.start();
     }
 
     /**
@@ -207,7 +223,9 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
      * @param progress the progress to set
      */
     private void setProgress(int progress) {
-        seekbar.setProgress(progress);
+        if(seekbar != null) {
+            seekbar.setProgress(progress);
+        }
     }
 
     /**
@@ -244,5 +262,14 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, On
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         // Not used
+    }
+
+    private class SeekbarAnimatorUpdateListener implements ValueAnimator.AnimatorUpdateListener {
+
+        @Override
+        public void onAnimationUpdate(ValueAnimator valueAnimator) {
+            int animProgress = (Integer) valueAnimator.getAnimatedValue();
+            setProgress(animProgress);
+        }
     }
 }

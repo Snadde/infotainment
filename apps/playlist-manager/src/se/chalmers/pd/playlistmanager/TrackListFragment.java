@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * This fragment is used to show list of tracks. Both the playlist and the search
@@ -116,6 +117,7 @@ public class TrackListFragment extends ListFragment {
         switch (action) {
             case add:
                 addTrack((Track) t);
+                Toast.makeText(getActivity(), getActivity().getString(R.string.track_added), Toast.LENGTH_SHORT).show();
                 break;
             case add_all:
                 addAllTracks((ArrayList<Track>) t);

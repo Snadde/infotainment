@@ -153,12 +153,6 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
         if (!tracks.isEmpty()) {
             viewPager.setCurrentItem(SectionsPagerAdapter.FIRST_PAGE, true);
             sectionsPagerAdapter.updateSearchResults(tracks);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(MainActivity.this, getString(R.string.track_added), Toast.LENGTH_SHORT).show();
-                }
-            });
         } else {
             runOnUiThread(new Runnable() {
                 @Override
