@@ -49,3 +49,7 @@ in the head unit. This application can also control playback on the primary devi
 
 The sensor application (project name [sensors](https://github.com/Snadde/infotainment/tree/development/apps/sensors)) is a simple Java application which will simulate a “sensor gateway”. It allows the user to control playback when clicking some buttons (like on a steering wheel on a car).
 
+## License
+
+This software (Infotainment) is licensed under the terms of the Apache License, version 2.0. Please see the LICENSE file for full details.
+
