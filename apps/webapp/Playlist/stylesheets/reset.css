@@ -4,6 +4,10 @@
    HTML5 display definitions
    ========================================================================== */
 
+* {
+    box-shadow: 0 0 0;
+}
+
 /**
  * Correct `block` display not defined in IE 8/9.
  */

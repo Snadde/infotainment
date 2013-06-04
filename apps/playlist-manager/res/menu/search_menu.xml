@@ -5,4 +5,7 @@
           android:icon="@android:drawable/ic_menu_search"
           android:showAsAction="ifRoom|collapseActionView"
           android:actionViewClass="android.widget.SearchView" />
+    <item android:id="@+id/connect"
+          android:icon="@android:drawable/sym_call_outgoing"
+          android:title="Connect" />
 </menu>

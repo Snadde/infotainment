@@ -1,9 +1,11 @@
 package se.chalmers.pd.device;
 
 import se.chalmers.pd.device.ApplicationController.Callbacks;
+import se.chalmers.pd.device.NfcReader.NFCCallback;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,11 +19,12 @@ import android.widget.ToggleButton;
 /**
  * This Class is separated from all logic and consist only of the view part of
  * the application. It sets up all the buttons and adds onclicklisteners.
+ * Implements Callbacks to update the view and forward different actions.
  * 
  * @author Patrik Thituson
  * 
  */
-public class MainActivity extends Activity implements Callbacks, View.OnClickListener {
+public class MainActivity extends Activity implements Callbacks, View.OnClickListener, NFCCallback, DialogFactory.Callback {
 
 	private ApplicationController controller;
 	private TextView currentTrack, status;
@@ -29,6 +32,9 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	private ToggleButton start;
 	private MenuItem connect, disconnect, install, uninstall;
 	private SeekBar seekbar;
+	private NfcReader nfcReader;
+	private LoadingDialogFragment loadingDialog;
+    private final String BROKER_URL = "tcp://192.168.43.147:1883";
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -41,6 +47,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		setupButtons();
 		// log in to spotify
 		controller.login();
+		nfcReader = new NfcReader(this);
 	}
 
 	/**
@@ -73,6 +80,11 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		});
 	}
 
+    /**
+     * Sets up the items in the menu
+     * @param menu
+     * @return
+     */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu, menu);
@@ -98,7 +110,7 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	}
 
 	/**
-	 * Sets the text of stats view
+	 * Sets the text of currentTrack view
 	 * 
 	 * @param text
 	 */
@@ -168,45 +180,72 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onStartedApplication(final String status) {
 		runOnUiThread(new Runnable() {
 			public void run() {
-				String message = "";
-				if (status.equals("start")) {
-					uninstall.setEnabled(false);
-					start.setChecked(true);
-					message = "Started application";
-				} else if (status.equals("stop")) {
-					uninstall.setEnabled(true);
-					start.setChecked(false);
-					message = "Stopped application";
-				} else if (status.equals("error")) {
-					start.setChecked(false);
-					alert("No application installed !");
-				}
-				changeStatus(message);
+            if(loadingDialog!=null){
+                loadingDialog.dismiss();
+            }
+            String message = "";
+            switch (ActionResponse.valueOf(status)){
+                case success:
+                    uninstall.setEnabled(false);
+                    start.setChecked(true);
+                    message = getString(R.string.started_application);
+                    break;
+                case error:
+                    start.setChecked(false);
+                    alert(getString(R.string.no_application_installed));
+                    break;
+                case pending:
+                    loadDialog(getString(R.string.starting_application));
+                    break;
+                default:
+                    uninstall.setEnabled(true);
+                    start.setChecked(false);
+                    message = getString(R.string.stopped_application);
+                    break;
+            }
+            changeStatus(message);
+            setCurrentTrack();
 			}
 		});
 
+	}
+
+    /**
+     * Launches a loading dialog with the specified message.
+     * @param message
+     */
+	private void loadDialog(String message){
+		loadingDialog = LoadingDialogFragment.newInstance(message);
+		loadingDialog.show(getFragmentManager(), getString(R.string.loading_dialog));
 	}
 
 	/**
 	 * Callback that is called when we want to change the visibility of the
-	 * buttons start, uninstall and install.
+	 * buttons uninstall and install. Updates the status field for user feedback.
 	 */
 	public void onInstalledApplication(final boolean show) {
 		runOnUiThread(new Runnable() {
 			public void run() {
+				if(loadingDialog!=null){
+					loadingDialog.dismiss();
+				}
 				if (show) {
 					uninstall.setEnabled(true);
-					changeStatus("Installed application found");
+					install.setEnabled(false);
+					changeStatus(getString(R.string.installed_application_found));
 				} else {
+					uninstall.setEnabled(false);
 					install.setEnabled(true);
-					changeStatus("No installed application");
+					changeStatus(getString(R.string.no_installed_application));
 				}
 			}
 		});
 	}
 
 	/**
-	 * Callback that is called when the application is connected with the broker
+	 * Callback that is called when the application has tried connecting with the broker.
+     * launches a reconnect dialog if the connection was unsuccessful ß
+     * @param connected true or false pending on the success of the connection
 	 */
 	public void onConnectedMQTT(final boolean connected) {
 		runOnUiThread(new Runnable() {
@@ -214,11 +253,10 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 				if (connected) {
 					connect.setEnabled(false);
 					disconnect.setEnabled(true);
-					changeStatus("Connected to broker");
+					changeStatus(getString(R.string.connected_to_broker));
 				} else {
-					connect.setEnabled(true);
-					disconnect.setEnabled(false);
-					changeStatus("Disconnected from broker");
+                    DialogFactory.buildConnectToUrlDialog(MainActivity.this, MainActivity.this, BROKER_URL, R.string.reconnect_dialog_message).show();
+					changeStatus(getString(R.string.could_not_connect_broker));
 				}
 
 			}
@@ -226,18 +264,58 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		});
 	}
 
+    /**
+     * Callback that is called when the application has disconnected with the broker
+     * on purpose.
+     */
+    public void onDisconnectedMQTT(final boolean success) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                if (success) {
+                    connect.setEnabled(true);
+                    disconnect.setEnabled(false);
+                    install.setEnabled(false);
+                    uninstall.setEnabled(false);
+                    changeStatus(getString(R.string.disconnected_from_broker));
+                } else {
+                    changeStatus(getString(R.string.could_not_disconenct_broker));
+                }
+
+            }
+
+        });
+    }
+
+    /**
+     * Callback from the connect/reconnect dialog that calls the controller with
+     * the new broker url if the result is true
+     * @param result
+     * @param newBrokerUrl
+     */
+    public void onConnectDialogAnswer(boolean result, String newBrokerUrl){
+        if(result) {
+            controller.connect(newBrokerUrl);
+        }
+    }
+
+    /**
+     * Handles the menu items when they are selected to perform the correct action.
+     * @param item
+     * @return
+     */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		// Handle item selection
 		switch (item.getItemId()) {
 		case R.id.install:
-			controller.install();
+            loadDialog(getString(R.string.installing_application));
+			controller.createAndPublishSystemActions(Action.install);
 			return true;
 		case R.id.uninstall:
-			controller.uninstall();
+            controller.createAndPublishSystemActions(Action.uninstall);
 			return true;
 		case R.id.connect:
-			controller.connect();
+            DialogFactory.buildConnectToUrlDialog(this, this, BROKER_URL, R.string.connect_message).show();
 			return true;
 		case R.id.disconnect:
 			controller.disconnect();
@@ -254,41 +332,49 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.start:
-			if (controller.isConnectedToBroker()) {
-				if (start.isChecked()) {
-					start.setChecked(false);
-					controller.start();
-				} else {
-					controller.stop();
-				}
-			} else {
-				start.setChecked(false);
-				alert("Not connected to broker! ");
-			}
+            Action action;
+            if (start.isChecked()) {
+                start.setChecked(false);
+                action = Action.start;
+            } else {
+                action = Action.stop;
+            }
+            controller.createAndPublishSystemActions(action);
 			break;
 		case R.id.play:
-			controller.play();
+			controller.createAndPublishPlayerActions(Action.play);
 			break;
 		case R.id.next:
-			controller.next();
+            controller.createAndPublishPlayerActions(Action.next);
 			break;
 		case R.id.pause:
-			controller.pause();
+            controller.createAndPublishPlayerActions(Action.pause);
 			break;
 		case R.id.prev:
-			controller.previous();
+            controller.createAndPublishPlayerActions(Action.prev);
 			break;
 		}
 		setCurrentTrack();
 	}
 
+    /**
+     * Updates the current track in the currentTrack view
+     */
 	private void setCurrentTrack() {
-		setText(controller.getCurrentTrack());
+        runOnUiThread(new Runnable() {
+            public void run() {
+                setText(controller.getCurrentTrack());
+            }
+        });
 	}
 
+    /**
+     * Alerts the user when trying to perform an unavailable action
+     * @param message
+     */
 	private void alert(String message) {
-		AlertDialog alert = new AlertDialog.Builder(this).setTitle("Warning").setMessage(message)
-				.setNeutralButton("ok", new DialogInterface.OnClickListener() {
+		AlertDialog alert = new AlertDialog.Builder(this).setTitle(getString(R.string.warning)).setMessage(message)
+				.setNeutralButton(getString(R.string.ok), new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int id) {
 						// TODO maybe implement ? controller.connect();
 						dialog.cancel();
@@ -297,11 +383,52 @@ public class MainActivity extends Activity implements Callbacks, View.OnClickLis
 		alert.show();
 	}
 
+    /**
+     * Updates the status view
+     * @param message the message to show in the status view
+     */
 	private void changeStatus(String message) {
 		status.setText(message);
 	}
 
+    /**
+     * Updates the seekbar
+     * @param position
+     */
 	public void onUpdateSeekbar(float position) {
 		seekbar.setProgress((int) (position * seekbar.getMax()));
+	}
+
+    /**
+     * Sets the current track
+     */
+    public void onUpdatedPlaylist() {
+        setCurrentTrack();
+        //this was implemented so this device could have a view of the playlist
+    }
+
+    /**
+     * Callback from NFC that contains the url to the broker, forwards this url to
+     * the controller.
+     * @param url
+     */
+    public void onNFCResult(String url) {
+		controller.connect(url);		
+	}
+
+    @Override
+	protected void onPause() {
+		super.onPause();
+		nfcReader.onPause();
+	}		
+	@Override	
+	protected void onResume() {
+		super.onResume();
+		nfcReader.onResume();
+	}
+	@Override
+	protected void onNewIntent(Intent intent) {
+		super.onNewIntent(intent);
+		nfcReader.onNewIntent(intent);
 	}
 }

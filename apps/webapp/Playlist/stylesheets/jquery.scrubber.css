@@ -1,0 +1,16 @@
+#meter span#bar {
+    height: 3px;
+    display: block;
+    background: #33b5e5;
+}
+#meter span#ring {
+    opacity: 0.65;
+    height: 32px;
+    width: 32px;
+    display: block;
+    position: absolute;
+    top: -14px;
+    left: -16px;
+    border-radius: 16px;
+    background: #33b5e5;
+}

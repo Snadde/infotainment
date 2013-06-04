@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
 <link rel="stylesheet" href="stylesheets/reset.css" type="text/css" media="screen" charset="utf-8">
 <link rel="stylesheet" href="stylesheets/fonts.css" type="text/css" media="screen" charset="utf-8">
 <link rel="stylesheet" href="stylesheets/stylesheet.css" type="text/css" media="screen" charset="utf-8">
+<link rel="stylesheet" href="stylesheets/jquery.scrubber.css" type="text/css" media="screen" charset="utf-8">
 <script type="text/javascript" src="javascripts/jquery1.9.1.js"></script>
+<script type="text/javascript" src="javascripts/jquery.plugin.js"></script>
+<script type="text/javascript" src="javascripts/jquery.timer.js"></script>
+<script type="text/javascript" src="javascripts/jquery.scrubber.js"></script>
 <script type="text/javascript" src="javascripts/spotify.js"></script>
 <script type="text/javascript" src="javascripts/main.js"></script>
 </head>
@@ -31,10 +36,14 @@
             <h4></h4>
         </section>
         <section id='music-controls-section'>
-            <img id="previous" class='music-control' src='images/previous.png'/>
+            <img id="prev" class='music-control' src='images/previous.png'/>
             <img id="play" class='music-control' src='images/play.png'/>
             <img id="pause" class='music-control' src='images/pause.png'/>
             <img id="next" class='music-control' src='images/next.png'/>            
+        </section>
+        <section id='meter-section'>
+            <div id="meter">
+            </div>
         </section>
     </section>
 </section>

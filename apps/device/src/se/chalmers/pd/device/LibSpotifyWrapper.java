@@ -8,6 +8,9 @@ public class LibSpotifyWrapper {
 	private static Handler handler = new Handler();
 	private static PlaylistCallback callback;
 
+    /**
+     *  The Native methods accessable from the java code.
+     */
 	native public static void init(ClassLoader loader, String storagePath);
 
 	native public static void destroy();
@@ -33,14 +36,17 @@ public class LibSpotifyWrapper {
 		playnext(uri);
 	}
 
+    /**
+     * When a login attempt is either successful or fail notify Playlistcallback
+     * @param success
+     * @param message
+     */
 	public static void onLogin(final boolean success, final String message) {
 		handler.post(new Runnable() {
 			public void run() {
 				if (success) {
 					callback.onLoginSuccess();
-					System.out.println("onLogin success");
 				} else {
-					System.out.println("onLogin fail");
 					callback.onLoginFailed(message);
 
 				}
@@ -49,6 +55,9 @@ public class LibSpotifyWrapper {
 
 	}
 
+    /**
+     * When a track has ended notify the callback to PlaylistCallback
+     */
 	public static void onPlayerEndOfTrack() {
 		handler.post(new Runnable() {
 
@@ -58,6 +67,10 @@ public class LibSpotifyWrapper {
 		});
 	}
 
+    /**
+     * When a player position has changed notify the callback to PlaylistCallback
+     * @param position
+     */
 	public static void onPlayerPositionChanged(final float position) {
 		handler.post(new Runnable() {
 
@@ -68,6 +81,9 @@ public class LibSpotifyWrapper {
 		});
 	}
 
+    /**
+     * When a track has paused notify the callback PlaylistCallback
+     */
 	public static void onPlayerPause() {
 		handler.post(new Runnable() {
 
@@ -77,12 +93,14 @@ public class LibSpotifyWrapper {
 		});
 	}
 
+    /**
+     * When a track has started playing notify PlaylistCallback
+     */
 	public static void onPlayerPlay() {
 		handler.post(new Runnable() {
 
 			public void run() {
 				callback.onPlay(true);
-				System.out.println("onPlayerPlay");
 			}
 		});
 	}

@@ -21,7 +21,7 @@ public class MqttWorker extends Thread {
 
 	private static final String STORAGE_DIRECTORY = "/infotainment/";
 	private static final String WORKER_NAME = "MqttWorker";
-	private static final String BROKER = "tcp://192.168.43.147:1883";
+	private static final String BROKER_URL = "tcp://192.168.43.147:1883";
 	private static final String CLIENT_NAME = "sensors";
 	private MqttClient mqttClient;
 	private MqttConnectOptions connectionOptions;
@@ -38,7 +38,7 @@ public class MqttWorker extends Thread {
 			MqttDefaultFilePersistence dataStore = new MqttDefaultFilePersistence(tmpDir);
 			connectionOptions = new MqttConnectOptions();
             connectionOptions.setKeepAliveInterval(10);
-			mqttClient = new MqttClient(BROKER, CLIENT_NAME, dataStore);
+			mqttClient = new MqttClient(BROKER_URL, CLIENT_NAME, dataStore);
 			mqttClient.connect();
 		} catch (MqttException e) {
 			e.printStackTrace();

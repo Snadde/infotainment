@@ -1,1 +1,0 @@
-PYTHONPATH=. ~/Development/libs/pywebsocket-read-only/src/mod_pywebsocket/standalone.py -p 8080 -d ~/Development/workspaces/infotainment/experiments/pywebsocket/public_html/ -w ~/Development/workspaces/infotainment/experiments/pywebsocket/public_html/websock_handlers/

@@ -1,8 +1,15 @@
+html {
+    background: #151719;
+    height: 100%;
+}
+
 body {
     background: #151719;
     color: #717171;
     font-family: "Roboto", "Helvetica", "Arial", "sans-serif";
     font-weight: 200;
+    height: 100%;
+    padding-top: 20px;
 }
 
 h1 {
@@ -41,7 +48,7 @@ li {
 
 #container {
     width: 1160px;
-    margin: 40px auto;
+    margin: 20px auto;
     overflow: hidden;
 }
 
@@ -52,7 +59,7 @@ li {
 #current-section {
     width: 700px;
     margin: 0 auto 0 auto;
-    height: 513px;
+    height: 515px;
     padding-top: 100px;
     text-align: center;
 }
@@ -80,14 +87,22 @@ li {
 }
 
 #options {
-    min-height: 425px;
+    height: 425px;
     margin-top: 20px;
     padding: 15px 20px;
     width: 320px;
+    overflow: auto;
 }
 
-#options span.track {
+#options span.track, #options span.tracklength {
     font-size: 20px;
+}
+
+#meter {
+    width: 450px;
+    margin: 25px auto 0px;
+    background: #333;
+    position: relative;
 }
 
 .wrapper-section {

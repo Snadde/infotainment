@@ -34,16 +34,18 @@ public class SpotifyController {
 
 	private static final int USER_NAME = 0;
 	private static final int PASSWORD = 1;
+    private static final String SPOTIFY = "spotify";
+    private static final String SPOTIFY_WRAPPER = "spotifywrapper";
+    private static final String USER_DETAILS = "userdetails.txt";
+    private static final String PATH = "/Android/data/se.chalmers.pd.device";
 
 	private boolean isPlaying = false;
-	private int currentTrackIndex = 0;
-	private boolean emptyList = true;
+    private boolean initiated = false;
 	private ArrayList<Track> playlist;
 	private PlaylistCallback playlistCallback;
-	private Track currentTrack;
 	private Context context;
 
-	public SpotifyController(PlaylistCallback playlistCallback, Context context) {
+    public SpotifyController(PlaylistCallback playlistCallback, Context context) {
 		this.playlistCallback = playlistCallback;
 		this.context = context;
 		init();
@@ -54,10 +56,10 @@ public class SpotifyController {
 	 */
 	private void init() {
 		playlist = new ArrayList<Track>();
-		System.loadLibrary("spotify");
-		System.loadLibrary("spotifywrapper");
+		System.loadLibrary(SPOTIFY);
+		System.loadLibrary(SPOTIFY_WRAPPER);
 		LibSpotifyWrapper.init(LibSpotifyWrapper.class.getClassLoader(), Environment.getExternalStorageDirectory()
-				.getAbsolutePath() + "/Android/data/se.chalmers.pd.device");
+				.getAbsolutePath() + PATH);
 	}
 
 	/**
@@ -70,10 +72,18 @@ public class SpotifyController {
 	 * @param spotifyUri
 	 *            the uri of the track
 	 */
-	public void addTrackToPlaylist(String name, String artist, String spotifyUri) {
-		Track newTrack = new Track(name, artist, spotifyUri);
+	public void addTrackToPlaylist(String name, String artist, String spotifyUri, int length) {
+		Track newTrack = new Track(name, artist, spotifyUri, length);
 		playlist.add(newTrack);
-		emptyList = false;
+	}
+
+    /**
+     * Adds a track to the playlist and if there is an empty list -> set
+     * the track to current track
+     * @param newTrack
+     */
+	public void addTrackToPlaylist(Track newTrack){
+        playlist.add(newTrack);
 	}
 	
 	/**
@@ -81,10 +91,12 @@ public class SpotifyController {
 	 * uses the callback to notify back to the application controller.
 	 */
 	public void play() {
-		if (!isPlaying && !emptyList) {
-			currentTrack = playlist.get(currentTrackIndex);
-			LibSpotifyWrapper.togglePlay(currentTrack.getUri());
+		if (!isPlaying && !isEmptyPlaylist()) {
+			LibSpotifyWrapper.togglePlay(getCurrentTrack().getUri());
 			isPlaying = true;
+            if(!initiated){
+                initiated = true;
+            }
 		} else {
 			playlistCallback.onPlay(false);
 		}
@@ -96,7 +108,7 @@ public class SpotifyController {
 	 */
 	public void pause() {
 		if (isPlaying) {
-			LibSpotifyWrapper.togglePlay(currentTrack.getUri());
+			LibSpotifyWrapper.togglePlay(getCurrentTrack().getUri());
 			isPlaying = false;
 		} else {
 			playlistCallback.onPause(false);
@@ -106,25 +118,35 @@ public class SpotifyController {
 	/**
 	 * Tries to play the next track of the playlist. If it is at the end 
 	 * it starts over.
-	 * uses the callback to notify back to the application controller.
 	 */
 	public void playNext() {
-		currentTrackIndex++;
-		if (playlist.size() <= currentTrackIndex) {
-			currentTrackIndex = 0;
-		}
+		if (!isEmptyPlaylist()){
+            Track originalTrack = playlist.get(0);
+            playlist.remove(originalTrack);
+            playlist.add(originalTrack);
+		    LibSpotifyWrapper.playNext(getCurrentTrack().getUri());
+	    }
+    }
+    /**
+     * Tries to play the previous track of the playlist. If it is at the
+     * beginning of hte palylist it starts at the end.
+     */
+    public void playPrevious() {
+        if (!isEmptyPlaylist()){
+            Track originalTrack = playlist.get(playlist.size() - 1);
+            playlist.remove(originalTrack);
+            playlist.add(0, originalTrack);
+            LibSpotifyWrapper.playNext(originalTrack.getUri());
+        }
+    }
 
-		currentTrack = playlist.get(currentTrackIndex);
-		LibSpotifyWrapper.playNext(currentTrack.getUri());
-
-	}
 	/**
 	 * Reads the user name and password for spotify in a file called userdetails.txt.
 	 * Then tries to log in by calling the Lobsspotifywrapper.
 	 */
 	public void login() {
 		try {
-			InputStreamReader reader = new InputStreamReader(context.getAssets().open("userdetails.txt"));
+			InputStreamReader reader = new InputStreamReader(context.getAssets().open(USER_DETAILS));
 			char[] buf = new char[100];
 			int length = reader.read(buf);
 			String userDetails = new String(buf, 0, length);
@@ -148,14 +170,6 @@ public class SpotifyController {
 	public List<Track> getPlaylist() {
 		return playlist;
 	}
-	/**
-	 * 
-	 * @return currentTrackIndex
-	 * 				the index of the current track
-	 */
-	public int getIndexOfCurrentTrack() {
-		return currentTrackIndex;
-	}
 
 	/**
 	 * 
@@ -163,14 +177,30 @@ public class SpotifyController {
 	 * 				the current track
 	 */
 	public Track getCurrentTrack() {
-		return currentTrack;
-	}
+        return playlist.isEmpty() ? null : playlist.get(0);
+    }
 	/**
 	 * Method for updating the tracks position
 	 * @param position
 	 */
 	public void seek(float position) {
-		LibSpotifyWrapper.seek(position);
+		if(initiated){
+            LibSpotifyWrapper.seek(position);
+        }
 	}
+
+    /**
+     * Clears the playlist and resets the different
+     * variables.
+     */
+	public void clearPlaylist() {
+		seek(0);
+        initiated = false;
+        playlist.clear();
+	}
+
+    private boolean isEmptyPlaylist(){
+        return playlist.isEmpty();
+    }
 
 }

@@ -12,4 +12,4 @@ jni/key.h
 obj
 apps/device/assets/userdetails.txt
 apps/device/libs/armeabi/libspotifywrapper.so
-
+apps/headunit/gen/*

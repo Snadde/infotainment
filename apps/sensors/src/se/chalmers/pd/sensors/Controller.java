@@ -12,44 +12,24 @@ import org.json.JSONObject;
 public class Controller {
 
 	private static final String TOPIC = "/sensor/infotainment";
-	private static final String ACTION = "action";
-	private static final String ACTION_NEXT = "next";
-	private static final String ACTION_PLAY = "play";
-	private static final String ACTION_PAUSE = "pause";
 
 	private MqttWorker mqttWorker;
 
 	/**
-	 * Creates a an mqtt worker and tells it to start
+	 * Creates a an mqtt client and tells it to connect
 	 */
 	public Controller() {
 		mqttWorker = new MqttWorker();
 		mqttWorker.start();
 	}
 
-	/**
-	 * Tells the worker to publish a message on this specific sensor topic with
-	 * a play message.
-	 */
-	public void play() {
-		mqttWorker.publish(TOPIC, getJsonMessage(ACTION_PLAY));
-	}
-
-	/**
-	 * Tells the worker to publish a message on this specific sensor topic with
-	 * a pause message.
-	 */
-	public void pause() {
-		mqttWorker.publish(TOPIC, getJsonMessage(ACTION_PAUSE));
-	}
-
-	/**
-	 * Tells the worker to publish a message on this specific sensor topic with
-	 * a next message.
-	 */
-	public void next() {
-		mqttWorker.publish(TOPIC, getJsonMessage(ACTION_NEXT));
-	}
+    /**
+     * Tells the mqtt client to publish a message on this specific sensor topic with
+     * the action message.
+     */
+    public void performAction(Action action) {
+        mqttWorker.publish(TOPIC, getJsonMessage(action));
+    }
 
 	/**
 	 * Helper method to create a json object that can be stringified and sent to
@@ -60,10 +40,10 @@ public class Controller {
 	 * @return a stringified json object containing the action that is passed
 	 *         in.
 	 */
-	private String getJsonMessage(String action) {
+	private String getJsonMessage(Action action) {
 		JSONObject message = new JSONObject();
 		try {
-			message.put(ACTION, action);
+			message.put(Action.action.toString(), action.toString());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
