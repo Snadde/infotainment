@@ -13,6 +13,11 @@ import android.view.MenuItem;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+/**
+ * This is the main activity of the application. It is a fragment activity so that it can host a view pager with
+ * fragments. Since this class holds the view pager and its adapter, it contains callback implementations
+ * from the fragments. It also has callbacks from the application controller, the search bar and NFC reader.
+ */
 public class MainActivity extends FragmentActivity implements FragmentCallback, ApplicationController.Callback, QueryTextListener.Callback, NfcReader.NfcCallback {
 
     private static final int NUMBER_OF_PAGES = 3;
@@ -26,6 +31,11 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
      * System callback implementations
      */
 
+    /**
+     * Sets up the view pager, pager adapter, controller and nfc reader.
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +49,11 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
     }
 
 
+    /**
+     * Creates the options menu for the application.
+     *
+     * @param menu the menu being instantiated
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.search_menu, menu);
@@ -49,6 +64,13 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
         return super.onCreateOptionsMenu(menu);
     }
 
+    /**
+     * When an item has been selected in the options menu this method is called by the
+     * system. This method creates a connect dialog and shows it to the user.
+     *
+     * @param item the menu item that was selected
+     * @return true if handled by this implementation
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -62,18 +84,30 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
         }
     }
 
+    /**
+     * Pauses the nfc reader when the application pauses.
+     */
     @Override
     protected void onPause() {
         super.onPause();
         nfcReader.onPause();
     }
 
+    /**
+     * Resumes the nfc reader when the application resumes.
+     */
     @Override
     protected void onResume() {
         super.onResume();
         nfcReader.onResume();
     }
 
+    /**
+     * Called from the system when a new intent has been received. This method
+     * forwards it to the nfc reader.
+     *
+     * @param intent the intent that was received.
+     */
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -84,6 +118,11 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
      * NfcReader callback
      */
 
+    /**
+     * Called when the nfc reader has a result from its reading.
+     *
+     * @param url the url that was read.
+     */
     @Override
     public void onNfcResult(String url) {
         controller.connect(url);
@@ -93,12 +132,21 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
      * Search callbacks
      */
 
+    /**
+     * Called from the query text listener on the search field when the search
+     * begins. It shows a simpe "searching" dialog message to the user.
+     */
     @Override
     public void onSearchBegin() {
         searchingDialog = DialogFactory.buildLoadingDialog(this);
         searchingDialog.show(getFragmentManager(), "searchingDialog");
     }
 
+    /**
+     * Called from the query text listener when a result has been received.
+     *
+     * @param tracks the tracks that matched the search
+     */
     @Override
     public void onSearchResult(ArrayList<Track> tracks) {
         searchingDialog.dismiss();
@@ -119,6 +167,9 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
      * ApplicationController callbacks
      */
 
+    /**
+     * {inheritDoc}
+     */
     @Override
     public void onMessageAction(final Action action) {
         runOnUiThread(new Runnable() {
@@ -129,6 +180,9 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
         });
     }
 
+    /**
+     * {inheritDoc}
+     */
     @Override
     public <T extends Object> void onMessageAction(final Action action, final T t) {
         runOnUiThread(new Runnable() {
@@ -143,16 +197,25 @@ public class MainActivity extends FragmentActivity implements FragmentCallback, 
      * FragmentCallback implementations
      */
 
+    /**
+     * {inheritDoc}
+     */
     @Override
     public void onPlayerAction(Action action) {
         controller.performAction(action);
     }
 
+    /**
+     * {inheritDoc}
+     */
     @Override
     public void onPlayerAction(float position) {
         controller.seek(position);
     }
 
+    /**
+     * {inheritDoc}
+     */
     @Override
     public void onTrackSelected(Track track) {
         switch (viewPager.getCurrentItem()) {
