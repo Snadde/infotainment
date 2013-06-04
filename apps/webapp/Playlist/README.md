@@ -13,7 +13,6 @@ The web application is a simple HTML5 app which receives information about which
 
 ### Known issues
 
-* Can’t scrub music.
 * Double tapping can be tricky
 
 ### Libs
