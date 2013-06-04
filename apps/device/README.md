@@ -34,6 +34,8 @@ Here are some known issues that we are aware of, note that this implementation i
 * There is no search and add tracks implemented, you have to use the secondary device for that
 * The login info to spotify is stored in a textfile, could be a login page instead?
 * The Playlist is not visible in the application
+* Doesn't reset scrubber at next/prev until play action 
+* Resets playlist at stop
 
 ### Libs
 

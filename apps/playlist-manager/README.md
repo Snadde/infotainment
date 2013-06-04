@@ -22,8 +22,7 @@ You can set the broker URL by using an NFC tag that is programmed with the broke
 ### Known issues
 
 * User cannot select a specific song in playlist and launch it, not implemented yet.
-* Scrubber is not animated
-* User cannot scrub playback
+* Looses state if primary device is playing an this device disconnects and comes back.
 
 ### Libs
 
